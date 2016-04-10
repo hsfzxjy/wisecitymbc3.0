@@ -1,0 +1,15 @@
+{
+  "name": "wisecity-3.0-front-end",
+  "version": "3.0.0",
+  "description": "Front end for wisecity 3.0.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "hsfzxjy, hfercc",
+  "license": "ISC",
+  "dependencies": {
+    "bower": "^1.7.9",
+    "gulp": "^3.9.1"
+  }
+}
