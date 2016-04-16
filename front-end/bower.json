@@ -21,7 +21,6 @@
   ],
   "dependencies": {
     "bootstrap": "v4.0.0-alpha.2",
-    "requirejs": "~2.2.0",
     "vue": "~1.0.21"
   }
 }
