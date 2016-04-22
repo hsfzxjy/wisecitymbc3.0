@@ -6,6 +6,23 @@ Website for wisecitymbc 3.0. Brighter &amp; better.
  + Python >= 3.5.1
  + Postgresql >= 9.3 (username: root, password: 12345. Only for test)
 
+## Configuration for Postgresql
+
+```bash
+$ su - postgres
+$ psql template1
+template1=# CREATE USER root WITH PASSWORD '12345';
+template1=# CREATE DATABASE app_wisecitymbc;
+template1=# GRANT ALL PRIVILEGES ON DATABASE app_wisecitymbc to root;
+template1=# \q
+```
+
+Test:
+
+```bash
+$ psql -U root -h localhost
+```
+
 # Installation
 
 Install python virtual environment:
