@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'webpack_loader',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -64,6 +65,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'enhancements.webpack_loader_adapter.context_processors'
+                '.webpack',
             ],
         },
     },
@@ -77,12 +80,12 @@ WSGI_APPLICATION = 'wisecitymbc.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'app_wisecitymbc',
         'USER': 'root',
         'PASSWORD': '12345',
         'HOST': '127.0.0.1',
-        'PORT': 3306,
+        'PORT': 5432,
     }
 }
 
@@ -132,3 +135,17 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     'front-end/dest'
 ]
+
+# Configuration for django-webpack-loader.
+
+FRONTEND_DIR = os.path.join(BASE_DIR, 'front-end')
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': './',
+        'STATS_FILE': os.path.join(FRONTEND_DIR, 'webpack-stats.json'),
+        'POLL_INTERVAL': 0.1,
+        'IGNORE': ['.+\.hot-update.js', '.+\.map']
+    }
+}

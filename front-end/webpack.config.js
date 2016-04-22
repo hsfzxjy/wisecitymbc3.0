@@ -1,6 +1,7 @@
 var path = require('path'),
     fs   = require('fs'),
     glob = require('glob'),
+    BundleTracker = require('webpack-bundle-tracker'),
     srcDir = './',
     entriesDir = 'entries/';
 
@@ -20,7 +21,7 @@ module.exports = {
     output: {
         path: path.join(__dirname, "dest/"), //文件输出目录
         //publicPath: "dist/js/",        //用于配置文件发布路径，如CDN或本地服务器
-        filename: "[name].js",        //根据入口文件输出的对应多个文件名
+        filename: "[name].[hash].js",        //根据入口文件输出的对应多个文件名
     },
     module: {
         loaders: [{
@@ -33,5 +34,9 @@ module.exports = {
                 presets: ['es2015']
             }
         }]
-    }
+    },
+
+    plugins: [
+        new BundleTracker({filename: './webpack-stats.json'})
+    ]
 };

@@ -54,4 +54,5 @@ class Template(jinja2backend.Template):
             context['csrf_token'] = csrf_token_lazy(request)
             for cp in self.context_processors:
                 context.update(cp(request))
+            print(context)
         return self.template.render(context)
