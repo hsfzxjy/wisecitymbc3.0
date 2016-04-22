@@ -1,4 +1,5 @@
 Django==1.9.5
+-e git://github.com/mvpdev/django-eav.git@86098dc1cd602be8cf2e7fd8fbbc34a6e6b2dd53#egg=django_eav
 django-webpack-loader==0.3.0
 djangorestframework==3.3.3
 Jinja2==2.8
