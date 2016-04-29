@@ -1,7 +1,7 @@
 from django.contrib.auth import models as auth_models
 from django.db import models
 from django.core import validators
-from django.utils import six, timezone
+from django.utils import timezone
 
 from enhancements.shortcuts import _
 
