@@ -54,20 +54,20 @@ MIDDLEWARE_CLASSES = [
 
 ROOT_URLCONF = 'wisecitymbc.urls'
 
+CONTEXT_PROCESSORS = [
+    'django.template.context_processors.debug',
+    'django.template.context_processors.request',
+    'django.contrib.auth.context_processors.auth',
+    'django.contrib.messages.context_processors.messages',
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'enhancements.webpack_loader_adapter.context_processors'
-                '.webpack',
-            ],
+            'context_processors': CONTEXT_PROCESSORS,
         },
     },
     {
@@ -76,12 +76,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'environment': 'enhancements.jinja2.env.environment',
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
+            'context_processors': CONTEXT_PROCESSORS,
             'extensions': [
                 'webpack_loader.contrib.jinja2ext.WebpackExtension'
             ]
