@@ -81,9 +81,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'enhancements.webpack_loader_adapter.context_processors'
-                '.webpack',
             ],
+            'extensions': [
+                'webpack_loader.contrib.jinja2ext.WebpackExtension'
+            ]
         },
     },
 ]
