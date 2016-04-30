@@ -15,3 +15,5 @@ FILE_TYPE_CHOICES = annotate({
     FileType.image: _('image'),
     FileType.file: _('file')
 })
+
+EXPORTS = ['FileType']
