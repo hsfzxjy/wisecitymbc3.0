@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'questions',
     'notifications',
     'files',
+    'entries',
 ]
 
 MIDDLEWARE_CLASSES = [
