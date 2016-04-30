@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'articles',
     'questions',
     'notifications',
+    'files',
 ]
 
 MIDDLEWARE_CLASSES = [
