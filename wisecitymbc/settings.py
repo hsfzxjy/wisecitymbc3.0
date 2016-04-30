@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'webpack_loader',
     'accounts',
     'articles',
+    'questions',
 ]
 
 MIDDLEWARE_CLASSES = [
