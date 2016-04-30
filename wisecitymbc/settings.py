@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'enhancements.constants',
     'webpack_loader',
     'accounts',
+    'articles',
 ]
 
 MIDDLEWARE_CLASSES = [
