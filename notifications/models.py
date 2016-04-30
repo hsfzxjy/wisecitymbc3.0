@@ -14,8 +14,9 @@ class Notification(models.Model):
     has_read = models.BooleanField(default=False)
     url = models.URLField()
 
-    target_id = models.PositiveIntegerField()
-    target_content_type = models.ForeignKey('contenttypes.ContentType')
+    target_id = models.PositiveIntegerField(null=True)
+    target_content_type = models.ForeignKey(
+        'contenttypes.ContentType', null=True)
     target = contenttypes_fields.GenericForeignKey(
         'target_content_type',
         'target_id'
