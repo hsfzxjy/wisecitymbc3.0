@@ -18,3 +18,4 @@ class UserData(models.Model):
     industry = models.CharField(max_length=255)
     sector = models.CharField(max_length=255)
     description = models.TextField()
+    reports = models.ManyToManyField('files.File')

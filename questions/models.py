@@ -14,3 +14,4 @@ class Reply(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
     content = models.TextField()
+    attachments = models.ManyToManyField('files.File')

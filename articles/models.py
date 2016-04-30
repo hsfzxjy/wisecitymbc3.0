@@ -9,6 +9,7 @@ class Article(models.Model):
     content = models.TextField()
     is_top = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
+    attachments = models.ManyToManyField('files.File')
 
 
 class Tag(models.Model):
