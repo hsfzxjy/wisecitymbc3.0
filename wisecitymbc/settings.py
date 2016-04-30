@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'notifications',
     'files',
     'entries',
+    'finance',
 ]
 
 MIDDLEWARE_CLASSES = [
