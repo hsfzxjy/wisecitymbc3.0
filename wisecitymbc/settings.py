@@ -39,9 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'enhancements.constants',
     'webpack_loader',
+    # website related apps
     'accounts',
     'articles',
     'questions',
+    'notifications',
 ]
 
 MIDDLEWARE_CLASSES = [
