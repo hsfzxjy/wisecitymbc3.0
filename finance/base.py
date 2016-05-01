@@ -45,7 +45,7 @@ class RevisionBase(models.Model):
 
     def has_changed(self):
 
-        from utils import diff
+        from .utils import diff
 
         if self.current_log is None:
             return True
@@ -92,7 +92,7 @@ def create_revision_model(name, fields, log_fields_names, module,
 
     fields.update({
         '__module__': module,
-        'current_log': models.ForeignKey(log_class_name, null=True,
+        'current_log': models.ForeignKey(log_class_name, null=True, blank=True,
                                          on_delete=models.SET_NULL)
     })
 
