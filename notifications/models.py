@@ -23,3 +23,9 @@ class Notification(models.Model):
     )
 
     module = models.CharField(max_length=255)
+
+    @property
+    def message(self):
+        from . import formatter
+
+        return formatter.render(self.template, self.data)
