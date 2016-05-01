@@ -1,17 +1,71 @@
-from django.db import models
+from django.db import models, transaction
 from jsonfield import JSONField
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from contextlib import contextmanager
+
 
 class RevisionBase(models.Model):
 
-    def undo(self):
-        pass
-
     class Meta:
         abstract = True
+
+    def undo(self):
+        with transaction.atomic(), self.manually_save():
+            try:
+                last_log = self.log_class.objects.filter(
+                    owner=self).order_by('-created_time')[1]
+            except IndexError:
+                # There is only one log left.
+                return
+
+            self.current_log.delete()
+
+            self.current_log = last_log
+            self._recover(last_log.serialized_data)
+
+            self.save()
+
+    def __init__(self, *args, **kwargs):
+        self.manually_saving = False
+
+        return super(RevisionBase, self).__init__(*args, **kwargs)
+
+    def _recover(self, data):
+        for key, value in data.items():
+            setattr(self, key, value)
+
+    def get_log_values(self):
+        return {
+            field_name: getattr(self, field_name)
+            for field_name in self.log_fields_names
+        }
+
+    def has_changed(self):
+
+        from utils import diff
+
+        if self.current_log is None:
+            return True
+
+        return bool(diff(self.get_log_values(),
+                         self.current_log.serialized_data))
+
+    def create_log(self):
+        with transaction.atomic(), self.manually_save():
+            log_values = self.get_log_values()
+            new_log = self.log_class.objects.create(
+                owner=self, serialized_data=log_values, **log_values)
+            self.current_log = new_log
+            self.save()
+
+    @contextmanager
+    def manually_save(self):
+        self.manually_saving = True
+        yield
+        self.manually_saving = False
 
 
 class LogBase(models.Model):
@@ -34,8 +88,12 @@ def create_revision_model(name, fields, log_fields_names, module,
     returns: (revision_class, log_class)
     '''
 
+    log_class_name = name + 'Log'
+
     fields.update({
-        '__module__': module
+        '__module__': module,
+        'current_log': models.ForeignKey(log_class_name, null=True,
+                                         on_delete=models.SET_NULL)
     })
 
     revision_class = type(
@@ -55,7 +113,7 @@ def create_revision_model(name, fields, log_fields_names, module,
     })
 
     log_class = type(
-        name + 'Log',
+        log_class_name,
         (LogBase, ) + log_bases,
         log_fields
     )
@@ -70,13 +128,8 @@ def create_revision_model(name, fields, log_fields_names, module,
 def revision_pre_save(sender, instance, created,
                       raw, using, update_fields, **kwargs):
 
-    if not issubclass(sender, RevisionBase):
+    if not issubclass(sender, RevisionBase) or instance.manually_saving \
+            or not instance.has_changed():
         return
 
-    data = {
-        name: getattr(instance, name)
-        for name in sender.log_fields_names
-    }
-
-    sender.log_class.objects.create(
-        owner=instance, serialized_data=data, **data)
+    instance.create_log()
