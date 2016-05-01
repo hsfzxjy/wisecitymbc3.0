@@ -6,5 +6,8 @@ Stock, StockLog = create_revision_model(
     'Stock',
     dict(price=models.FloatField()),
     ['price'],
-    __name__
+    __name__,
+    meta=type('Meta', (), {
+        'verbose_name': 'Stock'
+    })
 )

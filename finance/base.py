@@ -78,7 +78,7 @@ class LogBase(models.Model):
 
 
 def create_revision_model(name, fields, log_fields_names, module,
-                          bases=(), log_bases=()):
+                          bases=(), log_bases=(), meta=None, log_meta=None):
     '''
     name: str. must be capitalized.
     fields: dict of str:Field.
@@ -96,6 +96,9 @@ def create_revision_model(name, fields, log_fields_names, module,
                                          on_delete=models.SET_NULL)
     })
 
+    if meta is not None:
+        fields.update(Meta=meta)
+
     revision_class = type(
         name,
         (RevisionBase,) + bases,
@@ -111,6 +114,9 @@ def create_revision_model(name, fields, log_fields_names, module,
         'owner': models.ForeignKey(revision_class),
         '__module__': module
     })
+
+    if log_meta is not None:
+        log_fields.update(Meta=log_meta)
 
     log_class = type(
         log_class_name,
