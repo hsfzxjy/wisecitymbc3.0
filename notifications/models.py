@@ -21,3 +21,5 @@ class Notification(models.Model):
         'target_content_type',
         'target_id'
     )
+
+    module = models.CharField(max_length=255)
