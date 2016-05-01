@@ -2,7 +2,8 @@ from django.db import models
 
 from enhancements.auth.models import AbstractUser
 
-from .consts import USER_TYPE_CHOICES, UserType
+from .consts import USER_TYPE_CHOICES, \
+    UserType, BUREAU_TYPE_CHOICES, BureauType
 
 
 class User(AbstractUser):
@@ -11,6 +12,8 @@ class User(AbstractUser):
     data = models.ForeignKey('UserData', null=True, blank=True)
     user_type = models.IntegerField(
         choices=USER_TYPE_CHOICES, default=UserType.company.value)
+    bureau_type = models.IntegerField(
+        choices=BUREAU_TYPE_CHOICES, default=BureauType.none.value)
 
 
 class UserData(models.Model):
@@ -18,3 +21,4 @@ class UserData(models.Model):
     industry = models.CharField(max_length=255)
     sector = models.CharField(max_length=255)
     description = models.TextField()
+    reports = models.ManyToManyField('files.File')

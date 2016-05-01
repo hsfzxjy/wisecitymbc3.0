@@ -38,8 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'enhancements.constants',
+    'django_object_actions',
     'webpack_loader',
+    # website related apps
     'accounts',
+    'articles',
+    'questions',
+    'notifications',
+    'files',
+    'entries',
+    'finance',
 ]
 
 MIDDLEWARE_CLASSES = [

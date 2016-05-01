@@ -1,5 +1,5 @@
 def annotate(labels_map):
-    return [
+    return sorted([
         (item.value, description)
         for item, description in labels_map.items()
-    ]
+    ])
