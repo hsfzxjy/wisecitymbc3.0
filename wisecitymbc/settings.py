@@ -37,9 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Enhancements
     'enhancements.constants',
+    # Third-party
     'django_object_actions',
     'webpack_loader',
+    'rules.apps.AutodiscoverRulesConfig',
     # website related apps
     'accounts',
     'articles',
