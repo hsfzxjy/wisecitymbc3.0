@@ -1,7 +1,8 @@
 from django.db import models
+from django.dispatch import receiver
 
 from enhancements.auth.models import AbstractUser
-from enhancements.shortcuts import _, ValidationError
+from enhancements.shortcuts import _
 from enhancements.models.mixins import AutoCleanMixin
 
 
@@ -21,19 +22,11 @@ class User(AutoCleanMixin, AbstractUser):
 
     REQUIRED_FIELDS = ['nickname']
 
-    def _clean_data(self):
-        if self.user_type == UserType.company.value:
-            if self.data is None:
-                UserData.objects.create(user=self)
-        elif self.data is not None:
-            self.data.delete()
-
     def _clean_bureau_type(self):
         if self.user_type != UserType.bureau.value:
             self.bureau_type = BureauType.none.value
 
     def clean(self):
-        self._clean_data()
         self._clean_bureau_type()
 
     @property
@@ -55,6 +48,16 @@ class User(AutoCleanMixin, AbstractUser):
             tuple
         """
         return (UserType(self.user_type), BureauType(self.bureau_type))
+
+
+@receiver(models.signals.post_save, sender=User)
+def check_user_data(sender, instance, **kwargs):
+    print('processing', instance, instance.data)
+    if instance.user_type == UserType.company.value:
+        if instance.data is None:
+            UserData.objects.create(user=instance)
+    elif instance.data is not None:
+        instance.data.delete()
 
 
 class UserData(models.Model):

@@ -9,18 +9,24 @@ from .consts import UserType
 
 from django_object_actions import DjangoObjectActions
 
+from rules.contrib.admin import ObjectPermissionsModelAdmin, \
+    ObjectPermissionsStackedInline
+
 
 def monkey_patch():
     auth_forms.UserChangeForm.clean_password = \
         lambda self: self.initial.get('password')
 
 
-class UserDataInline(admin.StackedInline):
+class UserDataInline(ObjectPermissionsStackedInline):
     model = UserData
+
+    can_delete = False
 
 
 @admin.register(User)
-class UserAdmin(DjangoObjectActions, auth_admin.UserAdmin):
+class UserAdmin(DjangoObjectActions,
+                auth_admin.UserAdmin, ObjectPermissionsModelAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'nickname')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
