@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth import admin as auth_admin
+from django.contrib.auth import admin as auth_admin, forms as auth_forms
 
 from .models import User, UserData
 
@@ -10,7 +10,12 @@ from .consts import UserType
 from django_object_actions import DjangoObjectActions
 
 
-class UserDataInline(admin.TabularInline):
+def monkey_patch():
+    auth_forms.UserChangeForm.clean_password = \
+        lambda self: self.initial.get('password')
+
+
+class UserDataInline(admin.StackedInline):
     model = UserData
 
 
@@ -54,3 +59,5 @@ class UserAdmin(DjangoObjectActions, auth_admin.UserAdmin):
         'Click here to change your password.')
 
     change_actions = ['change_password']
+
+monkey_patch()
