@@ -1,7 +1,8 @@
 from django.db import models
+from django.dispatch import receiver
 
 from enhancements.auth.models import AbstractUser
-from enhancements.shortcuts import _, ValidationError
+from enhancements.shortcuts import _
 from enhancements.models.mixins import AutoCleanMixin
 
 
@@ -21,19 +22,11 @@ class User(AutoCleanMixin, AbstractUser):
 
     REQUIRED_FIELDS = ['nickname']
 
-    def _clean_data(self):
-        if self.user_type == UserType.company.value:
-            if hasattr(self, 'data'):
-                UserData.objects.create(user=self)
-        elif self.data is not None:
-            self.data.delete()
-
     def _clean_bureau_type(self):
         if self.user_type != UserType.bureau.value:
             self.bureau_type = BureauType.none.value
 
     def clean(self):
-        self._clean_data()
         self._clean_bureau_type()
 
     @property
@@ -57,13 +50,25 @@ class User(AutoCleanMixin, AbstractUser):
         return (UserType(self.user_type), BureauType(self.bureau_type))
 
 
+@receiver(models.signals.post_save, sender=User)
+def check_user_data(sender, instance, **kwargs):
+    print('processing', instance, instance.data)
+    if instance.user_type == UserType.company.value:
+        if instance.data is None:
+            UserData.objects.create(user=instance)
+    elif instance.data is not None:
+        instance.data.delete()
+
+
 class UserData(models.Model):
-    user = models.OneToOneField('User', related_name='_data', null=True)
-    name = models.CharField(_('name'), max_length=255)
-    industry = models.CharField(_('industry'), max_length=255)
-    sector = models.CharField(_('sector'), max_length=255)
-    description = models.TextField(_('description'))
-    reports = models.ManyToManyField('files.File', _('reports'))
+    user = models.OneToOneField(
+        'User', related_name='_data', null=True, blank=True)
+    name = models.CharField(_('name'), max_length=255, blank=True)
+    industry = models.CharField(_('industry'), max_length=255, blank=True)
+    sector = models.CharField(_('sector'), max_length=255, blank=True)
+    description = models.TextField(_('description'), blank=True)
+    reports = models.ManyToManyField(
+        'files.File', verbose_name=_('reports'), blank=True)
 
     class Meta:
         verbose_name = _('user data')
