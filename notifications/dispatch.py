@@ -38,5 +38,31 @@ def send(user, template, url, module, target=None, **kwargs):
     )
 
 
-def Sender(**kwargs):
-    return partial(send, **kwargs)
+class Sender(object):
+
+    def __init__(self, *args, **kwargs):
+        self.__args = args
+        self.__kwargs = kwargs
+
+    def _extend_arguments(self, *_args, **_kwargs):
+        from copy import deepcopy
+
+        args = deepcopy(list(self.__args))
+        kwargs = deepcopy(_kwargs)
+
+        args.extend(_args)
+        kwargs.update(kwargs)
+
+        return args, kwargs
+
+    def pack(self, *args, **kwargs):
+
+        a, k = self._extend_arguments(*args, **kwargs)
+
+        return Sender(*a, **k)
+
+    def send(self, *args, **kwargs):
+
+        a, k = self._extend_arguments(*args, **kwargs)
+
+        return send(*a, **k)

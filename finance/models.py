@@ -14,7 +14,8 @@ Stock, StockLog = create_revision_model(
     ['price', 'turnover'],
     __name__,
     meta=type('Meta', (), {
-        'verbose_name': _('stock')
+        'verbose_name': _('stock'),
+        'verbose_name_plural': _('stocks')
     })
 )
 
@@ -29,7 +30,8 @@ Bond, BondLog = create_revision_model(
     ['price', 'quantity'],
     __name__,
     meta=type('Meta', (), {
-        'verbose_name': _('bond')
+        'verbose_name': _('bond'),
+        'verbose_name_plural': _('bonds')
     })
 )
 
@@ -42,7 +44,8 @@ Futures, FuturesLog = create_revision_model(
     ['price'],
     __name__,
     meta=type('Meta', (), {
-        'verbose_name': _('futures')
+        'verbose_name': _('futures'),
+        'verbose_name_plural': _('futures')
     })
 )
 
@@ -58,6 +61,7 @@ RawMaterials, RawMaterialsLog = create_revision_model(
     ['price'],
     __name__,
     meta=type('Meta', (), {
-        'verbose_name': _('raw materials')
+        'verbose_name': _('raw materials'),
+        'verbose_name_plural': _('raw materials'),
     })
 )

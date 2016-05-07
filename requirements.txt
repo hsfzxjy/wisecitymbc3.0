@@ -1,8 +1,9 @@
-Django==1.9.5
+Django==1.9.6
 -e git://github.com/mvpdev/django-eav.git@86098dc1cd602be8cf2e7fd8fbbc34a6e6b2dd53#egg=django_eav
 django-object-actions==0.8.2
 django-webpack-loader==0.3.0
 djangorestframework==3.3.3
+fn.py==0.4.4
 Jinja2==2.8
 jsonfield==1.0.3
 MarkupSafe==0.23

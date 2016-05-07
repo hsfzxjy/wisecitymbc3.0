@@ -1,0 +1,91 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-05-07 13:16+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: admin.py:15
+msgid "Undo"
+msgstr "撤销"
+
+#: admin.py:16
+msgid "Revert this object to previous version."
+msgstr "回滚到上一版本。"
+
+#: apps.py:8
+msgid "Finance System"
+msgstr "金融交易系统"
+
+#: models.py:10 models.py:26 models.py:41 models.py:55
+msgid "name"
+msgstr "名称"
+
+#: models.py:11 models.py:28 models.py:42
+msgid "price"
+msgstr "价格"
+
+#: models.py:12
+msgid "turnover"
+msgstr "成交量"
+
+#: models.py:17
+msgid "stock"
+msgstr "股票"
+
+#: models.py:18
+msgid "stocks"
+msgstr "股票"
+
+#: models.py:25
+msgid "issuer"
+msgstr "发行方"
+
+#: models.py:27
+msgid "quantity"
+msgstr "量"
+
+#: models.py:33
+msgid "bond"
+msgstr "债券"
+
+#: models.py:34
+msgid "bonds"
+msgstr "债券"
+
+#: models.py:47 models.py:48
+msgid "futures"
+msgstr "期货"
+
+#: models.py:56
+msgid "description"
+msgstr "简介"
+
+#: models.py:57
+msgid "mining costs"
+msgstr "开采成本"
+
+#: models.py:58
+msgid "processing costs"
+msgstr "加工成本"
+
+#: models.py:59
+msgid "costs"
+msgstr "成品购买价格"
+
+#: models.py:64 models.py:65
+msgid "raw materials"
+msgstr "原材料"

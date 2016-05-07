@@ -43,6 +43,17 @@ class DispatchTestCase(TestCase):
             'Hi! admin.'
         )
 
+    def test_sender(self):
+        sender = dispatch.Sender(self.user)
+        sender.pack('Hi! {{user.nickname}}{{text}}', '/')\
+            .pack('greet')\
+            .send(text='fuck')
+
+        self.assertEqual(
+            self.user.notification_set.all()[0].message,
+            'Hi! adminfuck'
+        )
+
 
 class RegistryTestCase(TestCase):
 

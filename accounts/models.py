@@ -1,24 +1,70 @@
 from django.db import models
 
 from enhancements.auth.models import AbstractUser
+from enhancements.shortcuts import _, ValidationError
+from enhancements.models.mixins import AutoCleanMixin
+
 
 from .consts import USER_TYPE_CHOICES, \
     UserType, BUREAU_TYPE_CHOICES, BureauType
 
 
-class User(AbstractUser):
+class User(AutoCleanMixin, AbstractUser):
 
-    nickname = models.CharField(max_length=255, unique=True)
-    data = models.ForeignKey('UserData', null=True, blank=True)
+    nickname = models.CharField(_('nickname'), max_length=255, unique=True)
     user_type = models.IntegerField(
+        _('user type'),
         choices=USER_TYPE_CHOICES, default=UserType.company.value)
     bureau_type = models.IntegerField(
+        _('bureau type'),
         choices=BUREAU_TYPE_CHOICES, default=BureauType.none.value)
+
+    REQUIRED_FIELDS = ['nickname']
+
+    def _clean_data(self):
+        if self.user_type == UserType.company.value:
+            if hasattr(self, 'data'):
+                UserData.objects.create(user=self)
+        elif self.data is not None:
+            self.data.delete()
+
+    def _clean_bureau_type(self):
+        if self.user_type != UserType.bureau.value:
+            self.bureau_type = BureauType.none.value
+
+    def clean(self):
+        self._clean_data()
+        self._clean_bureau_type()
+
+    @property
+    def data(self):
+        try:
+            user_data = self._data
+        except UserData.DoesNotExist:
+            user_data = None
+
+        return user_data
+
+    @property
+    def category(self):
+        """[summary]
+
+        Return a (user_type, bureau_type) tuple.
+
+        Returns:
+            tuple
+        """
+        return (UserType(self.user_type), BureauType(self.bureau_type))
 
 
 class UserData(models.Model):
-    name = models.CharField(max_length=255)
-    industry = models.CharField(max_length=255)
-    sector = models.CharField(max_length=255)
-    description = models.TextField()
-    reports = models.ManyToManyField('files.File')
+    user = models.OneToOneField('User', related_name='_data', null=True)
+    name = models.CharField(_('name'), max_length=255)
+    industry = models.CharField(_('industry'), max_length=255)
+    sector = models.CharField(_('sector'), max_length=255)
+    description = models.TextField(_('description'))
+    reports = models.ManyToManyField('files.File', _('reports'))
+
+    class Meta:
+        verbose_name = _('user data')
+        verbose_name_plural = _('user data')
