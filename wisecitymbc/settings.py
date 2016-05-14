@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Enhancements
     'enhancements.constants',
     # Third-party
+    'django_nose',
     'django_object_actions',
     'webpack_loader',
     'rules.apps.AutodiscoverRulesConfig',
@@ -180,3 +181,9 @@ WEBPACK_LOADER = {
         'IGNORE': ['.+\.hot-update.js', '.+\.map']
     }
 }
+
+# Tests
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--nocapture',
+             '--nologcapture', ]
