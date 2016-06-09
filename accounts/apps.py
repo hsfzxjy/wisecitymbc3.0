@@ -8,6 +8,11 @@ class AccountsConfig(AppConfig):
     verbose_name = _('accounts')
 
     def ready(self):
+        from django.db.utils import ProgrammingError
+
         from .init_groups import create_default_groups
 
-        create_default_groups()
+        try:
+            create_default_groups()
+        except ProgrammingError:
+            pass
