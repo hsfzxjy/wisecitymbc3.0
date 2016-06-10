@@ -1,6 +1,4 @@
-from enum import Enum
-
-from enhancements.constants.utils import annotate
+from enhancements.collections import Enum
 from enhancements.shortcuts import _
 
 
@@ -10,11 +8,13 @@ class UserType(Enum):
     company = 2
     bureau = 3
 
-USER_TYPE_CHOICES = annotate({
-    UserType.government: _('government'),
-    UserType.company: _('company'),
-    UserType.bureau: _('bureau'),
-})
+    @classmethod
+    def get_choices(cls):
+        return {
+            cls.government: _('government'),
+            cls.company: _('company'),
+            cls.bureau: _('bureau'),
+        }
 
 
 class BureauType(Enum):
@@ -28,15 +28,17 @@ class BureauType(Enum):
     financial_system = 7
     media = 8
 
-BUREAU_TYPE_CHOICES = annotate({
-    BureauType.none: _('none'),
-    BureauType.real_estate: _('real_estate'),
-    BureauType.car: _('car'),
-    BureauType.electronic_technology: _('electronic_technology'),
-    BureauType.bank: _('bank'),
-    BureauType.enegry_and_raw_materials: _('enegry_and_raw_materials'),
-    BureauType.financial_system: _('financial_system'),
-    BureauType.media: _('media'),
-})
+    @classmethod
+    def get_choices(cls):
+        return {
+            cls.none: _('none'),
+            cls.real_estate: _('real_estate'),
+            cls.car: _('car'),
+            cls.electronic_technology: _('electronic_technology'),
+            cls.bank: _('bank'),
+            cls.enegry_and_raw_materials: _('enegry_and_raw_materials'),
+            cls.financial_system: _('financial_system'),
+            cls.media: _('media'),
+        }
 
 EXPORTS = ['UserType', 'BureauType']
