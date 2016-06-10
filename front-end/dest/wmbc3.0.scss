@@ -1,0 +1,63 @@
+$bgc: rgb(38,38,38);
+$gre: #209E85;
+$fsize:16px;
+$marg:5px;
+body,html {
+	background-color: $bgc;
+	font: {
+		size:$fsize;
+	}
+}
+.form-control {
+	border:{
+		width:0px;
+		radius:1px;
+	}
+	line-height:1.5;
+}
+.btn-login {
+	margin-top: 0px;
+	width: 100%;
+	background-color:$gre;
+	border-radius:1px;
+	color: #EEE;
+	font-weight: 700;
+	font-size:$fsize;
+	&:hover,&:focus,&:active {
+		color: #EEE;
+	}
+}
+.input-group-addon {
+	background-color:white;
+	border:{
+		width:0px;
+		radius:0px;
+	}
+	margin: {
+		right:2px;
+	}
+	padding: {
+		right:3px;
+	}
+}
+.alert-login {
+	border:{
+		color:#800;
+		width:0.5px;
+		style:solid;
+		radius:2px;
+	}
+	text-align:center;
+	padding: {
+	  top:10px;
+	  bottom:10px;
+	}
+}
+@media (max-width: 500px) {
+	li.nav-item {
+		width:100%
+	}
+	.nav-brand {
+		display: none
+	}
+}
