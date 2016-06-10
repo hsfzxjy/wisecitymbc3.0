@@ -87,7 +87,6 @@ class NestedEnhancementMixin(serializers_.ModelSerializer):
                 )
             )
 
-        print (serializer)
 
         field_kwargs = get_nested_relation_kwargs(relation_info)
 

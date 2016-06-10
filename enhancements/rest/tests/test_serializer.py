@@ -52,16 +52,15 @@ class SerializerTestCase(TestCase):
         s = BaseSerializer(self.base)
         self.assertEqual(s.data, {'id': 1, 'name': '1', 'child': {'id': 2}})
 
-    def test_url_rel(self):
+    def test_url(self):
 
         class BaseSerializer(ModelSerializer):
 
             class Meta:
                 model = Base
-                url_relations = 'child'
+                url_relations = ['child']
 
         factory = APIRequestFactory()
         request = factory.get('/')
-
-        s = BaseSerializer(self.base, context={'request': request})
-        self.assertEqual(s.data, {'id': 1, 'name': '1', 'child': '/2'})
+        s = BaseSerializer(self.base, context=dict(request=request))
+        self.assertIn('/users/2/', s.data['child'])
