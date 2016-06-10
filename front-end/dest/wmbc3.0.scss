@@ -20,11 +20,11 @@ body,html {
 	width: 100%;
 	background-color:$gre;
 	border-radius:1px;
-	color: #EEE;
+	color: #FFF;
 	font-weight: 700;
 	font-size:$fsize;
 	&:hover,&:focus,&:active {
-		color: #EEE;
+		color: #FFF;
 	}
 }
 .input-group-addon {
@@ -37,8 +37,11 @@ body,html {
 		right:2px;
 	}
 	padding: {
-		right:3px;
+		right:0px;
 	}
+}
+input + .input-group-addon {
+	padding-right:10px;
 }
 .alert-login {
 	border:{

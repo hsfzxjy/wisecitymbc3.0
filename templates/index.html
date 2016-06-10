@@ -11,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="/static/font-awesome.css" />
 	</head>
 	<body>
-		<!--nav class="navbar navbar-fixed-top navbar-dark" style="background-color:#191919" role="navigation">
+		<nav class="navbar navbar-fixed-top navbar-dark" style="background-color:#191919" role="navigation">
       <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar2">&#9776;</button>
       <div class="collapse navbar-toggleable-xs" id="exCollapsingNavbar2">
         <script type="text/javascript">
@@ -38,13 +38,18 @@
             </li>
           </ul>
         </div>
-      </nav-->
-    <main class="container">
+      </nav>
+    <main class="container" style="margin-top:54px;">
       <div class="row">
-        <div class="col-sm-8">8888888888</div>
+        <div class="col-sm-8">
+          <button @click="change('posts')">posts</button>
+          <components :is='currentView'>  
+            
+          </components>
+        </div>
         <div class="col-sm-4" style="border-left: 1px solid #666">
           <div class="container">
-            <form id="login-form">
+            <form id="login-form" style="margin-top:20px">
               <div class="form-group">
                 <div class="input-group">
                   <span class="input-group-addon"><i class="fa fa-user fa-fw" style="color:#333;"></i></span>
@@ -67,13 +72,17 @@
     </main>
     <script type="text/javascript">
     var vl = new Vue({
-        el: '#login-form',
+        el: 'body',
         data: {
           un:'',
           pw:'',
           iE:false,
+          currentView: 'home'
         },
         methods: {
+          change: function(type){
+            this.currentView = type
+          },
           validate: function() {
             if ((!this.un)||(!this.pw)) {
               this.iE = true
@@ -85,6 +94,14 @@
               this.iE=false
           }
         },
+        components: {
+          home: {
+            template:"<p>home</p>"
+          },
+          posts: {
+            template:"<p>posts</p>"
+          },
+        }
       })
     </script>
 	</body>
