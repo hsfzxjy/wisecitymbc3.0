@@ -1,0 +1,4 @@
+#! /bin/bash
+
+../../manage.py test . --settings enhancements.rest.tests.test_settings
+

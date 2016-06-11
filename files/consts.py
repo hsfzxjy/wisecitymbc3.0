@@ -1,6 +1,5 @@
-from enum import Enum
+from enhancements.collections import Enum
 
-from enhancements.constants.utils import annotate
 from enhancements.shortcuts import _
 
 
@@ -10,10 +9,13 @@ class FileType(Enum):
     image = 2
     file = 3
 
-FILE_TYPE_CHOICES = annotate({
-    FileType.video: _('video'),
-    FileType.image: _('image'),
-    FileType.file: _('file')
-})
+    @classmethod
+    def get_choices(cls):
+        return {
+            cls.video: _('video'),
+            cls.image: _('image'),
+            cls.file: _('file')
+        }
+
 
 EXPORTS = ['FileType']

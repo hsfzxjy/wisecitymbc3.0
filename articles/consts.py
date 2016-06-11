@@ -1,6 +1,5 @@
-from enum import Enum
+from enhancements.collections import Enum
 
-from enhancements.constants.utils import annotate
 from enhancements.shortcuts import _
 
 from accounts.consts import BureauType, UserType
@@ -20,13 +19,15 @@ class ArticleType(Enum):
     def from_user(self, user):
         return USER_TO_ARTICLE_MAPPING[(user.user_type, user.bureau_type)]
 
-ARTICLE_TYPE_CHOICES = annotate({
-    ArticleType.company: _('company'),
-    ArticleType.government: _('government'),
-    ArticleType.media: _('media'),
-    ArticleType.finance: _('finance'),
-    ArticleType.energy_and_raw_materials: _('energy_and_raw_materials'),
-})
+    @classmethod
+    def get_choices(cls):
+        return {
+            cls.company: _('company'),
+            cls.government: _('government'),
+            cls.media: _('media'),
+            cls.finance: _('finance'),
+            cls.energy_and_raw_materials: _('energy_and_raw_materials'),
+        }
 
 USER_TO_ARTICLE_MAPPING = {
     (UserType.company, BureauType.none): ArticleType.company,
