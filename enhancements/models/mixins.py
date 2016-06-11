@@ -10,17 +10,22 @@ class PermsMixin(object):
     """Permission Enhancement Mixin
     """
 
-    PERMS = {}
+    # Format
+    # {
+    #      <perm>: list of fields disallowed without the permission
+    # }
+    INVISIBLE_FIELDS = {}
     DEFAULT_ID = True
 
     @classmethod
-    def get_perms_map(cls):
+    def get_invisible_fields(cls):
         if hasattr(cls, '_perms_map'):
             return cls._perms_map
 
         pmap = cls._perms_map = {}
+        all_fields = set(field.name for field in cls._meta.get_fields())
 
-        for perms, options in cls.PERMS.items():
+        for perms, invisible_fields in cls.INVISIBLE_FIELDS.items():
             assert isinstance(perms, (str, tuple)), \
                 "Permission %r must be list or tuple." % perms
 
@@ -28,29 +33,19 @@ class PermsMixin(object):
                 perms = (perms, )
 
             for perm in perms:
-                pmap[perm] = cls._get_fields_by_perm(perm, options)
+                pmap[perm] = fields = all_fields & set(invisible_fields)
+
+                if cls.DEFAULT_ID:
+                    fields -= {'id'}
 
         return pmap
 
     @classmethod
-    def _get_fields_by_perm(cls, perm, options):
-
-        # Type check and options validation
-        assert isinstance(options, dict), \
-            "`options` for %r must be a dict." % perm
-        assert not ('visible' in options and 'invisible' in options), \
-            "`visible` and `invisible` cannot appear in the same"\
-            " option %r." % perm
-
+    def get_fields_by_user(cls, user, obj=None):
         fields = set(field.name for field in cls._meta.get_fields())
 
-        if 'visible' in options:
-            fields &= set(options['visible'])
-
-        if 'invisible' in options:
-            fields -= set(options['invisible'])
-
-        if cls.DEFAULT_ID:
-            fields |= {'id'}
+        for perm, invisible in cls.get_invisible_fields().items():
+            if not user.has_perm(perm):
+                fields -= invisible
 
         return fields

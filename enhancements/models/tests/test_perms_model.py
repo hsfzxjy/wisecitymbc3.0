@@ -9,13 +9,9 @@ class M(models.Model, PermsMixin):
     f1 = models.IntegerField()
     f2 = models.IntegerField()
 
-    PERMS = {
-        'a': {
-            'visible': ['f1'],
-        },
-        'b': {
-
-        }
+    INVISIBLE_FIELDS = {
+        'a': ['f1'],
+        'b': []
     }
 
 
@@ -24,13 +20,8 @@ class M2(models.Model, PermsMixin):
     f1 = models.IntegerField()
     f2 = models.IntegerField()
 
-    PERMS = {
-        'a': {
-            'visible': ['f1'],
-        },
-        ('b', 'c'): {
-            'invisible': ['id', ],
-        }
+    INVISIBLE_FIELDS = {
+        ('b', 'c'): ['id', ]
     }
 
     DEFAULT_ID = False
@@ -39,12 +30,11 @@ class M2(models.Model, PermsMixin):
 class PermsModelTestCase(TestCase):
 
     def test_model(self):
-        self.assertEqual(M.get_perms_map(), {
-            'a': {'f1', 'id'},
-            'b': {'f1', 'f2', 'id'},
-        })
-        self.assertEqual(M2.get_perms_map(), {
+        self.assertEqual(M.get_invisible_fields(), {
             'a': {'f1'},
-            'b': {'f1', 'f2'},
-            'c': {'f1', 'f2'},
+            'b': set(),
+        })
+        self.assertEqual(M2.get_invisible_fields(), {
+            'b': {'id'},
+            'c': {'id'},
         })
