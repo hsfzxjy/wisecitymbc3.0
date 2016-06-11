@@ -12,6 +12,18 @@ class SerializerRegistry(RegistryBase):
 registry = SerializerRegistry()
 
 
+def remove_fields(serializer, fields, disallowed):
+    existing = set(serializer.fields.keys())
+
+    if disallowed:
+        to_pop = existing & set(fields)
+    else:
+        to_pop = existing - set(fields)
+
+    for field_name in to_pop:
+        serializer.fields.pop(field_name)
+
+
 class DynamicSerializerMixin(serializers_.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
@@ -21,19 +33,11 @@ class DynamicSerializerMixin(serializers_.ModelSerializer):
         super(DynamicSerializerMixin, self).__init__(*args, **kwargs)
 
         if fields is not None:
-            allowed = set(fields)
-            existing = set(self.fields.keys())
-            for field_name in existing - allowed:
-                self.fields.pop(field_name)
-
+            remove_fields(self, fields, disallowed=False)
             return
 
         if exclude is not None:
-            disallowed = set(exclude)
-            existing = set(self.fields.keys())
-            for field_name in existing & disallowed:
-                self.fields.pop(field_name)
-
+            remove_fields(self, exclude, disallowed=True)
             return
 
 
@@ -122,6 +126,29 @@ class NestedEnhancementMixin(serializers_.ModelSerializer):
         return field_class, field_kwargs
 
 
-class ModelSerializer(DynamicSerializerMixin, NestedEnhancementMixin):
+class PartialFieldsMixin(serializers_.ModelSerializer):
+    """
+    The core implementation of disallowing fields by permissions
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(PartialFieldsMixin, self).__init__(*args, **kwargs)
+
+        if 'request' not in self._context:
+            return
+
+        request = self._context['request']
+        model = self.Meta.model
+
+        # Backward capibility
+        if not hasattr(model, 'get_fields_by_user'):
+            return
+
+        allowed = model.get_fields_by_user(request.user, self.instance)
+        remove_fields(self, allowed, disallowed=False)
+
+
+class ModelSerializer(PartialFieldsMixin,
+                      DynamicSerializerMixin, NestedEnhancementMixin):
 
     pass
