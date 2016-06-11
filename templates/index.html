@@ -45,7 +45,7 @@
           <a @click="change('posts')" href='#'>posts</a>
           <span>
           <a @click="change('home')" href='#'>home</a>
-          <components :is='currentView' transition="fade" transition-mode="out-in">  
+          <components :is='currentView' transition="fade" transition-mode="out-in" v-bind:msg="msg">  
             
           </components>
         </div>
@@ -79,11 +79,14 @@
           un:'',
           pw:'',
           iE:false,
-          currentView: 'home'
+          currentView: 'home',
+          msg:'',
         },
         methods: {
           change: function(type){
-            this.currentView = type
+            this.currentView = type;
+            this.msg = type;
+            console.log(this.msg);
           },
           validate: function() {
             if ((!this.un)||(!this.pw)) {
@@ -98,10 +101,12 @@
         },
         components: {
           home: {
-            template:'<ul class="list-group list-wmbc"><li class="list-group-item">Cras justo odio</li><li class="list-group-item">Dapibus ac facilisis in</li><li class="list-group-item">Morbi leo risus</li><li class="list-group-item">Porta ac consectetur ac</li><li class="list-group-item">Vestibulum at eros</li></ul>'
+            props: { msg: String },
+            template:'<ul class="list-group list-wmbc"><li class="list-group-item">Cras justo odio</li><li class="list-group-item">Dapibus ac facilisis in</li><li class="list-group-item">Morbi leo risus</li><li class="list-group-item">Porta ac consectetur ac</li><li class="list-group-item">MSG: {{ msg }}</li></ul>'
           },
           posts: {
-            template:'<ul class="list-group list-wmbc"><li class="list-group-item">Cras justo odio</li>"</ul>'
+            props: { msg: String },
+            template:'<ul class="list-group list-wmbc"><li class="list-group-item">Cras justo odio</li><li class="list-group-item">MSG: {{ msg }}</li>"</ul>'
           },
         }
       })
