@@ -26,13 +26,13 @@ class EnumFieldTestCase(TestCase):
         self.assertEqual(ABC.C, obj.test)
 
     def test_declared_choices(self):
-        from .models import DeclaredChoicesModel
+        from .models import DeclaredChoicesModel, ABC2
 
         self.assertEqual(
             DeclaredChoicesModel._meta.get_field('test').choices,
             [
-                (1, 'ei'),
-                (2, 'bee'),
-                (3, 'sii'),
+                (ABC2.A, 'ei'),
+                (ABC2.B, 'bee'),
+                (ABC2.C, 'sii'),
             ]
         )
