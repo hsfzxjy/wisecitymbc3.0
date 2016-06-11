@@ -12,7 +12,7 @@ def user_type_predicate_factory(user_type):
 
     @rules.predicate
     def _predicate(user):
-        return user.user_type == user_type.value
+        return user.user_type == user_type
 
     return _predicate
 
