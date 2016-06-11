@@ -11,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="/static/font-awesome.css" />
 	</head>
 	<body>
-		<nav class="navbar navbar-fixed-top navbar-dark" style="background-color:#191919" role="navigation">
+		<!--nav class="navbar navbar-fixed-top navbar-dark" style="background-color:#111" role="navigation">
       <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar2">&#9776;</button>
       <div class="collapse navbar-toggleable-xs" id="exCollapsingNavbar2">
         <script type="text/javascript">
@@ -38,12 +38,14 @@
             </li>
           </ul>
         </div>
-      </nav>
+      </nav-->
     <main class="container" style="margin-top:54px;">
       <div class="row">
         <div class="col-sm-8">
-          <button @click="change('posts')">posts</button>
-          <components :is='currentView'>  
+          <a @click="change('posts')" href='#'>posts</a>
+          <span>
+          <a @click="change('home')" href='#'>home</a>
+          <components :is='currentView' transition="fade" transition-mode="out-in">  
             
           </components>
         </div>
@@ -96,10 +98,10 @@
         },
         components: {
           home: {
-            template:"<p>home</p>"
+            template:'<ul class="list-group list-wmbc"><li class="list-group-item">Cras justo odio</li><li class="list-group-item">Dapibus ac facilisis in</li><li class="list-group-item">Morbi leo risus</li><li class="list-group-item">Porta ac consectetur ac</li><li class="list-group-item">Vestibulum at eros</li></ul>'
           },
           posts: {
-            template:"<p>posts</p>"
+            template:'<ul class="list-group list-wmbc"><li class="list-group-item">Cras justo odio</li>"</ul>'
           },
         }
       })

@@ -37,11 +37,28 @@ input + .input-group-addon {
   padding-top: 10px;
   padding-bottom: 10px; }
 
+.list-wmbc > .list-group-item {
+  background-color: #191919;
+  border-top-width: 1px;
+  border-top-color: #595959;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  color: #CCC; }
+
+.list-group-item:first-child {
+  border: none; }
+
 @media (max-width: 500px) {
   li.nav-item {
     width: 100%; }
 
   .nav-brand {
     display: none; } }
+.fade-transition {
+  transition: opacity .3s ease; }
+
+.fade-enter, .fade-leave {
+  opacity: 0; }
 
 /*# sourceMappingURL=wisecitymbc3.0.css.map */

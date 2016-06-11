@@ -1,13 +1,17 @@
 $bgc: rgb(38,38,38);
 $gre: #209E85;
 $fsize:16px;
+$red: #DB4E02;
 $marg:5px;
+$text:#CCC;
+//global
 body,html {
 	background-color: $bgc;
 	font: {
 		size:$fsize;
 	}
 }
+//form
 .form-control {
 	border:{
 		width:0px;
@@ -56,6 +60,22 @@ input + .input-group-addon {
 	  bottom:10px;
 	}
 }
+//list
+.list-wmbc > .list-group-item {
+	background-color: darken($bgc, 5%);
+	border:{
+		top-width:1px;
+		top-color: lighten($bgc,20%);
+		left:none;
+		right:none;
+		bottom:none;
+	} 
+	color: $text;
+}
+.list-group-item:first-child {
+	border:none;
+}
+//responsive
 @media (max-width: 500px) {
 	li.nav-item {
 		width:100%
@@ -63,4 +83,11 @@ input + .input-group-addon {
 	.nav-brand {
 		display: none
 	}
+}
+// animation
+.fade-transition {
+  transition: opacity .3s ease;
+}
+.fade-enter, .fade-leave {
+  opacity: 0;
 }
