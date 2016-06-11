@@ -1,6 +1,6 @@
 from django.test import TestCase
 from enhancements.rest.serializers import ModelSerializer
-from enhancements.rest.registry import registry
+from enhancements.rest import registry
 from .models import Base, Child
 
 from rest_framework.test import APIRequestFactory

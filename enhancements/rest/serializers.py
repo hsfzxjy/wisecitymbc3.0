@@ -1,8 +1,15 @@
 from rest_framework import serializers as serializers_
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs, \
     get_relation_kwargs
+from enhancements.globalreg.core import RegistryBase
 
-from .registry import registry
+
+class SerializerRegistry(RegistryBase):
+
+    def make_key(self, key):
+        return key.__name__
+
+registry = SerializerRegistry()
 
 
 class DynamicSerializerMixin(serializers_.ModelSerializer):
@@ -87,24 +94,25 @@ class NestedEnhancementMixin(serializers_.ModelSerializer):
                 )
             )
 
-
         field_kwargs = get_nested_relation_kwargs(relation_info)
 
         return serializer, field_kwargs
 
     def build_relational_field(self, field_name, relation_info):
         if field_name in self.pk_relations:
-            field_class=serializers_.PrimaryKeyRelatedField
+            field_class = serializers_.PrimaryKeyRelatedField
         elif field_name in self.url_relations:
-            field_class=serializers_.HyperlinkedRelatedField
+            field_class = serializers_.HyperlinkedRelatedField
 
-        field_kwargs=get_relation_kwargs(
+        field_kwargs = get_relation_kwargs(
             field_name, relation_info)
 
-        to_field=field_kwargs.pop('to_field', None)
-        if to_field and not relation_info.related_model._meta.get_field(to_field).primary_key:
-            field_kwargs['slug_field']=to_field
-            field_class=self.serializer_related_to_field
+        to_field = field_kwargs.pop('to_field', None)
+        if to_field and \
+                not relation_info.related_model\
+                ._meta.get_field(to_field).primary_key:
+            field_kwargs['slug_field'] = to_field
+            field_class = self.serializer_related_to_field
 
         # `view_name` is only valid for hyperlinked relationships.
         if not issubclass(
