@@ -26,4 +26,7 @@ class Goods(models.Model, PermsMixin):
         'tests.change_goods': ['price']
     }
 
+    class Meta:
+        ordering = ('id',)
+
 rules.add_perm('tests.change_goods', accounts_rules.is_government)

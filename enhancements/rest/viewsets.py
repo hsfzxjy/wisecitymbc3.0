@@ -1,7 +1,13 @@
 from enhancements.rest import registry
 
+from rest_framework import filters
+
 
 class EnhancedViewSetMixin(object):
+
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    ordering_fields = ('id',)
+    search_fields = ()
 
     def get_serializer_class(self):
         model = self.get_queryset().model
