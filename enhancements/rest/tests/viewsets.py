@@ -1,8 +1,8 @@
-from .models import Child, Goods, Bucket
+from .models import Child, Goods, Bucket, Box, Ball
 
 from rest_framework import viewsets
 
-from enhancements.rest.urls import register
+from enhancements.rest.urls import register, register_nested
 
 
 @register('users', base_name='child')
@@ -21,3 +21,23 @@ class GoodsViewSet(viewsets.ModelViewSet):
 class BucketViewSet(viewsets.ModelViewSet):
 
     queryset = Bucket.objects.all()
+
+
+@register('boxes')
+class BoxViewSet(viewsets.ModelViewSet):
+
+    queryset = Box.objects.all()
+
+
+@register_nested(
+    'balls',
+    BoxViewSet,
+    'boxes',
+    'box',
+)
+class BallViewSet(viewsets.ModelViewSet):
+
+    queryset = Ball.objects.all()
+
+    def get_queryset(self):
+        return Ball.objects.filter(box=self.kwargs['box_pk'])

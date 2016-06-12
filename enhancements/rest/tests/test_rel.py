@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from .models import Bucket, Goods
+from .models import Bucket, Goods, Box, Ball
 
 
 class RelTestCase(APITestCase):
@@ -38,4 +38,22 @@ class RelTestCase(APITestCase):
                 'id': 1,
                 'name': 'g1'
             }]
+        })
+
+
+class NestedTestCase(APITestCase):
+
+    def setUp(self):
+        box = Box.objects.create(name='1', id=1)
+        ball = Ball.objects.create(box=box)
+
+    def test_get(self):
+        response = self.client.get('/boxes/1/balls/1/')
+
+        self.assertEqual(response.data, {
+            'id': 1,
+            'box': {
+                'id': 1,
+                'name': '1'
+            }
         })

@@ -1,9 +1,45 @@
 from rest_framework.routers import DefaultRouter, BaseRouter
+from rest_framework_nested.routers import NestedSimpleRouter
 
 from .routers import custom_router
 
 _default_router = DefaultRouter()
 _routers = [_default_router]
+_router_map = {}
+
+
+def _get_key(viewset):
+    return '.'.join((viewset.__module__, viewset.__class__.__name__))
+
+
+def _store_viewset(viewset, router):
+    _router_map[_get_key(viewset)] = router
+
+
+def _get_router(viewset):
+    try:
+        return _router_map[_get_key(viewset)]
+    except KeyError:
+        raise ValueError("Viewset %r hasn't been registered." % viewset)
+
+
+class register_nested(object):
+
+    def __init__(self, prefix, required, parent_prefix,
+                 lookup=None, base_name=None):
+        self.prefix, self.parent_prefix, self.base_name = prefix, \
+            parent_prefix, base_name
+
+        self.parent_router = _get_router(required)
+        self.router = NestedSimpleRouter(self.parent_router,
+                                         parent_prefix, lookup=lookup)
+        _routers.append(self.router)
+
+    def __call__(self, viewset_class):
+        self.router.register(self.prefix, viewset_class, self.base_name)
+        _store_viewset(viewset_class, self.router)
+
+        return viewset_class
 
 
 class register(object):
@@ -36,6 +72,8 @@ class register(object):
             viewset_class,
             self._base_name
         )
+
+        _store_viewset(viewset_class, self._router)
 
         return viewset_class
 
