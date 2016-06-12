@@ -1,5 +1,10 @@
 from django.apps import AppConfig
 
+from . import viewsets, serializers
+
+serializers.monkey_patch()
+viewsets.monkey_patch()
+
 
 class AutoDiscoverConfig(AppConfig):
 

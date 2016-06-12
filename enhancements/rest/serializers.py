@@ -1,7 +1,8 @@
-from rest_framework import serializers as serializers_
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs, \
     get_relation_kwargs
 from enhancements.globalreg.core import RegistryBase
+
+from rest_framework import serializers as serializers_
 
 
 class SerializerRegistry(RegistryBase):
@@ -24,7 +25,7 @@ def remove_fields(serializer, fields, disallowed):
         serializer.fields.pop(field_name)
 
 
-class DynamicSerializerMixin(serializers_.ModelSerializer):
+class DynamicSerializerMixin(object):
 
     def __init__(self, *args, **kwargs):
         fields = kwargs.pop('fields', None)
@@ -41,7 +42,7 @@ class DynamicSerializerMixin(serializers_.ModelSerializer):
             return
 
 
-class NestedEnhancementMixin(serializers_.ModelSerializer):
+class NestedEnhancementMixin(object):
 
     def __init__(self, *args, **kwargs):
         self.pk_relations = set(getattr(self.Meta, 'pk_relations', []))
@@ -126,7 +127,7 @@ class NestedEnhancementMixin(serializers_.ModelSerializer):
         return field_class, field_kwargs
 
 
-class PartialFieldsMixin(serializers_.ModelSerializer):
+class PartialFieldsMixin(object):
     """
     The core implementation of disallowing fields by permissions
     """
@@ -148,7 +149,26 @@ class PartialFieldsMixin(serializers_.ModelSerializer):
         remove_fields(self, allowed, disallowed=False)
 
 
-class ModelSerializer(PartialFieldsMixin,
-                      DynamicSerializerMixin, NestedEnhancementMixin):
+def monkey_patch():
+    from rest_framework import serializers
 
-    pass
+    old_model_serializer = serializers.ModelSerializer
+
+    for object_name in dir(serializers):
+        if not object_name.endswith('Serializer'):
+            continue
+
+        old_class = getattr(serializers, object_name)
+        if not issubclass(old_class, old_model_serializer):
+            continue
+
+        new_class = type(
+            object_name,
+            (DynamicSerializerMixin,
+                NestedEnhancementMixin,
+                PartialFieldsMixin,
+                old_class),
+            {}
+        )
+
+        setattr(serializers, object_name, new_class)

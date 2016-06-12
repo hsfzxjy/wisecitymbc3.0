@@ -1,5 +1,5 @@
 from django.test import TestCase
-from enhancements.rest.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer
 from enhancements.rest import registry
 from .models import Base, Child
 

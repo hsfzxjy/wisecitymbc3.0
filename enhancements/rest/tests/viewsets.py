@@ -5,7 +5,6 @@ from rest_framework import viewsets
 
 from enhancements.rest.urls import register
 
-
 @register('users', base_name='child')
 class V(viewsets.ModelViewSet):
 
@@ -16,4 +15,3 @@ class V(viewsets.ModelViewSet):
 class GoodsViewSet(viewsets.ModelViewSet):
 
     queryset = Goods.objects.all()
-    serializer_class = GoodsSerializer
