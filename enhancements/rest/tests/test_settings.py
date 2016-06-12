@@ -1,6 +1,7 @@
 from wisecitymbc.settings import *
 
 INSTALLED_APPS = [
+    'enhancements.rest.apps.AutoDiscoverConfig',
     'enhancements.rest.tests',
     'django.contrib.contenttypes',
     'django.contrib.auth',
