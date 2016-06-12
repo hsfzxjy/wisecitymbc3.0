@@ -1,7 +1,9 @@
 from django.db import models
 from django.conf import settings
 
-from .consts import ARTICLE_TYPE_CHOICES, ArticleType
+from enhancements.models.fields import EnumField
+
+from .consts import ArticleType
 
 
 class Article(models.Model):
@@ -12,8 +14,10 @@ class Article(models.Model):
     is_top = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
     attachments = models.ManyToManyField('files.File')
-    article_type = models.IntegerField(
-        ARTICLE_TYPE_CHOICES, default=ArticleType.government.value)
+    article_type = EnumField(
+        ArticleType,
+        default=ArticleType.government
+    )
 
 
 class Tag(models.Model):
