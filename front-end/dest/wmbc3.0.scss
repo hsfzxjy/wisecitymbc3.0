@@ -1,0 +1,93 @@
+$bgc: rgb(38,38,38);
+$gre: #209E85;
+$fsize:16px;
+$red: #DB4E02;
+$marg:5px;
+$text:#CCC;
+//global
+body,html {
+	background-color: $bgc;
+	font: {
+		size:$fsize;
+	}
+}
+//form
+.form-control {
+	border:{
+		width:0px;
+		radius:1px;
+	}
+	line-height:1.5;
+}
+.btn-login {
+	margin-top: 0px;
+	width: 100%;
+	background-color:$gre;
+	border-radius:1px;
+	color: #FFF;
+	font-weight: 700;
+	font-size:$fsize;
+	&:hover,&:focus,&:active {
+		color: #FFF;
+	}
+}
+.input-group-addon {
+	background-color:white;
+	border:{
+		width:0px;
+		radius:0px;
+	}
+	margin: {
+		right:2px;
+	}
+	padding: {
+		right:0px;
+	}
+}
+input + .input-group-addon {
+	padding-right:10px;
+}
+.alert-login {
+	border:{
+		color:#800;
+		width:0.5px;
+		style:solid;
+		radius:2px;
+	}
+	text-align:center;
+	padding: {
+	  top:10px;
+	  bottom:10px;
+	}
+}
+//list
+.list-wmbc > .list-group-item {
+	background-color: darken($bgc, 5%);
+	border:{
+		top-width:1px;
+		top-color: lighten($bgc,20%);
+		left:none;
+		right:none;
+		bottom:none;
+	} 
+	color: $text;
+}
+.list-group-item:first-child {
+	border:none;
+}
+//responsive
+@media (max-width: 500px) {
+	li.nav-item {
+		width:100%
+	}
+	.nav-brand {
+		display: none
+	}
+}
+// animation
+.fade-transition {
+  transition: opacity .3s ease;
+}
+.fade-enter, .fade-leave {
+  opacity: 0;
+}

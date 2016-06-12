@@ -1,0 +1,64 @@
+body, html {
+  background-color: #262626;
+  font-size: 16px; }
+
+.form-control {
+  border-width: 0px;
+  border-radius: 1px;
+  line-height: 1.5; }
+
+.btn-login {
+  margin-top: 0px;
+  width: 100%;
+  background-color: #209E85;
+  border-radius: 1px;
+  color: #FFF;
+  font-weight: 700;
+  font-size: 16px; }
+  .btn-login:hover, .btn-login:focus, .btn-login:active {
+    color: #FFF; }
+
+.input-group-addon {
+  background-color: white;
+  border-width: 0px;
+  border-radius: 0px;
+  margin-right: 2px;
+  padding-right: 0px; }
+
+input + .input-group-addon {
+  padding-right: 10px; }
+
+.alert-login {
+  border-color: #800;
+  border-width: 0.5px;
+  border-style: solid;
+  border-radius: 2px;
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px; }
+
+.list-wmbc > .list-group-item {
+  background-color: #191919;
+  border-top-width: 1px;
+  border-top-color: #595959;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  color: #CCC; }
+
+.list-group-item:first-child {
+  border: none; }
+
+@media (max-width: 500px) {
+  li.nav-item {
+    width: 100%; }
+
+  .nav-brand {
+    display: none; } }
+.fade-transition {
+  transition: opacity .3s ease; }
+
+.fade-enter, .fade-leave {
+  opacity: 0; }
+
+/*# sourceMappingURL=wisecitymbc3.0.css.map */
