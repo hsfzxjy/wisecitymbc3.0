@@ -1,7 +1,6 @@
-from .models import Child, Goods
-from .serializers import GoodsSerializer
+from .models import Child, Goods, Bucket
 
-from rest_framework import viewsets, filters
+from rest_framework import viewsets
 
 from enhancements.rest.urls import register
 
@@ -16,3 +15,9 @@ class V(viewsets.ModelViewSet):
 class GoodsViewSet(viewsets.ModelViewSet):
 
     queryset = Goods.objects.all()
+
+
+@register('buckets')
+class BucketViewSet(viewsets.ModelViewSet):
+
+    queryset = Bucket.objects.all()

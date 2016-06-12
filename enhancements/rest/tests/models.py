@@ -30,3 +30,9 @@ class Goods(models.Model, PermsMixin):
         ordering = ('id',)
 
 rules.add_perm('tests.change_goods', accounts_rules.is_government)
+
+
+class Bucket(models.Model):
+
+    goods = models.ManyToManyField(Goods)
+    name = models.CharField(max_length=100)
