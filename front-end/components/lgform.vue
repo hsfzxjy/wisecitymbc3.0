@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     validate() {
-      this.iE = ((!this.un)||(this.pw))
+      this.iE = ((!this.un)||(!this.pw))
     },
     clearError() {
       this.iE=false
