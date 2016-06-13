@@ -234,6 +234,7 @@ class PartialFieldsMixin(object):
 
 def monkey_patch():
     from rest_framework import serializers
+    from .serializer_fields import mapping
 
     old_model_serializer = serializers.ModelSerializer
 
@@ -253,5 +254,7 @@ def monkey_patch():
                 old_class),
             {}
         )
+
+        new_class.serializer_field_mapping.update(mapping)
 
         setattr(serializers, object_name, new_class)
