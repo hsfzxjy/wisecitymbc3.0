@@ -77,6 +77,7 @@ class UserAPITestCase(APITestCase):
         res = self.client.get('/api/users/1/')
 
         self.assertEqual(res.data, {
+            'id': 1,
             'nickname': 'user1',
             'username': 'user1',
             'user_type': UserType.company.value,
@@ -86,6 +87,7 @@ class UserAPITestCase(APITestCase):
         res = self.client.get('/api/users/2/')
 
         self.assertEqual(res.data, {
+            'id': 2,
             'nickname': 'user2',
             'username': 'user2',
             'user_type': UserType.government.value,
@@ -97,6 +99,7 @@ class UserAPITestCase(APITestCase):
         res = self.client.get('/api/users/1/')
 
         self.assertEqual(res.data, {
+            'id': 1,
             'nickname': 'user1',
             'username': 'user1',
             'user_type': UserType.company.value,
@@ -115,6 +118,7 @@ class UserAPITestCase(APITestCase):
         res = self.client.get('/api/users/1/')
 
         self.assertEqual(res.data, {
+            'id': 1,
             'nickname': 'user1',
             'username': 'user1',
             'user_type': UserType.company.value,
@@ -127,3 +131,37 @@ class UserAPITestCase(APITestCase):
                 'reports': []
             }
         })
+
+        res = self.client.get('/api/users/me/')
+        self.assertEqual(res.data['id'], 1)
+
+    def test_get_user_data(self):
+        # from enhancements.debug.urls import print_urls
+        # print_urls()
+        self.client.force_authenticate(self.user)
+        res = self.client.patch('/api/users/me/userdata/', {
+            'name': 'cowboy',
+        }, format='json')
+
+        # print(res.data)
+        self.assertEqual(res.status_code, 200)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.user_data.name, 'cowboy')
+
+        res = self.client.patch('/api/users/2/userdata/', {
+            'name': 'cowboy',
+        }, format='json')
+
+        self.assertEqual(res.status_code, 404)
+
+        self.client.force_authenticate(self.gov)
+        res = self.client.patch('/api/users/1/userdata/', {
+            'name': 'gay',
+        }, format='json')
+
+        # print(res.data)
+        self.assertEqual(res.status_code, 200)
+
+        self.user.user_data.refresh_from_db()
+        self.assertEqual(self.user.user_data.name, 'gay')
