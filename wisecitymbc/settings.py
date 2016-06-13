@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'enhancements.rest.apps.AutoDiscoverConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -191,7 +192,7 @@ NOSE_ARGS = ['--nocapture',
 # rest_framework
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
+        'enhancements.rest.renderers.JSONRenderer',
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
