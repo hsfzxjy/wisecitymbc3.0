@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Enhancements
     'enhancements.constants',
     # Third-party
+    'django_nose',
     'django_object_actions',
     'webpack_loader',
     'rules.apps.AutodiscoverRulesConfig',
@@ -179,4 +180,23 @@ WEBPACK_LOADER = {
         'POLL_INTERVAL': 0.1,
         'IGNORE': ['.+\.hot-update.js', '.+\.map']
     }
+}
+
+# Tests
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--nocapture',
+             '--nologcapture', ]
+
+# rest_framework
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'PAGE_SIZE': 10,
 }

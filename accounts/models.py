@@ -2,29 +2,31 @@ from django.db import models
 from django.dispatch import receiver
 
 from enhancements.auth.models import AbstractUser
+from enhancements.models.fields import EnumField
 from enhancements.shortcuts import _
 from enhancements.models.mixins import AutoCleanMixin
 
 
-from .consts import USER_TYPE_CHOICES, \
-    UserType, BUREAU_TYPE_CHOICES, BureauType
+from .consts import UserType, BureauType
 
 
 class User(AutoCleanMixin, AbstractUser):
 
     nickname = models.CharField(_('nickname'), max_length=255, unique=True)
-    user_type = models.IntegerField(
-        _('user type'),
-        choices=USER_TYPE_CHOICES, default=UserType.company.value)
-    bureau_type = models.IntegerField(
-        _('bureau type'),
-        choices=BUREAU_TYPE_CHOICES, default=BureauType.none.value)
+    user_type = EnumField(
+        UserType,
+        verbose_name=_('user type'),
+        default=UserType.company)
+    bureau_type = EnumField(
+        BureauType,
+        verbose_name=_('bureau type'),
+        default=BureauType.none)
 
     REQUIRED_FIELDS = ['nickname']
 
     def _clean_bureau_type(self):
-        if self.user_type != UserType.bureau.value:
-            self.bureau_type = BureauType.none.value
+        if self.user_type != UserType.bureau:
+            self.bureau_type = BureauType.none
 
     def clean(self):
         self._clean_bureau_type()
@@ -52,8 +54,7 @@ class User(AutoCleanMixin, AbstractUser):
 
 @receiver(models.signals.post_save, sender=User)
 def check_user_data(sender, instance, **kwargs):
-    print('processing', instance, instance.data)
-    if instance.user_type == UserType.company.value:
+    if instance.user_type == UserType.company:
         if instance.data is None:
             UserData.objects.create(user=instance)
     elif instance.data is not None:
