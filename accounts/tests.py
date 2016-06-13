@@ -67,8 +67,51 @@ class UserAPITestCase(APITestCase):
             id=1,
             user_type=UserType.company,
             bureau_type=BureauType.media)
+        self.gov = User.objects.create_user(
+            username='user2', nickname='user2', password='user1',
+            id=2,
+            user_type=UserType.government,
+            bureau_type=BureauType.media)
 
     def test_get(self):
+        res = self.client.get('/api/users/1/')
+
+        self.assertEqual(res.data, {
+            'nickname': 'user1',
+            'username': 'user1',
+            'user_type': UserType.company.value,
+            'bureau_type': BureauType.none.value,
+        })
+
+        res = self.client.get('/api/users/2/')
+
+        self.assertEqual(res.data, {
+            'nickname': 'user2',
+            'username': 'user2',
+            'user_type': UserType.government.value,
+            'bureau_type': BureauType.none.value,
+        })
+
+        self.client.force_authenticate(self.gov)
+
+        res = self.client.get('/api/users/1/')
+
+        self.assertEqual(res.data, {
+            'nickname': 'user1',
+            'username': 'user1',
+            'user_type': UserType.company.value,
+            'bureau_type': BureauType.none.value,
+            'user_data': {
+                'name': '',
+                'industry': '',
+                'sector': '',
+                'description': '',
+                'reports': []
+            }
+        })
+
+        self.client.force_authenticate(self.user)
+
         res = self.client.get('/api/users/1/')
 
         self.assertEqual(res.data, {

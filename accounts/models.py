@@ -35,7 +35,7 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
     REQUIRED_FIELDS = ['nickname']
 
     INVISIBLE_FIELDS = {
-        'accounts.view_user_data': ['_data']
+        'accounts.view_user_data': ['user_data']
     }
 
     def _clean_bureau_type(self):
