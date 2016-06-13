@@ -26,13 +26,19 @@ def _get_router(viewset):
 class register_nested(object):
 
     def __init__(self, prefix, required, parent_prefix,
-                 lookup=None, base_name=None):
+                 lookup=None, base_name=None, routes=None):
         self.prefix, self.parent_prefix, self.base_name = prefix, \
             parent_prefix, base_name
 
         self.parent_router = _get_router(required)
-        self.router = NestedSimpleRouter(self.parent_router,
-                                         parent_prefix, lookup=lookup)
+
+        if routes is not None:
+            router_class = custom_router(routes, NestedSimpleRouter)
+        else:
+            router_class = NestedSimpleRouter
+
+        self.router = router_class(self.parent_router,
+                                   parent_prefix, lookup=lookup)
         _routers.append(self.router)
 
     def __call__(self, viewset_class):
