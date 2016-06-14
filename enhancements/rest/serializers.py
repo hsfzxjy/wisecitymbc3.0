@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs, \
     get_relation_kwargs
+from rest_framework.fields import SkipField
 from enhancements.globalreg.core import RegistryBase
 
 from rest_framework import serializers as serializers_
@@ -255,7 +256,20 @@ class PartialFieldsMixin(object):
         allowed = model.get_fields_by_user(request.user, self.instance)
         remove_fields(self, allowed, disallowed=False)
 
+
 class EnhancedListSerializer(serializers_.ListSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super(EnhancedListSerializer, self).__init__(*args, **kwargs)
+
+        self.required = False
+
+    def run_validation(self, data):
+        (is_empty_value, data) = self.validate_empty_values(data)
+        if is_empty_value:
+            raise SkipField
+
+        return super(EnhancedListSerializer, self).run_validation(data)
 
     def to_internal_value(self, data):
         if all(map(lambda x: isinstance(x, int), data)):
