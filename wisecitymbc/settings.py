@@ -194,6 +194,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'enhancements.rest.renderers.JSONRenderer',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.DjangoObjectPermissions',
+    ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
     ),
