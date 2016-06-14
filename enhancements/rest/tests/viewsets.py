@@ -27,6 +27,7 @@ class BucketViewSet(viewsets.ModelViewSet):
 class BoxViewSet(viewsets.ModelViewSet):
 
     queryset = Box.objects.all()
+    ordering_fields = ('id',)
 
 
 @register_nested(
@@ -41,3 +42,6 @@ class BallViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Ball.objects.filter(box=self.kwargs['box_pk'])
+
+    def create(self, request, *args, **kwargs):
+        return super(BallViewSet, self).create(request, *args, **kwargs)
