@@ -16,8 +16,10 @@ class ArticleType(Enum):
     finance = 4
     energy_and_raw_materials = 5
 
-    def from_user(self, user):
-        return USER_TO_ARTICLE_MAPPING[(user.user_type, user.bureau_type)]
+    @classmethod
+    def from_user(cls, user):
+        return USER_TO_ARTICLE_MAPPING.get(
+            (user.user_type, user.bureau_type), None)
 
     @classmethod
     def get_choices(cls):
