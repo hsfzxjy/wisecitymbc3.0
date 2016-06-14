@@ -12,6 +12,12 @@ class Enum(_Enum):
             {}
         )
 
+    # def __eq__(self, obj):
+    #     if isinstance(obj, Enum):
+    #         return super(Enum, self).__eq__(obj)
+
+    #     return self.value == obj
+
     def __gt__(self, obj):
         return self.value > getattr(obj, 'value', obj)
 

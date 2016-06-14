@@ -16,9 +16,12 @@ def user_type_predicate_factory(user_type):
 
     return _predicate
 
-is_government = user_type_predicate_factory(consts.UserType.government)
-is_company = user_type_predicate_factory(consts.UserType.company)
-is_bureau = user_type_predicate_factory(consts.UserType.bureau)
+is_government = is_authenticated & user_type_predicate_factory(
+    consts.UserType.government)
+is_company = is_authenticated & user_type_predicate_factory(
+    consts.UserType.company)
+is_bureau = is_authenticated & user_type_predicate_factory(
+    consts.UserType.bureau)
 
 
 @rules.predicate

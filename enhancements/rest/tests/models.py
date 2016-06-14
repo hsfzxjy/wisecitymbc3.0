@@ -26,4 +26,23 @@ class Goods(models.Model, PermsMixin):
         'tests.change_goods': ['price']
     }
 
+    class Meta:
+        ordering = ('id',)
+
 rules.add_perm('tests.change_goods', accounts_rules.is_government)
+
+
+class Bucket(models.Model):
+
+    goods = models.ManyToManyField(Goods)
+    name = models.CharField(max_length=100)
+
+
+class Ball(models.Model):
+
+    box = models.ForeignKey('Box', related_name='balls')
+
+
+class Box(models.Model):
+
+    name = models.CharField(max_length=100)
