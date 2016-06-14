@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 
 from accounts.tests import create_users
+from .models import Article
 
 from .consts import ArticleType
 
@@ -64,3 +65,17 @@ class ArticleTestCase(APITestCase):
         )
 
         self.assertEqual(res.status_code, 403)
+
+    def test_search(self):
+        from watson import search as watson
+
+        for i in range(1, 20):
+            Article(
+                author=self.user,
+                title='title%s' % i,
+                content='content%s' % i,
+            ).save()
+        print(list(watson.search('on')))
+        res = self.client.get('/api/articles/search/?keyword=conte')
+
+        print(res.data)

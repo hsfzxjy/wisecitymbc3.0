@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # Enhancements
     'enhancements.constants',
     # Third-party
+    'watson',
     'django_nose',
     'django_object_actions',
     'webpack_loader',
@@ -195,7 +196,7 @@ REST_FRAMEWORK = {
         'enhancements.rest.renderers.JSONRenderer',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.DjangoObjectPermissions',
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
