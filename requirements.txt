@@ -1,3 +1,4 @@
+beautifulsoup4==4.4.1
 Django==1.9.7
 -e git://github.com/mvpdev/django-eav.git@86098dc1cd602be8cf2e7fd8fbbc34a6e6b2dd53#egg=django_eav-master
 django-filter==0.13.0
