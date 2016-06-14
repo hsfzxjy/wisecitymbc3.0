@@ -1,5 +1,5 @@
 <template>
-  <nav class='navbar navbar-fixed-top navbar-dark' style='background-color:#191919' role='navigation'>
+  <nav class='navbar navbar-fixed-top' style='background-color:#191919' role='navigation'>
     <button class='navbar-toggler hidden-sm-up' type='button' data-toggle='collapse' data-target='#exCollapsingNavbar2'>&#9776;</button>
     <div class='collapse navbar-toggleable-xs' id='exCollapsingNavbar2'>
       <script type='text/javascript'>

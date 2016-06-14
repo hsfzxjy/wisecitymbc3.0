@@ -1,4 +1,4 @@
-$bgc: rgb(38,38,38);
+$bgc: rgba(31, 35, 36, 1);
 $gre: #209E85;
 $fsize:16px;
 $red: #DB4E02;
@@ -9,6 +9,13 @@ body,html {
 	background-color: $bgc;
 	font: {
 		size:$fsize;
+	}
+}
+a {
+	color: rgba(155, 140, 103, 1);
+	&:hover,&:focus {
+		color: rgba(155, 140, 103, 1);
+		text-decoration:underline;
 	}
 }
 //form
@@ -74,6 +81,18 @@ input + .input-group-addon {
 }
 .list-group-item:first-child {
 	border:none;
+}
+//article
+#article-title,#article-content {
+	p,h1 {
+		color:#FFF;
+	}
+	p {
+		font-size:18px;
+	}
+	h1 {
+		font-size:50px;
+	}
 }
 //responsive
 @media (max-width: 500px) {

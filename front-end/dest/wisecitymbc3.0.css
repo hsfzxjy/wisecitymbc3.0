@@ -1,6 +1,12 @@
 body, html {
-  background-color: #262626;
+  background-color: #1f2324;
   font-size: 16px; }
+
+a {
+  color: #9b8c67; }
+  a:hover, a:focus {
+    color: #9b8c67;
+    text-decoration: underline; }
 
 .form-control {
   border-width: 0px;
@@ -38,9 +44,9 @@ input + .input-group-addon {
   padding-bottom: 10px; }
 
 .list-wmbc > .list-group-item {
-  background-color: #191919;
+  background-color: #131616;
   border-top-width: 1px;
-  border-top-color: #595959;
+  border-top-color: #4e585b;
   border-left: none;
   border-right: none;
   border-bottom: none;
@@ -48,6 +54,13 @@ input + .input-group-addon {
 
 .list-group-item:first-child {
   border: none; }
+
+#article-title p, #article-title h1, #article-content p, #article-content h1 {
+  color: #FFF; }
+#article-title p, #article-content p {
+  font-size: 18px; }
+#article-title h1, #article-content h1 {
+  font-size: 50px; }
 
 @media (max-width: 500px) {
   li.nav-item {
