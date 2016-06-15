@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Enhancements
     'enhancements.constants',
+    'enhancements.postgres',
     # Third-party
     'watson',
     'django_nose',
@@ -186,7 +187,7 @@ WEBPACK_LOADER = {
 
 # Tests
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+TEST_RUNNER = 'enhancements.postgres.test.PostgresEnhancedTestRunner'
 NOSE_ARGS = ['--nocapture',
              '--nologcapture', ]
 
@@ -205,3 +206,11 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'PAGE_SIZE': 10,
 }
+
+
+# watson: full text search engine
+
+WATSON_BACKEND = 'enhancements.postgres.search_backends'\
+    '.PostgresChineseSearchBackend'
+
+TS_CONFIG_NAME = 'chinesecfg'
