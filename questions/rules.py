@@ -23,6 +23,11 @@ is_my_topic = account_rules.is_authenticated & is_my_topic
 
 
 @rules.predicate
+def topic_is_open(self, reply):
+    return not reply.topic.is_closed
+
+
+@rules.predicate
 def is_my_reply(user, reply):
     return reply is not None and reply.author.id == user.id
 
@@ -36,12 +41,14 @@ is_government_or_company = account_rules.logined_and_government & \
 rules.add_perm('questions', account_rules.logined_and_government)
 
 rules.add_perm('questions.add_topic', account_rules.logined_and_company)
-rules.add_perm('questions.change_topic', is_my_topic_or_government)
+rules.add_perm('questions.change_topic', topic_is_open &
+               is_my_topic_or_government)
 rules.add_perm('questions.delete_topic', is_my_topic_or_government)
 rules.add_perm('questions.view_topic', is_my_topic_or_government)
 
-rules.add_perm('questions.add_reply', account_rules.is_my_topic_or_government)
+rules.add_perm('questions.add_reply', topic_is_open &
+               is_my_topic_or_government)
 rules.add_perm('questions.change_reply', rules.always_deny)
 rules.add_perm('questions.delete_reply',
-               account_rules.is_my_topic_or_government)
+               topic_is_open & is_my_topic_or_government)
 rules.add_perm('questions.view_reply', is_my_topic_or_government)
