@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from rest_framework.test import APITestCase
 
 from accounts.tests import create_users
@@ -67,15 +69,13 @@ class ArticleTestCase(APITestCase):
         self.assertEqual(res.status_code, 403)
 
     def test_search(self):
-        from watson import search as watson
-
         for i in range(1, 20):
-            Article(
+            Article.objects.create(
                 author=self.user,
-                title='title%s' % i,
-                content='content%s' % i,
-            ).save()
-        print(list(watson.search('on')))
-        res = self.client.get('/api/articles/search/?keyword=conte')
+                title='我是中国人',
+                content='content%s asshole' % i,
+            )
+        res = self.client.get(
+            '/api/articles/search/?keyword=%E6%88%91%E6%98%AF')
 
-        print(res.data)
+        self.assertEqual(len(res.data['results']), 10)

@@ -27,7 +27,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def filter_queryset(self, qs):
         keyword = self.request.query_params.get(self.keyword_param, '')
-        print(keyword)
+
         if not self.action == 'search' or not keyword:
             return super(ArticleViewSet, self).filter_queryset(qs)
 
