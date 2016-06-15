@@ -46,3 +46,6 @@ class Ball(models.Model):
 class Box(models.Model):
 
     name = models.CharField(max_length=100)
+
+    class Meta:
+        ordering = ('id',)

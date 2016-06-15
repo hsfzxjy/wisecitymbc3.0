@@ -7,6 +7,7 @@ class EnhancedViewSetMixin(object):
 
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
     ordering_fields = ('id',)
+    ordering = 'id'
     search_fields = ()
 
     def get_serializer_class(self):

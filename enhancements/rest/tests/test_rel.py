@@ -28,8 +28,10 @@ class RelTestCase(APITestCase):
 
         self.bucket.goods.add(goods)
 
+        Goods.objects.create(name='g2', price=2, id=2)
+
         response = self.client.patch('/buckets/1/',
-                                     {'goods': [1]}, format='json')
+                                     {'goods': [1, 2, 3]}, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {
             'id': 1,
@@ -37,6 +39,9 @@ class RelTestCase(APITestCase):
             'goods': [{
                 'id': 1,
                 'name': 'g1'
+            }, {
+                'id': 2,
+                'name': 'g2'
             }]
         })
 
@@ -57,3 +62,25 @@ class NestedTestCase(APITestCase):
                 'name': '1'
             }
         })
+
+    def test_post(self):
+        response = self.client.post(
+            '/boxes/1/balls/', {'box': 1}, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['box']['id'], 1)
+
+    def test_list(self):
+        res = self.client.get('/boxes/')
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_patch(self):
+        id = Ball.objects.all()[0].id
+        Box.objects.create(id=2)
+
+        response = self.client.patch(
+            '/boxes/1/balls/%d/' % id, {'box': 2}, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['box']['id'], 2)

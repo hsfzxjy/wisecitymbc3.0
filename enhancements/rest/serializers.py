@@ -6,9 +6,12 @@ from collections import OrderedDict
 
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs, \
     get_relation_kwargs
+from rest_framework.fields import SkipField
 from enhancements.globalreg.core import RegistryBase
 
 from rest_framework import serializers as serializers_
+
+from django.http import Http404
 
 
 class SerializerRegistry(RegistryBase):
@@ -53,6 +56,7 @@ class NestedEnhancementMixin(object):
     def __init__(self, *args, **kwargs):
         self.pk_relations = set(getattr(self.Meta, 'pk_relations', []))
         self.url_relations = getattr(self.Meta, 'url_relations', [])
+        self.Meta.list_serializer_class = EnhancedListSerializer
 
         super(NestedEnhancementMixin, self).__init__(*args, **kwargs)
 
@@ -183,6 +187,7 @@ class NestedEnhancementMixin(object):
             )
 
         field_kwargs = get_nested_relation_kwargs(relation_info)
+        field_kwargs.pop('read_only')
 
         return serializer, field_kwargs
 
@@ -209,6 +214,26 @@ class NestedEnhancementMixin(object):
 
         return field_class, field_kwargs
 
+    def to_internal_value(self, data):
+        if isinstance(data, int):
+            return data
+
+        return super(NestedEnhancementMixin, self).to_internal_value(data)
+
+    def validate(self, data):
+        model = self.Meta.model
+        qs = model.objects.only('id')
+
+        if isinstance(data, int):
+            try:
+                return qs.get(pk=data)
+            except model.DoesNotExist:
+                raise Http404
+        elif isinstance(data, list):
+            return qs.filter(pk__in=data)
+        else:
+            return data
+
 
 class PartialFieldsMixin(object):
     """
@@ -232,11 +257,38 @@ class PartialFieldsMixin(object):
         remove_fields(self, allowed, disallowed=False)
 
 
+class EnhancedListSerializer(serializers_.ListSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super(EnhancedListSerializer, self).__init__(*args, **kwargs)
+
+        self.required = False
+
+    def run_validation(self, data):
+        (is_empty_value, data) = self.validate_empty_values(data)
+        if is_empty_value:
+            raise SkipField
+
+        return super(EnhancedListSerializer, self).run_validation(data)
+
+    def to_internal_value(self, data):
+        if all(map(lambda x: isinstance(x, int), data)):
+            model = self.child.Meta.model
+
+            return model.objects.only('id').filter(pk__in=data)
+
+        return super(EnhancedListSerializer, self).to_internal_value(data)
+
+
 def monkey_patch():
     from rest_framework import serializers
     from .serializer_fields import mapping
 
+    serializers.raise_errors_on_nested_writes = lambda *args, **kwargs: None
+
     old_model_serializer = serializers.ModelSerializer
+
+    old_list_serializer = serializers.ListSerializer
 
     for object_name in dir(serializers):
         if not object_name.endswith('Serializer'):
