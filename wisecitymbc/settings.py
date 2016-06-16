@@ -214,3 +214,5 @@ WATSON_BACKEND = 'enhancements.postgres.search_backends'\
     '.PostgresChineseSearchBackend'
 
 TS_CONFIG_NAME = 'chinesecfg'
+
+from .qiniu_keys import *
