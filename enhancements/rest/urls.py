@@ -1,11 +1,18 @@
 from rest_framework.routers import DefaultRouter, BaseRouter
 from rest_framework_nested.routers import NestedSimpleRouter
 
+from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
+
+from django.conf.urls import url
+
 from .routers import custom_router
 
 _default_router = DefaultRouter()
 _routers = [_default_router]
 _router_map = {}
+
+_urls = []
 
 
 def _get_key(viewset):
@@ -84,9 +91,20 @@ class register(object):
         return viewset_class
 
 
+class register_view(object):
+
+    def __init__(self, prefix):
+        self._prefix = prefix
+
+    def __call__(self, view):
+        _urls.append(url(self._prefix, view.as_view()))
+
+        return view
+
+
 def generate_urls():
     urls = []
     for router in _routers:
         urls += router.urls
 
-    return urls
+    return urls + _urls
