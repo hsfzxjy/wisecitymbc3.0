@@ -8,7 +8,7 @@ from .models import Reply, Topic
 @rules.predicate
 def is_my_topic(user, obj):
     if obj is None:
-        return False
+        return True
 
     if isinstance(obj, Topic):
         topic = obj
@@ -22,9 +22,16 @@ def is_my_topic(user, obj):
 is_my_topic = account_rules.is_authenticated & is_my_topic
 
 
-@rules.predicate
-def topic_is_open(self, reply):
-    return not reply.topic.is_closed
+@rules.predicate(bind=True)
+def topic_is_open(self, user, obj):
+    if isinstance(obj, Topic):
+        topic = obj
+    elif isinstance(obj, Reply):
+        topic = obj.topic
+    else:
+        return obj is None
+
+    return not topic.is_closed
 
 
 @rules.predicate

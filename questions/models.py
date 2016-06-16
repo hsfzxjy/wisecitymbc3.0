@@ -1,12 +1,16 @@
 from django.db import models
+from django.db.models.functions import Now
 from django.db.models import signals
 from django.conf import settings
 from django.dispatch import receiver
 
 from enhancements.shortcuts import _
+from enhancements.utils.html import filter_html_mixin
+
+FilterContentMixin = filter_html_mixin(['content'])
 
 
-class Topic(models.Model):
+class Topic(FilterContentMixin, models.Model):
     asker = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name=_('asker')
@@ -15,6 +19,7 @@ class Topic(models.Model):
         _('title'),
         max_length=1000,
     )
+    content = models.TextField(_('content'))
     created_time = models.DateTimeField(
         _('created time'),
         auto_now_add=True
@@ -45,7 +50,7 @@ class Topic(models.Model):
         verbose_name_plural = _('topics')
 
 
-class Reply(models.Model):
+class Reply(FilterContentMixin, models.Model):
     topic = models.ForeignKey(
         'Topic',
         verbose_name=_('topic')
@@ -83,9 +88,11 @@ def reply_saved_handler(sender, instance, created, **kwargs):
 
 @receiver(signals.post_delete, sender=Reply)
 def reply_deleted_handler(sender, instance, **kwargs):
+    from datetime import datetime
+
     topic = instance.topic
 
     topic.replies_count -= 1
-    topic.updated_time = instance.created_time
+    topic.updated_time = datetime.now()
 
     topic.save()

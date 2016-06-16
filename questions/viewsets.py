@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.decorators import detail_route
 
 from enhancements.rest.urls import register, register_nested
 
@@ -32,6 +34,18 @@ class TopicViewSet(viewsets.ModelViewSet):
 
         return super(TopicViewSet, self).create(*args, **kwargs)
 
+    @detail_route(['GET'])
+    def open(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.open()
+        return Response(self.get_serializer(obj).data)
+
+    @detail_route(['GET'])
+    def close(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.close()
+        return Response(self.get_serializer(obj).data)
+
 
 @register_nested(
     'replies',
@@ -46,13 +60,15 @@ class ReplyViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         topic = self.topic = get_object_or_404(
             Topic.objects.only('id'),
-            id=self.request.query_params['topic_pk'],
+            id=self.kwargs['topic_pk'],
         )
 
         return self.queryset.filter(topic=topic)
 
     def create(self, *args, **kwargs):
-        self.request.data['author'] = self.request.user.id
-        self.request.topic['topic'] = self.topic.id
+        self.check_object_permissions(self.request, self.topic)
 
-        return super(TopicViewSet, self).create(*args, **kwargs)
+        self.request.data['author'] = self.request.user.id
+        self.request.data['topic'] = self.topic.id
+
+        return super(ReplyViewSet, self).create(*args, **kwargs)
