@@ -17,5 +17,31 @@ class FileType(Enum):
             cls.file: _('file')
         }
 
+    @classmethod
+    def get_by_mime_type(cls, mime_type):
+        for type, mime_list in MIME_TYPES.items():
+            if [ext for ext in mime_list if ext in mime_type]:
+                return type
+
+        return cls.file
+
 
 EXPORTS = ['FileType']
+
+MIME_TYPES = {
+    FileType.video: (
+        'aac',
+        'mp4',
+        'mpeg',
+        'ogg',
+        'wav',
+        'webm',
+    ),
+    FileType.image: (
+        'bmp',
+        'gif',
+        'jpeg',
+        'tiff',
+        'x-xbitmap',
+    )
+}
