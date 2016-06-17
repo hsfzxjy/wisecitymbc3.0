@@ -36,6 +36,10 @@ class Topic(FilterContentMixin, models.Model):
         _('replies count'),
         default=0
     )
+    attachments = models.ManyToManyField(
+        'files.File',
+        verbose_name=_('attachments')
+    )
 
     def close(self):
         self.is_closed = True
