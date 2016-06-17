@@ -218,3 +218,7 @@ from .qiniu_keys import *
 
 QINIU_BUCKET_NAME = 'wisecitymbc'
 QINIU_DOMAIN_NAME = '7xkade.dl1.z0.glb.clouddn.com'
+
+CONSTS_OUTPUT_PATHS = [
+    'front-end/consts.json'
+]
