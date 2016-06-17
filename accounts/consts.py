@@ -24,7 +24,7 @@ class BureauType(Enum):
     car = 3
     electronic_technology = 4
     bank = 5
-    enegry_and_raw_materials = 6
+    energy_and_raw_materials = 6
     financial_system = 7
     media = 8
 
@@ -36,7 +36,7 @@ class BureauType(Enum):
             cls.car: _('car'),
             cls.electronic_technology: _('electronic_technology'),
             cls.bank: _('bank'),
-            cls.enegry_and_raw_materials: _('enegry_and_raw_materials'),
+            cls.energy_and_raw_materials: _('energy_and_raw_materials'),
             cls.financial_system: _('financial_system'),
             cls.media: _('media'),
         }

@@ -36,7 +36,7 @@ USER_TO_ARTICLE_MAPPING = {
     (UserType.government, BureauType.none): ArticleType.government,
     (UserType.bureau, BureauType.media): ArticleType.media,
     (UserType.bureau, BureauType.financial_system): ArticleType.finance,
-    (UserType.bureau, BureauType.enegry_and_raw_materials):
+    (UserType.bureau, BureauType.energy_and_raw_materials):
     ArticleType.government,
     (UserType.bureau, BureauType.car): ArticleType.government,
     (UserType.bureau, BureauType.electronic_technology):
