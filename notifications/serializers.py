@@ -13,7 +13,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('id', 'created_time', 'message', 'url', 'has_read')
+        fields = ('id', 'created_time', 'message', 'url', 'has_read', 'module')
 
     def get_message(self, instance):
         return instance.message
