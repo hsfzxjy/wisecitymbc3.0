@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'questions',
     'notifications',
     'files',
-    'entries',
     'finance',
 ]
 
