@@ -1,5 +1,11 @@
 from rest_framework import viewsets, mixins
+from rest_framework.response import Response
+from rest_framework.exceptions import ParseError
+from rest_framework.decorators import list_route
+
 from django.http import Http404
+from django.http.response import HttpResponseRedirect
+from django.contrib import auth 
 
 from enhancements.rest import urls
 
@@ -29,6 +35,25 @@ class UserViewSet(
                 raise Http404
 
         return super(UserViewSet, self).get_object()
+
+    @list_route(['POST'], permission_classes=[])
+    def login(self, request, *args, **kwargs):
+        username = request.data.get('username', '')
+        password = request.data.get('password', '')
+
+        user = auth.authenticate(username=username, password=password)
+
+        if user is None:
+            raise ParseError('username or password error.')
+        else:
+            auth.login(request, user)
+            return self.render_object(user)
+
+    @list_route(['GET'])
+    def logout(self, request, *args, **kwargs):
+        auth.logout(request)
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @urls.register_nested(

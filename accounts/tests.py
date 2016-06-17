@@ -89,6 +89,42 @@ class UserAPITestCase(APITestCase):
             user_type=UserType.government,
             bureau_type=BureauType.media)
 
+    def test_login(self):
+        res = self.client.post(
+            '/api/users/login/',
+            {
+                'username': 'user1',
+                'password': 'user',
+            }, format='json'
+        )
+
+        self.assertEqual(res.status_code, 400)
+
+        res = self.client.post(
+            '/api/users/login/',
+            {
+                'username': 'user1',
+                'password': 'user1',
+            }, format='json'
+        )
+
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client.get('/api/users/me/')
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data['username'], 'user1')
+
+    def test_logout(self):
+        self.client.login(username='user1', password='user1')
+
+        res = self.client.get('/api/users/logout/')
+
+        self.assertEqual(res.status_code, 302)
+
+        res = self.client.get('/api/users/me/')
+        self.assertEqual(res.status_code, 404)
+
     def test_get(self):
         res = self.client.get('/api/users/1/')
 
