@@ -63,6 +63,13 @@ class ViewTestCase(APITestCase):
         )
         self.assertEqual(res.status_code, 200)
 
+        self.client.force_authenticate(self.user)
+        res = self.client.get(
+            '/api/n/mark_as_read/?ids=a,%s' %
+            ','.join(map(str, (self.n.id, self.n2.id)))
+        )
+        self.assertEqual(res.status_code, 400)
+
         res = self.client.get('/api/n', follow=True)
         self.assertTrue(res.data['results'][0]['has_read'])
 
