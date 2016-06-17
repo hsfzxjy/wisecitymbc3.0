@@ -21,7 +21,7 @@ def send(user, template, url, module, target=None, **kwargs):
     if not registry.has_module(module):
         raise registry.RegistryError("Module %r not found." % module)
 
-    Notification.objects.create(
+    return Notification.objects.create(
         user=user,
         template=template,
         url=url,
