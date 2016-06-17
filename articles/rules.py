@@ -18,6 +18,7 @@ def can_add_article(user):
 logined_and_my_article = is_authenticated & is_my_article
 
 rules.add_perm('articles', is_government)
+rules.add_perm('articles.view_article', rules.always_true)
 rules.add_perm('articles.add_article', can_add_article)
 rules.add_perm('articles.change_article',
                is_government | logined_and_my_article)

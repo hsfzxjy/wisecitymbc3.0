@@ -33,11 +33,12 @@ government_or_self = logined_and_government | (is_authenticated & is_self)
 
 rules.add_perm('accounts', is_government)
 rules.add_perm('accounts.add_user', logined_and_government)
-rules.add_perm('accounts.change_user', government_or_self)
+rules.add_perm('accounts.change_user', logined_and_government)
 rules.add_perm('accounts.delete_user', logined_and_government)
+rules.add_perm('accounts.view_user', rules.always_true)
 
 rules.add_perm('accounts.add_userdata', government_or_self)
 
-rules.add_perm('accounts.view_user_data', government_or_self)
+rules.add_perm('accounts.view_userdata', government_or_self)
 rules.add_perm('accounts.change_userdata', government_or_self)
 rules.add_perm('accounts.delete_userdata', government_or_self)

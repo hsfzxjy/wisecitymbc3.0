@@ -61,7 +61,7 @@ class UserDataViewSet(viewsets.GenericViewSet,
         if user.user_data is None:
             raise Http404
 
-        if not self.request.user.has_perm('accounts.view_user_data', user):
+        if not self.request.user.has_perm('accounts.view_userdata', user):
             self.permission_denied(self.request)
 
         return user.user_data
