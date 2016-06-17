@@ -12,7 +12,7 @@ class FinanceTestCase(APITestCase):
             stock = Stock.objects.create(
                 name='stock %s' % i,
                 price=12.00,
-                turnover=12.00,
+                volume=12.00,
                 company_info='company %s' % i,
             )
 

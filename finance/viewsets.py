@@ -55,5 +55,5 @@ def create_viewset(name, prefix, parent_lookup):
 
 create_viewset('Stock', 'stocks', 'stock')
 create_viewset('Bond', 'bonds', 'bond')
-create_viewset('Futures', 'futures', 'future')
+create_viewset('Futures', 'futures', 'futures')
 create_viewset('RawMaterials', 'raw_materials', 'raw_materials')
