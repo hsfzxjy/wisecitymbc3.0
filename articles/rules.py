@@ -2,7 +2,7 @@ import rules
 from rules import is_authenticated
 
 from . import consts
-from accounts.rules import is_government
+from accounts.rules import logined_and_government
 
 
 @rules.predicate
@@ -17,10 +17,10 @@ def can_add_article(user):
 
 logined_and_my_article = is_authenticated & is_my_article
 
-rules.add_perm('articles', is_government)
+rules.add_perm('articles', logined_and_government)
 rules.add_perm('articles.view_article', rules.always_true)
 rules.add_perm('articles.add_article', can_add_article)
 rules.add_perm('articles.change_article',
-               is_government | logined_and_my_article)
+               logined_and_government | logined_and_my_article)
 rules.add_perm('articles.delete_article',
-               is_government | logined_and_my_article)
+               logined_and_government | logined_and_my_article)
