@@ -9,7 +9,12 @@ from .models import User, UserData
 @urls.register(
     'users',
 )
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
 
     queryset = User.objects.all()
 
@@ -34,7 +39,7 @@ class UserViewSet(viewsets.ModelViewSet):
     routes=[
         dict(
             url=r'^{prefix}/$',
-            mapping={'get': 'retrieve', 'patch':'partial_update'},
+            mapping={'get': 'retrieve', 'patch': 'partial_update'},
             name='{basename}-detail',
             initkwargs={'suffix': 'List'}
         ),
