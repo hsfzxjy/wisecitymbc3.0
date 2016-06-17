@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('accounts', '0001_squashed_0004_auto_20160430_1245'),
-        ('files', '0001_initial'),
+        ('files', '0001_initial_squashed_0005_auto_20160616_2223'),
     ]
 
     operations = [
