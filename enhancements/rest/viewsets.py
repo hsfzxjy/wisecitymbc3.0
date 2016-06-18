@@ -33,6 +33,33 @@ class EnhancedViewSetMixin(object):
         serializer = self.get_serializer(obj)
         return Response(serializer.data)
 
+    def _get_dynamic_fields_options(self):
+        """
+        Extract `fields` or `exclude` from query params.
+        """
+
+        def extract(name):
+            option_str = self.request.query_params.get(name, '')\
+                .replace(' ', '')
+
+            return option_str.split(',') if option_str else None
+
+        return extract('fields'), extract('exclude')
+
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        kwargs['context'] = self.get_serializer_context()
+        kwargs.update(
+            dict(
+                zip(
+                    ('fields', 'exclude'),
+                    self._get_dynamic_fields_options()
+                )
+            )
+        )
+
+        return serializer_class(*args, **kwargs)
+
     def get_serializer_class(self):
         model = self.get_queryset().model
         serializer_class = registry.get_value(model, None)

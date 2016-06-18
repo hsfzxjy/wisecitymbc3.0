@@ -10,16 +10,6 @@ from .consts import ArticleType
 
 class ArticleTestCase(APITestCase):
 
-    INSTALLED_APPS = [
-        'enhancements.rest.apps.AutoDiscoverConfig',
-        'rules.apps.AutodiscoverRulesConfig',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'accounts',
-        'files',
-        'articles'
-    ]
-
     def setUp(self):
         self.user, self.gov = create_users()
 
@@ -37,6 +27,23 @@ class ArticleTestCase(APITestCase):
         self.assertEqual(res.data['content'], '<b>content</b>')
         self.assertEqual(res.data['summary'], '**content**\n')
         self.assertEqual(res.data['article_type'], ArticleType.company)
+
+    def test_partial(self):
+        self.client.force_authenticate(self.user)
+
+        res = self.client.post(
+            '/api/articles/',
+            {
+                'title': 'title',
+                'content': '<b>content'
+            }, format='json'
+        )
+        self.assertEqual(res.status_code, 201)
+
+        res = self.client.get(
+            '/api/articles/%s/?exclude=content' % res.data['id']
+        )
+        self.assertNotIn('content', res.data)
 
     def test_patch(self):
         self.client.force_authenticate(self.user)
