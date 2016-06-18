@@ -23,6 +23,7 @@ class UserViewSet(
 ):
 
     queryset = User.objects.all()
+    filter_fields = ('user_type',)
 
     def get_object(self):
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
