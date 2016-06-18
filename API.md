@@ -120,6 +120,7 @@
     author: (User)
     title: (str)
     content: (str)
+    summary: (str) 摘要，HTML 转为 Text 后前 20 行
     is_top: (bool) 置顶
     created_time: (datetime)
     attachments: (array of File)

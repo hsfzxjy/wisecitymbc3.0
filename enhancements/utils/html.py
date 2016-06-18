@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import html2text, re
 
 from enhancements.models.mixins import AutoCleanMixin
 
@@ -31,3 +32,13 @@ def filter_html_mixin(field_names):
             return super(FilterHtmlMixin, self).clean()
 
     return FilterHtmlMixin
+
+
+def summarize(html):
+    parser = html2text.HTML2Text()
+
+    text = re.sub(r'\n{2,}', '\n', parser.handle(html))
+
+    lines = text.split('\n')
+
+    return '\n'.join(lines[:20])
