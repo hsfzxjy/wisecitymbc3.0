@@ -35,6 +35,7 @@ class ArticleTestCase(APITestCase):
 
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res.data['content'], '<b>content</b>')
+        self.assertEqual(res.data['summary'], '**content**\n')
         self.assertEqual(res.data['article_type'], ArticleType.company)
 
     def test_patch(self):
