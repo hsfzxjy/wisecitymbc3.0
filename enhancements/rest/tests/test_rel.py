@@ -50,7 +50,7 @@ class NestedTestCase(APITestCase):
 
     def setUp(self):
         box = Box.objects.create(name='1', id=1)
-        ball = Ball.objects.create(box=box)
+        ball = Ball.objects.create(box=box, id=1)
 
     def test_get(self):
         response = self.client.get('/boxes/1/balls/1/')
