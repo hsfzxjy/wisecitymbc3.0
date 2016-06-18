@@ -130,3 +130,4 @@ jspm_packages
 .node_repl_history
 
 qiniu_keys.py
+front-end/consts.json
