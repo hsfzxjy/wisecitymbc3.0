@@ -242,6 +242,7 @@ class PartialFieldsMixin(object):
 
     def __init__(self, *args, **kwargs):
         super(PartialFieldsMixin, self).__init__(*args, **kwargs)
+        # print(args, kwargs)
 
         if 'request' not in self._context:
             return

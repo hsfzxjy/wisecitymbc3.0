@@ -2,6 +2,8 @@ import re
 
 from django.utils.encoding import force_text
 
+from django.utils.translation import ugettext as _
+
 re_expression = re.compile(r'{{(.*?)}}')
 
 
@@ -14,6 +16,8 @@ def extract_variables(template, **kwargs):
 
 
 def render(template, context):
+
+    template = _(template)
 
     return re_expression.sub(
         lambda match_object:

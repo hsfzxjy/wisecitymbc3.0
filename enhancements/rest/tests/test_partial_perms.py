@@ -33,7 +33,7 @@ class PartialPermsTestCase(APITestCase):
         })
 
     def test_patch(self):
-        self.client.force_authenticate(self.user2)
+        self.client.force_authenticate(self.user1)
         response = self.client.patch('/goods/2/',
                                      dict(name='newname'),
                                      format='json'
@@ -41,5 +41,6 @@ class PartialPermsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
             'id': 2,
+            'price': 3,
             'name': 'newname',
         })

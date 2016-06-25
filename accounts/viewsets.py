@@ -1,5 +1,11 @@
 from rest_framework import viewsets, mixins
+from rest_framework.response import Response
+from rest_framework.exceptions import ParseError
+from rest_framework.decorators import list_route
+
 from django.http import Http404
+from django.http.response import HttpResponseRedirect
+from django.contrib import auth 
 
 from enhancements.rest import urls
 
@@ -9,9 +15,15 @@ from .models import User, UserData
 @urls.register(
     'users',
 )
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
 
     queryset = User.objects.all()
+    filter_fields = ('user_type',)
 
     def get_object(self):
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
@@ -25,6 +37,25 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return super(UserViewSet, self).get_object()
 
+    @list_route(['POST'], permission_classes=[])
+    def login(self, request, *args, **kwargs):
+        username = request.data.get('username', '')
+        password = request.data.get('password', '')
+
+        user = auth.authenticate(username=username, password=password)
+
+        if user is None:
+            raise ParseError('username or password error.')
+        else:
+            auth.login(request, user)
+            return self.render_object(user)
+
+    @list_route(['GET'])
+    def logout(self, request, *args, **kwargs):
+        auth.logout(request)
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
 
 @urls.register_nested(
     'userdata',
@@ -34,7 +65,7 @@ class UserViewSet(viewsets.ModelViewSet):
     routes=[
         dict(
             url=r'^{prefix}/$',
-            mapping={'get': 'retrieve', 'patch':'partial_update'},
+            mapping={'get': 'retrieve', 'patch': 'partial_update'},
             name='{basename}-detail',
             initkwargs={'suffix': 'List'}
         ),
@@ -56,7 +87,7 @@ class UserDataViewSet(viewsets.GenericViewSet,
         if user.user_data is None:
             raise Http404
 
-        if not self.request.user.has_perm('accounts.view_user_data', user):
+        if not self.request.user.has_perm('accounts.view_userdata', user):
             self.permission_denied(self.request)
 
         return user.user_data

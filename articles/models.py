@@ -13,6 +13,7 @@ class Article(PermsMixin, AutoCleanMixin, models.Model):
         settings.AUTH_USER_MODEL, verbose_name=_('author'))
     title = models.CharField(_('title'), max_length=255)
     tags = models.ManyToManyField('Tag', verbose_name=_('tags'), blank=True)
+    summary = models.TextField(_('summary'), blank=True)
     content = models.TextField(_('content'))
     is_top = models.BooleanField(_('is top'), default=False)
     created_time = models.DateTimeField(_('created'), auto_now_add=True)
@@ -28,9 +29,10 @@ class Article(PermsMixin, AutoCleanMixin, models.Model):
         self.article_type = ArticleType.from_user(self.author)
 
     def _clean_content(self):
-        from enhancements.utils.html import standardize
+        from enhancements.utils.html import standardize, summarize
 
         self.content = standardize(self.content)
+        self.summary = summarize(self.content)
 
     def clean(self):
         self._clean_type()

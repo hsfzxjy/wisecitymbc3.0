@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'questions',
     'notifications',
     'files',
-    'entries',
     'finance',
 ]
 
@@ -197,7 +196,7 @@ REST_FRAMEWORK = {
         'enhancements.rest.renderers.JSONRenderer',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+        'enhancements.rest.permissions.DjangoObjectPermissionOrAnonReadOnly',
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
@@ -214,3 +213,12 @@ WATSON_BACKEND = 'enhancements.postgres.search_backends'\
     '.PostgresChineseSearchBackend'
 
 TS_CONFIG_NAME = 'chinesecfg'
+
+from .qiniu_keys import *
+
+QINIU_BUCKET_NAME = 'wisecitymbc'
+QINIU_DOMAIN_NAME = '7xkade.dl1.z0.glb.clouddn.com'
+
+CONSTS_OUTPUT_PATHS = [
+    'front-end/consts.json'
+]

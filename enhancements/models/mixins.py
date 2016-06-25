@@ -45,7 +45,7 @@ class PermsMixin(object):
         fields = set(field.name for field in cls._meta.get_fields())
 
         for perm, invisible in cls.get_invisible_fields().items():
-            if not user.has_perm(perm):
+            if not user.has_perm(perm, obj):
                 fields -= invisible
 
         return fields

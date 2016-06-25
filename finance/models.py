@@ -4,14 +4,23 @@ from .base import create_revision_model
 
 from enhancements.shortcuts import _
 
+
+class Comment(models.Model):
+
+    created_time = models.DateTimeField(_('created time'), auto_now_add=True)
+    content = models.TextField(_('content'))
+
 Stock, StockLog = create_revision_model(
     'Stock',
     dict(
         name=models.CharField(_('name'), max_length=255),
         price=models.FloatField(_('price')),
-        turnover=models.FloatField(_('turnover'))
+        volume=models.FloatField(_('volume')),
+        company_info=models.TextField(_('company info')),
+        comments=models.ManyToManyField(
+            Comment, verbose_name=_('brokerage comments'))
     ),
-    ['price', 'turnover'],
+    ['price', 'volume'],
     __name__,
     meta=type('Meta', (), {
         'verbose_name': _('stock'),

@@ -43,6 +43,12 @@ sudo make install
 
 ## Configure
 
+Alter user role:
+
+```bash
+[sudo -u postgres] psql -c "ALTER ROLE wisecity superuser;"
+```
+
 Checkout your config file location:
 
 ```bash
@@ -56,6 +62,8 @@ zhparser.multi_short = t
 zhparser.dict_in_memory = t
 zhparser.punctuation_ignore = t
 ```
+
+** Restart your postgres. **
 
 Run initial operations:
 
