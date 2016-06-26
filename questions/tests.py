@@ -81,6 +81,9 @@ class QuestionsTestCase(APITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data['content'], 'b')
 
+        print(self.user.notifications.all())
+        print(self.gov.notifications.all())
+
 
 class ReplyTestCase(APITestCase):
 
@@ -142,7 +145,7 @@ class ReplyTestCase(APITestCase):
         self.assertEqual(res.status_code, 403)
 
     def test_close(self):
-        self.topic.close()
+        self.topic.close(self.user)
         self.client.force_authenticate(self.user)
 
         res = self.client.post(
