@@ -32,7 +32,8 @@ class NotificationQuerySet(models.QuerySet):
 
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             verbose_name=_('receiver'))
+                             verbose_name=_('receiver'),
+                             related_name='notifications')
     template = models.TextField()
     created_time = models.DateTimeField(auto_now_add=True)
     data = JSONField()
@@ -64,3 +65,6 @@ class Notification(models.Model):
     def mark_as_read(self):
         self.has_read = True
         self.save()
+
+    def __str__(self):
+        return self.message
