@@ -1,3 +1,16 @@
+class AutoURLMixin(object):
+
+    def get_absolute_url(self):
+        from enhancements.rest.reverse import safe_reverse
+
+        name = self.__class__.__name__.lower()
+
+        return safe_reverse(
+            'views.{name}-detail'.format(name=name),
+            kwargs={'{name}_pk'.format(name=name): self.pk}
+        )
+
+
 class AutoCleanMixin(object):
 
     def save(self, *args, **kwargs):

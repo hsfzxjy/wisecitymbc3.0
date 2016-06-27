@@ -1,11 +1,11 @@
 from .models import Notification
 
-from functools import partial
+from django.utils.itercompat import is_iterable
 
 from . import formatter, registry
 
 
-def send(user, template, url, module, target=None, **kwargs):
+def send(user, template, module, url=None, target=None, **kwargs):
     """send notification.
 
     The core method to send a notification
@@ -18,29 +18,45 @@ def send(user, template, url, module, target=None, **kwargs):
         **kwargs {dict} -- Exrta data for template rendering.
     """
 
-    if not registry.has_module(module):
-        raise registry.RegistryError("Module %r not found." % module)
-
-    return Notification.objects.create(
-        user=user,
-        template=template,
-        url=url,
-        module=module,
-        target=target,
-        data=formatter.extract_variables(
-            template,
+    def get_arguments(user):
+        return dict(
             user=user,
+            template=template,
             url=url,
             module=module,
             target=target,
-            **kwargs
+            data=formatter.extract_variables(
+                template,
+                user=user,
+                url=url,
+                module=module,
+                target=target,
+                **kwargs
+            )
         )
-    )
+
+    if url is None:
+        url = target.get_absolute_url()
+
+    if not registry.has_module(module):
+        raise registry.RegistryError("Module %r not found." % module)
+
+    if is_iterable(user):
+        args = []
+        for u in user:
+            args.append(get_arguments(u))
+
+        return Notification.objects.bulk_create(
+            map(lambda arg: Notification(**arg), args)
+        )
+    else:
+        return Notification.objects.create(**get_arguments(user))
 
 
 class Sender(object):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, templates=None, *args, **kwargs):
+        self.__templates = templates if templates is not None else {}
         self.__args = args
         self.__kwargs = kwargs
 
@@ -48,10 +64,10 @@ class Sender(object):
         from copy import deepcopy
 
         args = deepcopy(list(self.__args))
-        kwargs = deepcopy(_kwargs)
+        kwargs = deepcopy(self.__kwargs)
 
         args.extend(_args)
-        kwargs.update(kwargs)
+        kwargs.update(_kwargs)
 
         return args, kwargs
 
@@ -59,7 +75,14 @@ class Sender(object):
 
         a, k = self._extend_arguments(*args, **kwargs)
 
-        return Sender(*a, **k)
+        return Sender(self.__templates, *a, **k)
+
+    def select(self, template_name):
+
+        a, k = self._extend_arguments(
+            **dict(template=self.__templates[template_name]))
+
+        return Sender(self.__templates, *a, **k)
 
     def send(self, *args, **kwargs):
 

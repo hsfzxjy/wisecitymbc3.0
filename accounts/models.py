@@ -1,13 +1,26 @@
 from django.db import models
 from django.dispatch import receiver
 
-from enhancements.auth.models import AbstractUser
+from enhancements.auth.models import AbstractUser, UserManager
 from enhancements.models.fields import EnumField
 from enhancements.shortcuts import _
+from enhancements.models import QuerySet
 from enhancements.models.mixins import AutoCleanMixin, PermsMixin
 
 
 from .consts import UserType, BureauType
+
+
+class UserQuerySet(QuerySet):
+
+    def governments(self):
+        return self.filter(user_type=UserType.government)
+
+    def governments_or(self, user):
+        return self.filter(
+            models.Q(user_type=UserType.government) |
+            models.Q(pk=user.pk)
+        )
 
 
 class User(AutoCleanMixin, PermsMixin, AbstractUser):
@@ -32,6 +45,8 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
         blank=True
     )
 
+    objects = UserQuerySet.as_manager(UserManager)
+
     REQUIRED_FIELDS = ['nickname']
 
     INVISIBLE_FIELDS = {
@@ -42,8 +57,17 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
         if self.user_type != UserType.bureau:
             self.bureau_type = BureauType.none
 
+    def _check_user_data(self):
+        if self.user_type == UserType.company:
+            if self.user_data is None:
+                self.user_data = UserData.objects.create()
+                self.save()
+        elif self.user_data is not None:
+            self.user_data.delete()
+
     def clean(self):
         self._clean_bureau_type()
+        self._check_user_data()
 
     @property
     def category(self):
@@ -54,16 +78,6 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
             tuple
         """
         return (UserType(self.user_type), BureauType(self.bureau_type))
-
-
-@receiver(models.signals.post_save, sender=User)
-def check_user_data(sender, instance, **kwargs):
-    if instance.user_type == UserType.company:
-        if instance.user_data is None:
-            instance.user_data = UserData.objects.create()
-            instance.save()
-    elif instance.user_data is not None:
-        instance.user_data.delete()
 
 
 class UserData(models.Model):

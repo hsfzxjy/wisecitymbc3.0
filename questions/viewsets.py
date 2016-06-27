@@ -37,13 +37,13 @@ class TopicViewSet(viewsets.ModelViewSet):
     @detail_route(['GET'])
     def open(self, request, *args, **kwargs):
         obj = self.get_object()
-        obj.open()
+        obj.open(request.user)
         return Response(self.get_serializer(obj).data)
 
     @detail_route(['GET'])
     def close(self, request, *args, **kwargs):
         obj = self.get_object()
-        obj.close()
+        obj.close(request.user)
         return Response(self.get_serializer(obj).data)
 
 
