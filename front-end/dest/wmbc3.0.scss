@@ -4,12 +4,16 @@ $fsize:16px;
 $red: #DB4E02;
 $marg:5px;
 $text:#CCC;
+$hyp:rgba(195, 150, 83, 1);
 //global
 body,html {
 	background-color: $bgc;
 	font: {
 		size:$fsize;
 	}
+}
+.no-padding {
+	padding:0px;
 }
 a {
 	color: rgba(155, 140, 103, 1);
@@ -39,7 +43,7 @@ a {
 	}
 }
 .input-group-addon {
-	background-color:white;
+	background-color:#FFF;
 	border:{
 		width:0px;
 		radius:0px;
@@ -84,7 +88,7 @@ input + .input-group-addon {
 }
 //article
 #article-title,#article-content {
-	p,h1 {
+	p {
 		color:#FFF;
 	}
 	p {
@@ -93,6 +97,38 @@ input + .input-group-addon {
 	h1 {
 		font-size:50px;
 	}
+}
+#article-title .list-group-item {
+	background-color:$bgc;
+	border-radius:0px;
+	border:{
+		left:none;
+		right:none;
+	}
+	color:lighten($hyp,5%);
+	&:hover {
+		background-color:lighten($bgc,5%);
+	}
+}
+
+.list-group-item + .list-group-item {
+	border-bottom:0px;
+}
+#article-title .active {
+	background-color:$gre;
+	color:darken(white,10%);
+	border-color:$gre;
+	&:hover {
+		background-color:$gre;
+	}
+}
+#article-content {
+}
+//breadcrumb
+.breadcrumb {
+	background-color:$bgc;
+	border-bottom: 1px solid #ccc;
+	border-radius: 0px;
 }
 //responsive
 @media (max-width: 500px) {

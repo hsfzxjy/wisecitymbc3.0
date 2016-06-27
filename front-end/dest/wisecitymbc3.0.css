@@ -2,6 +2,9 @@ body, html {
   background-color: #1f2324;
   font-size: 16px; }
 
+.no-padding {
+  padding: 0px; }
+
 a {
   color: #9b8c67; }
   a:hover, a:focus {
@@ -25,7 +28,7 @@ a {
     color: #FFF; }
 
 .input-group-addon {
-  background-color: white;
+  background-color: #FFF;
   border-width: 0px;
   border-radius: 0px;
   margin-right: 2px;
@@ -55,12 +58,36 @@ input + .input-group-addon {
 .list-group-item:first-child {
   border: none; }
 
-#article-title p, #article-title h1, #article-content p, #article-content h1 {
+#article-title p, #article-content p {
   color: #FFF; }
 #article-title p, #article-content p {
   font-size: 18px; }
 #article-title h1, #article-content h1 {
   font-size: 50px; }
+
+#article-title .list-group-item {
+  background-color: #1f2324;
+  border-radius: 0px;
+  border-left: none;
+  border-right: none;
+  color: #caa266; }
+  #article-title .list-group-item:hover {
+    background-color: #2b3032; }
+
+.list-group-item + .list-group-item {
+  border-bottom: 0px; }
+
+#article-title .active {
+  background-color: #209E85;
+  color: #e6e6e6;
+  border-color: #209E85; }
+  #article-title .active:hover {
+    background-color: #209E85; }
+
+.breadcrumb {
+  background-color: #1f2324;
+  border-bottom: 1px solid #ccc;
+  border-radius: 0px; }
 
 @media (max-width: 500px) {
   li.nav-item {
