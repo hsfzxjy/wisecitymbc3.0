@@ -1,71 +1,11 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<script src="/static/jquery.js" type="text/javascript"></script>
-		<script src="/static/vue.js" type="text/javascript"></script>
-		<script src="/static/tether.js" type="text/javascript"></script>
-		<script src="/static/bootstrap.js" type="text/javascript"></script>
-		<link rel="stylesheet" type="text/css" href="/static/bootstrap4.css" />
-    <link rel="stylesheet" type="text/css" href="/static/wisecitymbc3.0.css" />
-    <link rel="stylesheet" type="text/css" href="/static/font-awesome.css" />
-	</head>
-	<body>
-    <navbar></navbar>
-    <main class="container" style="margin-top:54px;">
-      <div class="row">
-        <div class="col-sm-8">
-          <articles-list>
-          </articles-list>
-        </div>
-        <div class="col-sm-4">
-          <lgform>
-          </lgform>
-        </div>
-      </div>
-    </main>
-    {{ render_bundle ('index') }}
-    <script>
-    
-    </script>
-    <!--script type="text/javascript">
-    var vl = new Vue({
-        el: 'body',
-        data: {
-          un:'',
-          pw:'',
-          iE:false,
-          currentView: 'home',
-          msg:'',
-        },
-        methods: {
-          change: function(type){
-            this.currentView = type;
-            this.msg = type;
-            console.log(this.msg);
-          },
-          validate: function() {
-            if ((!this.un)||(!this.pw)) {
-              this.iE = true
-              console.log(this.iE)
-            }
-          },
-          clearError: function()
-          {
-              this.iE=false
-          }
-        },
-        components: {
-          home: {
-            props: { msg: String },
-            template:''
-          },
-          posts: {
-            props: { msg: String },
-            template:'<ul class="list-group list-wmbc"><li class="list-group-item">Cras justo odio</li><li class="list-group-item">MSG: {{ msg }}</li>"</ul>'
-          },
-        }
-      })
-    </script-->
-	</body>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </head>
+    <body>
+        <div id="app"></div>
+        {{ render_bundle ('main') }}
+    </body>
 </html>
