@@ -221,3 +221,14 @@ QINIU_DOMAIN_NAME = '7xkade.dl1.z0.glb.clouddn.com'
 CONSTS_OUTPUT_PATHS = [
     'front-end/consts.json'
 ]
+
+# cache
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': 'localhost:6379',
+    },
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
