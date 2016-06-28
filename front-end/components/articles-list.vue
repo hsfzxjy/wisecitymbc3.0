@@ -1,11 +1,5 @@
 <template>
 	<ul class="list-group list-wmbc">
-		<li class="list-group-item"><a href="#">Cras justo odio</a></li>
-		<li class="list-group-item"><a href="#">Cras justo odio</a></li>
-		<li class="list-group-item"><a href="#">Cras justo odio</a></li>
-		<li class="list-group-item"><a href="#">Cras justo odio</a></li>
-		<li class="list-group-item"><a href="#">Cras justo odio</a></li>
-		<li class="list-group-item">MSG: {{ msg }}</li>
 		<li class="list-group-item" v-for="item in articles"><a href="/api/articles/{{item.id}}">{{item.title}}</a></li>
 	</ul>
 </template>

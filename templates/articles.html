@@ -10,16 +10,12 @@
     	<link rel="stylesheet" type="text/css" href="/static/wisecitymbc3.0.css" />
     	<link rel="stylesheet" type="text/css" href="/static/font-awesome.css" />
 	</head>
-	<body>
+	<body style="position:relative;">
 		<navbar></navbar>
 		<div class="container" style="margin-top:100px;">
-			<ol class="breadcrumb" style="margin-bottom: 0px;">
-  				<li><a href="#">Home</a></li>
-  				<li><a href="#">Library</a></li>
-  				<li class="active">Data</li>
-			</ol>
-			<article-detail>
-			</article-detail>
+			
+			<articles-box :article-type="a_s">  
+			</articles-box>
 		</div>
 	</body>
 	{{ render_bundle ('article-display') }}

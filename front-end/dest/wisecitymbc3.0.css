@@ -46,6 +46,10 @@ input + .input-group-addon {
   padding-top: 10px;
   padding-bottom: 10px; }
 
+.list-wmbc {
+  max-height: 560px;
+  overflow-y: auto; }
+
 .list-wmbc > .list-group-item {
   background-color: #131616;
   border-top-width: 1px;
@@ -58,12 +62,31 @@ input + .input-group-addon {
 .list-group-item:first-child {
   border: none; }
 
-#article-title p, #article-content p {
-  color: #FFF; }
-#article-title p, #article-content p {
+.article-header {
+  padding-left: 15px;
+  border-bottom: 1px solid #424b4d;
+  color: #bfbfbf; }
+
+.article-header h3 {
+  color: #d9d9d9; }
+
+.article-content {
+  padding-left: 15px;
+  color: #bfbfbf;
   font-size: 18px; }
-#article-title h1, #article-content h1 {
-  font-size: 50px; }
+
+.list-active b {
+  color: white; }
+
+#article-title, #article-content {
+  height: 560px;
+  overflow-y: auto; }
+  #article-title p, #article-content p {
+    color: #FFF; }
+  #article-title p, #article-content p {
+    font-size: 18px; }
+  #article-title h1, #article-content h1 {
+    font-size: 50px; }
 
 #article-title .list-group-item {
   background-color: #1f2324;
@@ -77,11 +100,11 @@ input + .input-group-addon {
 .list-group-item + .list-group-item {
   border-bottom: 0px; }
 
-#article-title .active {
+#article-title .list-active {
   background-color: #209E85;
-  color: #e6e6e6;
+  color: #cccccc;
   border-color: #209E85; }
-  #article-title .active:hover {
+  #article-title .list-active:hover {
     background-color: #209E85; }
 
 .breadcrumb {
