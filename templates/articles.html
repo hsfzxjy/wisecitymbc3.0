@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<script src="/static/jquery.js" type="text/javascript"></script>
+		<script src="/static/vue.js" type="text/javascript"></script>
+		<script src="/static/tether.js" type="text/javascript"></script>
+		<script src="/static/bootstrap.js" type="text/javascript"></script>
+		<link rel="stylesheet" type="text/css" href="/static/bootstrap4.css" />
+    	<link rel="stylesheet" type="text/css" href="/static/wisecitymbc3.0.css" />
+    	<link rel="stylesheet" type="text/css" href="/static/font-awesome.css" />
+	</head>
+	<body style="position:relative;">
+		<navbar></navbar>
+		<div class="container" style="margin-top:100px;">
+			
+			<articles-box :article-type="a_s">  
+			</articles-box>
+		</div>
+	</body>
+	{{ render_bundle ('article-display') }}
+</html>
