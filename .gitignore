@@ -133,3 +133,5 @@ jspm_packages
 
 qiniu_keys.py
 front-end/consts.json
+
+.DS_Store
