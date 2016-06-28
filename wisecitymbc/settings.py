@@ -232,3 +232,5 @@ CACHES = {
 }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+
+from .local_settings import *
