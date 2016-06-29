@@ -9,7 +9,7 @@ class EnhancedViewSetMixin(object):
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     ordering_fields = ('id',)
     ordering = 'id'
-    search_fields = ()
+    filter_fields = ()
 
     def render_list(self, queryset=None, filter=False):
         if queryset is None:

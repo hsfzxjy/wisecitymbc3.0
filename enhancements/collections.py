@@ -12,11 +12,19 @@ class Enum(_Enum):
             {}
         )
 
-    # def __eq__(self, obj):
-    #     if isinstance(obj, Enum):
-    #         return super(Enum, self).__eq__(obj)
+    def __str__(self):
+        return str(self.value)
 
-    #     return self.value == obj
+    def __eq__(self, obj):
+        try:
+            hash(obj)
+        except TypeError:
+            return False
+        else:
+            return obj == self.value or hash(self) == hash(obj)
+
+    def __hash__(self):
+        return hash(self._name_)
 
     def __gt__(self, obj):
         return self.value > getattr(obj, 'value', obj)

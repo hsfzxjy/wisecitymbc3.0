@@ -68,7 +68,8 @@ class EnumField(models.PositiveIntegerField):
         return self._parse(value)
 
     def get_prep_value(self, enum_value):
-        return enum_value.value
+        return enum_value.value if isinstance(enum_value, Enum) \
+            else self._enum(int(enum_value)).value
 
     def value_to_string(self, obj):
         value = self.value_from_object(obj)
