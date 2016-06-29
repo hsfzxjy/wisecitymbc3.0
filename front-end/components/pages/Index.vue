@@ -6,7 +6,7 @@
                 WiseCity
             </h1>
         </div>
-        <div class="col-md-4 col-sm-12">
+        <div class="col-md-4 col-sm-12" v-show="!$root.hasLogined">
             <login-form></login-form>
         </div>
     </vs-jumbotron>
@@ -15,12 +15,10 @@
 
 <script>
     import LoginForm from '../forms/LoginForm.vue'
-    import vsBase from 'vuestrap-base-components'
 
     export default {
         components: {
-            LoginForm,
-            'vs-jumbotron': vsBase.jumbotron
+            LoginForm
         }
     }
 </script>

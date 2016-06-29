@@ -17,17 +17,28 @@
 </template>
 
 <script>
-    import vsBase from 'vuestrap-base-components'
     import navbar from './navbar.vue'
+
     export default {
         components: {
-            'vs-alert': vsBase.alert,
-            'vs-navbar': vsBase.navbar,
-            'vs-nav': vsBase.nav,
-            'vs-nav-item': vsBase.navItem
         },
         data: () => ({
-            show: true
-        })
+            user: null
+        }),
+        computed: {
+            hasLogined () {
+                return !!this.user
+            }
+        },
+        ready () {
+            this.$http.get('/api/users/me/').then((res) => {
+                this.user = res.data
+            }, (res) => {})
+        },
+        events: {
+            logined (user) {
+                this.user = user
+            }
+        }
     }
 </script>
