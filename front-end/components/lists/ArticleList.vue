@@ -1,18 +1,24 @@
 <template>
-    <div class="rows">
-        <div class="card">
-          <img class="card-img-top" data-src="..." alt="Card image cap">
-          <div class="card-block">
-            <h4 class="card-title">Card title</h4>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.sdgasgadngladgnlsakgjnsakgbjlaskdjbgsakldgjbsddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd</p>
-            <a href="#" class="btn btn-primary">Button</a>
-          </div>
-        </div>
+    <div class="rows" v-for="article in articles">
+        <article-item :article="article"></article-item>
+        <infinite-loading :on-infinite="onInfinite"></infinite-loading>
     </div>
 </template>
 
 <script>
+    import ArticleItem from '../items/ArticleItem.vue'
+    import InfiniteLoading from 'vue-infinite-loading'
+
     export default {
-        
+        components: {ArticleItem, InfiniteLoading},
+        data: () => ({
+            articles: []
+        }),
+        ready () {
+            this.$http.get('/api/articles/')
+                .then((res) => {
+                    this.articles = res.data.results
+                })
+        }
     }
 </script>
