@@ -15,10 +15,11 @@ export default function (Vue) {
         '/': {
             component: Index
         },
-        '/articles/': {
-            component: Articles
+        '/articles/:category/': {
+            component: Articles,
+            name: 'articlesList'
         },
-        '/articles/edit/': {
+        '/articlesEdit/': {
             component: ArticleEdit
         }
     })

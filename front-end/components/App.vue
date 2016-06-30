@@ -23,7 +23,7 @@
         components: {
         },
         data: () => ({
-            user: null
+            user: null,
         }),
         computed: {
             hasLogined () {

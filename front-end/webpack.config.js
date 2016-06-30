@@ -22,7 +22,16 @@ module.exports = {
         }, { 
             test: /\.css$/, 
             loader: "style/url!file" 
+        }, {
+            test: /\.json$/,
+            loader: 'json'
         }]
+    },
+
+    resolve: {
+        root: [
+            path.resolve('.')
+        ]
     },
 
     plugins: [
