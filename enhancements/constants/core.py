@@ -1,8 +1,12 @@
 from django.utils.module_loading import module_has_submodule, import_module
+from django.utils.functional import Promise
+from django.utils.translation import force_text
 from django.utils.itercompat import is_iterable
 from django.apps import apps
 
-from enum import EnumMeta
+from enhancements.collections import Enum
+
+from collections import OrderedDict
 
 
 def generate_consts():
@@ -13,6 +17,7 @@ def generate_consts():
 
     for path in settings.OUTPUT_PATHS:
         with open(path, 'w') as fp:
+            print(consts)
             json.dump(consts, fp)
 
 
@@ -48,10 +53,21 @@ def get_consts(mod):
 
 
 def parse(obj):
-    if isinstance(obj, EnumMeta):
-        return {
+    if isinstance(obj, type(Enum)):
+        return OrderedDict({
             item.name: item.value
             for item in obj
-        }
+        })
+    elif isinstance(obj, Enum):
+        return obj.value
+    elif isinstance(obj, dict):
+        return OrderedDict({
+            parse(key): parse(value)
+            for key, value in obj.items()
+        })
+    elif isinstance(obj, (list, tuple)):
+        return [parse(item) for item in obj]
+    elif isinstance(obj, Promise):
+        return force_text(obj)
     else:
         return obj
