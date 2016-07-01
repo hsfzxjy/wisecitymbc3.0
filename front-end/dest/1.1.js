@@ -30217,7 +30217,7 @@ webpackJsonp([1],[
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] components/pages/Profile.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(53)
+	__vue_template__ = __webpack_require__(56)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -30249,7 +30249,7 @@ webpackJsonp([1],[
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
-	var _ReportList = __webpack_require__(62);
+	var _ReportList = __webpack_require__(53);
 	
 	var _ReportList2 = _interopRequireDefault(_ReportList);
 	
@@ -30296,12 +30296,97 @@ webpackJsonp([1],[
 
 /***/ },
 /* 53 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(54)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] components/lists/ReportList.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(55)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/components/lists/ReportList.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+/* 54 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _vueInfiniteLoading = __webpack_require__(34);
+	
+	var _vueInfiniteLoading2 = _interopRequireDefault(_vueInfiniteLoading);
+	
+	var _InfiniteLoadingMixin = __webpack_require__(33);
+	
+	var _InfiniteLoadingMixin2 = _interopRequireDefault(_InfiniteLoadingMixin);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.default = {
+	    components: { InfiniteLoading: _vueInfiniteLoading2.default },
+	    mixins: [_InfiniteLoadingMixin2.default],
+	    data: function data() {
+	        return {
+	            objects: [],
+	            nextURL: ''
+	        };
+	    },
+	    props: {
+	        userId: {
+	            required: true,
+	            type: Number
+	        }
+	    },
+	    computed: {
+	        baseURL: {
+	            get: function get() {
+	                return '/api/users/' + this.userId + '/reports/';
+	            }
+	        }
+	    },
+	    ready: function ready() {
+	        var _this = this;
+	
+	        this.$watch('userId', function () {
+	            _this.reset();
+	        });
+	    }
+	};
+
+/***/ },
+/* 55 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<vs-list-group flush>\n    <vs-list-group-item v-for=\"file in objects\">\n        {{ file.file_name }}\n    </vs-list-group-item>\n    <infinite-loading :on-infinite=\"load\"></infinite-loading>\n</vs-list-group>\n";
+
+/***/ },
+/* 56 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div>\n    <vs-jumbotron class=\"rows\" v-if=\"!$loadingRouteData\">\n        <div \n            :class=\"['col-md-' + (hasUserData ? 4 : 12),'col-sm-12', 'text-center']\"\n            :style=\"{ 'border-right': (hasUserData ? '1px solid' : 0)}\">\n            <h1 class=\"jumbotron-heading\">{{ user.nickname }}</h1>\n            <p class=\"lead text-muted\">@{{ user.username }}</p>\n            <p class=\"lead text-muted\">{{ userTypeName }}</p>\n        </div>\n        <hr class=\"m-y-2 hidden-md-up\">\n        <div \n            :class=\"['col-md-8','col-sm-12', 'text-center']\"\n            v-if=\"hasUserData\">\n            <dl class=\"dl-horizontal\">\n                <dt class=\"col-sm-3\">名称</dt>\n                <dd class=\"col-sm-9\">{{ user.user_data.name }}</dd>\n                <dt class=\"col-sm-3\">板块</dt>\n                <dd class=\"col-sm-9\">{{ user.user_data.sector }}</dd>\n                <dt class=\"col-sm-3\">行业</dt>\n                <dd class=\"col-sm-9\">{{ user.user_data.industry }}</dd>\n                <dt class=\"col-sm-3\">介绍</dt>\n                <dd class=\"col-sm-9\">{{ user.user_data.description }}</dd>\n            </dl>\n        </div>\n    </vs-jumbotron>\n    <div class=\"rows\" v-if=\"!$loadingRouteData\">\n        <div class=\"col-sm-12 col-md-3\">\n            <vs-card>\n                <div class=\"card-block\">\n                    <h4 style=\"margin-bottom: 0;\" class=\"text-center\">报告</h4>\n                </div>\n                <report-list :user-id=\"id\"></report-list>\n            </vs-card>\n        </div>\n    </div>\n</div>\n";
 
 /***/ },
-/* 54 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30317,14 +30402,14 @@ webpackJsonp([1],[
 	    Vue.http.headers.common['X-CSRFToken'] = /csrftoken=(.*)(\s|;|$)/.exec(document.cookie)[1];
 	};
 	
-	var _vueResource = __webpack_require__(55);
+	var _vueResource = __webpack_require__(58);
 	
 	var _vueResource2 = _interopRequireDefault(_vueResource);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ },
-/* 55 */
+/* 58 */
 /***/ function(module, exports) {
 
 	/*!
@@ -31641,7 +31726,7 @@ webpackJsonp([1],[
 	module.exports = plugin;
 
 /***/ },
-/* 56 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31663,7 +31748,7 @@ webpackJsonp([1],[
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ },
-/* 57 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31674,13 +31759,13 @@ webpackJsonp([1],[
 	
 	exports.default = function (Vue, callback) {
 	    __webpack_require__.e/* nsure */(2, function (require) {
-	        var vsBase = __webpack_require__(58);
+	        var vsBase = __webpack_require__(61);
 	
 	        _lodash2.default.forEach(vsBase, function (component, name) {
 	            Vue.component('vs-' + _lodash2.default.kebabCase(name), component);
 	        });
 	
-	        var vsFormButton = __webpack_require__(59);
+	        var vsFormButton = __webpack_require__(62);
 	
 	        Vue.component('vs-form-button', vsFormButton);
 	
@@ -31693,95 +31778,6 @@ webpackJsonp([1],[
 	var _lodash2 = _interopRequireDefault(_lodash);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/***/ },
-/* 58 */,
-/* 59 */,
-/* 60 */,
-/* 61 */,
-/* 62 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(63)
-	if (__vue_script__ &&
-	    __vue_script__.__esModule &&
-	    Object.keys(__vue_script__).length > 1) {
-	  console.warn("[vue-loader] components/lists/ReportList.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(64)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) {
-	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
-	}
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
-	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/components/lists/ReportList.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 63 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _vueInfiniteLoading = __webpack_require__(34);
-	
-	var _vueInfiniteLoading2 = _interopRequireDefault(_vueInfiniteLoading);
-	
-	var _InfiniteLoadingMixin = __webpack_require__(33);
-	
-	var _InfiniteLoadingMixin2 = _interopRequireDefault(_InfiniteLoadingMixin);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	exports.default = {
-	    components: { InfiniteLoading: _vueInfiniteLoading2.default },
-	    mixins: [_InfiniteLoadingMixin2.default],
-	    data: function data() {
-	        return {
-	            objects: [],
-	            nextURL: ''
-	        };
-	    },
-	    props: {
-	        userId: {
-	            required: true,
-	            type: Number
-	        }
-	    },
-	    computed: {
-	        baseURL: {
-	            get: function get() {
-	                return '/api/users/' + this.userId + '/reports/';
-	            }
-	        }
-	    },
-	    ready: function ready() {
-	        var _this = this;
-	
-	        this.$watch('userId', function () {
-	            _this.reset();
-	        });
-	    }
-	};
-
-/***/ },
-/* 64 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<vs-list-group flush>\n    <vs-list-group-item v-for=\"file in objects\">\n        {{ file.file_name }}\n    </vs-list-group-item>\n    <infinite-loading :on-infinite=\"load\"></infinite-loading>\n</vs-list-group>\n";
 
 /***/ }
 ]);

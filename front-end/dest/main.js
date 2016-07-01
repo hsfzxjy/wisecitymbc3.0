@@ -108,9 +108,9 @@
 	__webpack_require__.e/* nsure */(1, function (require) {
 	    var Vue = __webpack_require__(11);
 	    var router = __webpack_require__(13).default(Vue);
-	    __webpack_require__(54).default(Vue);
-	    __webpack_require__(56).default(Vue);
-	    __webpack_require__(57).default(Vue, function () {
+	    __webpack_require__(57).default(Vue);
+	    __webpack_require__(59).default(Vue);
+	    __webpack_require__(60).default(Vue, function () {
 	        router.start(_App2.default, '#app');
 	    });
 	});
