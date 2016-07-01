@@ -13,6 +13,23 @@ class ArticleTestCase(APITestCase):
     def setUp(self):
         self.user, self.gov = create_users()
 
+    def test_filter(self):
+        self.client.force_authenticate(self.user)
+        res = self.client.post(
+            '/api/articles/',
+            {
+                'title': 'title',
+                'content': '<b>content'
+            }, format='json'
+        )
+
+        self.assertEqual(res.status_code, 201)
+
+        res = self.client.get('/api/articles/?article_type=1')
+        print(Article.objects.all()[0].article_type)
+
+        self.assertEqual(len(res.data['results']), 1)
+
     def test_post(self):
         self.client.force_authenticate(self.user)
         res = self.client.post(

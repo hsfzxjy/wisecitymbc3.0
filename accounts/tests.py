@@ -75,6 +75,59 @@ class UserRulesTestCase(TestCase):
         self.assertTrue(user.has_perm('accounts.add_user'))
 
 
+from files.models import File
+from unittest.mock import MagicMock
+
+
+class ReportsAPITestCase(APITestCase):
+
+    def setUp(self):
+        self.user, self.gov = create_users()
+
+    def test_confict(self):
+        user = User.objects.create_user(
+            username='123',
+            nickname='123',
+            password='123'
+        )
+
+        from qiniu import BucketManager
+        BucketManager.stat = MagicMock(return_value=[{'mimeType': 'fuck'}])
+        self.client.force_authenticate(self.user)
+
+        self.client.post(
+            '/api/users/{0}/reports/'.format(self.user.id), {
+                'path': '1/1.txt'
+            }, format='json'
+        )
+
+        self.client.force_authenticate(user)
+
+        res = self.client.get('/api/users/{0}/reports/'.format(user.id))
+
+        self.assertEqual(len(res.data['results']), 0)
+
+    def test_create_delete(self):
+        from qiniu import BucketManager
+        BucketManager.stat = MagicMock(return_value=[{'mimeType': 'fuck'}])
+        self.client.force_authenticate(self.user)
+
+        res = self.client.post(
+            '/api/users/{0}/reports/'.format(self.user.id), {
+                'path': '1/1.txt'
+            }, format='json'
+        )
+
+        self.assertEqual(len(self.user.user_data.reports.all()), 1)
+        id = res.data['id']
+
+        self.client.delete(
+            '/api/users/{0}/reports/{1}/'.format(self.user.id, id)
+        )
+
+        self.assertEqual(len(self.user.user_data.reports.all()), 0)
+
+
 class UserAPITestCase(APITestCase):
 
     def setUp(self):

@@ -4,12 +4,43 @@ from rest_framework import filters
 from rest_framework.response import Response
 
 
+class RelViewSetMixin(object):
+
+    def get_owner(self, request):
+        return super(RelViewSetMixin, self).get_owner(request)
+
+    def get_rel(self, owner):
+        return super(RelViewSetMixin, self).get_rel(owner)
+
+    def get_queryset(self):
+        self.rel = self.get_rel(self.get_owner(self.request))
+
+        return self.rel.all()
+
+    def perform_create(self, serializer):
+        obj = serializer.save()
+        self.rel.add(obj)
+
+    def perform_destroy(self, instance):
+        self.rel.remove(instance)
+
+        return super(RelViewSetMixin, self).perform_destroy(instance)
+
+
+def rel_viewset(viewset_class):
+
+    class wrapped_class(RelViewSetMixin, viewset_class):
+        pass
+
+    return wrapped_class
+
+
 class EnhancedViewSetMixin(object):
 
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     ordering_fields = ('id',)
     ordering = 'id'
-    search_fields = ()
+    filter_fields = ()
 
     def render_list(self, queryset=None, filter=False):
         if queryset is None:
