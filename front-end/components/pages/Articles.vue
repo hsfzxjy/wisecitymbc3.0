@@ -1,15 +1,18 @@
 <template>
     <div class="rows">
-        <div class="col-md-offset-1 col-md-10 col-sm-12">
-            <vs-nav 
-                type="pills">
-                <vs-nav-item
-                    v-for="category in categories"
-                    :link="`/articles/${$key}/`"
-                    :active='$key === currentCategory'>
-                    {{ category }}
-                </vs-nav-item>
-            </vs-nav>
+        <div class="col-md-3 hidden-sm-down">
+            <article-nav-bar 
+                :vertical="true" 
+                class="hidden-sm-down"
+                :current-category="currentCategory">    
+            </article-nav-bar>
+        </div>
+        <div class="col-md-9 col-sm-12">
+            <article-nav-bar 
+                :vertical="false" 
+                class="hidden-md-up"
+                :current-category="currentCategory">    
+            </article-nav-bar>
             <article-list
                 :category="currentCategory">    
             </article-list>         
@@ -18,24 +21,23 @@
 </template>
 
 <script>
-    import _ from 'lodash'
+    import {StrUtils} from 'utils/index.es'
     import ArticleList from '../lists/ArticleList.vue'
+    import ArticleNavBar from '../navs/ArticleNavBar.vue'
     import consts from 'consts.json'
 
-    const AVAILABLE_CATEGORIES = ['government', 'company', 'media']
-    const CATEGORIES_NAME = ['政府', '公司', '媒体']
+    import { AVAILABLE_CATEGORIES } from 'components/consts.es'
 
     export default {
-        components: { ArticleList },
+        components: { ArticleList, ArticleNavBar },
         data: () => ({
-            categories: _.zipObject(AVAILABLE_CATEGORIES, CATEGORIES_NAME),
             currentCategory: ''
         }),
         route: {
             data (transition) {
                 let category = transition.to.params.category
 
-                if (! (_.indexOf(AVAILABLE_CATEGORIES, category) >= 0))
+                if (!StrUtils.isContainedBy(category, AVAILABLE_CATEGORIES))
                     category = 'government'
 
                 this.currentCategory = category

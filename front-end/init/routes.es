@@ -3,6 +3,8 @@ import VueRouter from 'vue-router'
 import Index from '../components/pages/Index.vue'
 import Articles from '../components/pages/Articles.vue'
 import ArticleEdit from '../components/pages/ArticleEdit.vue'
+import ArticleDetail from '../components/pages/ArticleDetail.vue'
+import Profile from 'components/pages/Profile.vue'
 
 export default function (Vue) {
     Vue.use(VueRouter)
@@ -19,8 +21,18 @@ export default function (Vue) {
             component: Articles,
             name: 'articlesList'
         },
+        '/articleDetail/:id/': {
+            component: ArticleDetail
+        },
         '/articlesEdit/': {
             component: ArticleEdit
+        },
+        '/me/': {
+            component: Profile,
+            id: 'me'
+        },
+        '/users/:id/': {
+            component: Profile
         }
     })
 

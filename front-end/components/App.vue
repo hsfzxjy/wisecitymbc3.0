@@ -9,7 +9,7 @@
 </template>
 
 <script>
-    import TopNavBar from './TopNavBar.vue'
+    import TopNavBar from './navs/TopNavBar.vue'
 
     export default {
         components: {
