@@ -61,3 +61,13 @@ class Box(models.Model):
 
     class Meta:
         ordering = ('id',)
+
+
+class Book(models.Model):
+
+    name = models.CharField(max_length=100)
+
+
+class Author(models.Model):
+
+    books = models.ManyToManyField(Book)
