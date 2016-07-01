@@ -1,6 +1,6 @@
 import App from './components/App.vue'
 
-require('./node_modules/bootstrap/dist/css/bootstrap.min.css')
+require('styles/bootstrap.scss') 
 
 require.ensure([], (require) => {
     let Vue = require('vue')

@@ -14,7 +14,7 @@ module.exports = {
             test: /\.vue$/,
             loader: 'vue',
         }, {
-            test: /\.es$/,
+            test: /(\.es)|(node_modules.*src.*\.js)$/,
             loader: 'babel',
             query: {
                 presets: ['es2015']
@@ -25,6 +25,9 @@ module.exports = {
         }, {
             test: /\.json$/,
             loader: 'json'
+        }, {
+            test: /\.scss$/,
+            loader: 'style!css!sass'
         }]
     },
 

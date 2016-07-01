@@ -1,6 +1,6 @@
 webpackJsonp([2],{
 
-/***/ 44:
+/***/ 45:
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -5578,16 +5578,16 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 45:
+/***/ 46:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(46)
+	__vue_script__ = __webpack_require__(47)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] components/vs-extend/form-button.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(47)
+	__vue_template__ = __webpack_require__(48)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -5607,7 +5607,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 46:
+/***/ 47:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5672,7 +5672,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 47:
+/***/ 48:
 /***/ function(module, exports) {
 
 	module.exports = "\n<fieldset class=\"form-group {{inputState}}\">\n    <div class=\"inputClass\">\n        <button \n            type=\"{{type}}\" \n            class=\"btn {{btnVariant}} {{btnSize}} {{btnBlock}} {{inactive ? 'btn-inactive' : ''}} {{btnDisabled}}\">\n            <slot></slot>\n        </button>\n    </div>\n</fieldset>\n";

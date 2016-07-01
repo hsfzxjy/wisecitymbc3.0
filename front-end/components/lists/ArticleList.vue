@@ -6,7 +6,7 @@
             track-by="$index">    
         </article-item>
     </div>
-    <infinite-loading :on-infinite="onInfinite"></infinite-loading>
+    <infinite-loading :on-infinite="load"></infinite-loading>
 </template>
 
 <script>
@@ -28,11 +28,20 @@
             }
         },
         ready () {
-            this.$broadcast('$InfiniteLoading:reset')
-            console.log(this.category)
+            this.$watch('category', () => {
+                this.reset()
+            })
         },
         methods: {
-            onInfinite () {
+            reset () {
+                this.articles = []
+                this.nextURL = ''
+                this.$nextTick(() => {
+                    this.$broadcast('$InfiniteLoading:reset')
+                })
+                
+            },
+            load () {
                 if (this.nextURL === '') 
                     this.nextURL = `/api/articles/?article_type=${consts.articles.ArticleType[this.category]}`
                 this.$http.get(this.nextURL)

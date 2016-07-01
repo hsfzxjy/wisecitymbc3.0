@@ -1,15 +1,7 @@
 <template>
     <div>
-        <vs-navbar type="light" variant="reverse" full>
-            <a class="navbar-brand" href="#">Navbar</a>
-            <vs-nav type="navbar" class="pull-xs-left">
-                <vs-nav-item link="#" active>Home <span class="sr-only">(current)</span></vs-nav-item>
-                <vs-nav-item link="#">Features</vs-nav-item>
-                <vs-nav-item link="#">Pricing</vs-nav-item>
-                <vs-nav-item link="#">About</vs-nav-item>
-            </vs-nav>
-        </vs-navbar>
-        <div class="container">
+        <top-nav-bar></top-nav-bar>
+        <div class="container-fluid" id="main-container">
             <router-view class="view" keep-alive transition transition-mode="out-in">
             </router-view>            
         </div>
@@ -17,10 +9,11 @@
 </template>
 
 <script>
-    import navbar from './navbar.vue'
+    import TopNavBar from './TopNavBar.vue'
 
     export default {
         components: {
+            TopNavBar
         },
         data: () => ({
             user: null,

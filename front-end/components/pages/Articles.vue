@@ -1,17 +1,18 @@
 <template>
     <div class="rows">
-        <div class="col-md-offset-2 col-md-8 col-sm-12">
-            <vs-tabs size="md" :fade="false">
-                <vs-tab
-                    id="$key"
-                    :title="category"
-                    :active='$key === currentCategory'
-                    v-for="category in categories">
-                    <article-list
-                        :category="$key">    
-                    </article-list>
-                </vs-tab>
-            </vs-tabs>          
+        <div class="col-md-offset-1 col-md-10 col-sm-12">
+            <vs-nav 
+                type="pills">
+                <vs-nav-item
+                    v-for="category in categories"
+                    :link="`/articles/${$key}/`"
+                    :active='$key === currentCategory'>
+                    {{ category }}
+                </vs-nav-item>
+            </vs-nav>
+            <article-list
+                :category="currentCategory">    
+            </article-list>         
         </div> 
     </div>
 </template>
@@ -27,16 +28,17 @@
     export default {
         components: { ArticleList },
         data: () => ({
-            categories: _.zipObject(AVAILABLE_CATEGORIES, CATEGORIES_NAME)
+            categories: _.zipObject(AVAILABLE_CATEGORIES, CATEGORIES_NAME),
+            currentCategory: ''
         }),
-        computed: {
-            currentCategory () {
-                let category = this.$route.params.category
+        route: {
+            data (transition) {
+                let category = transition.to.params.category
 
-                if (! category in AVAILABLE_CATEGORIES)
+                if (! (_.indexOf(AVAILABLE_CATEGORIES, category) >= 0))
                     category = 'government'
 
-                return category
+                this.currentCategory = category
             }
         },
         ready () {
