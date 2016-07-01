@@ -24,6 +24,12 @@ class UserDataInline(ObjectPermissionsStackedInline):
     can_delete = False
 
 
+@admin.register(UserData)
+class UserDataAdmin(DjangoObjectActions, admin.ModelAdmin):
+
+    model = UserData
+
+
 @admin.register(User)
 class UserAdmin(DjangoObjectActions,
                 auth_admin.UserAdmin, ObjectPermissionsModelAdmin):
@@ -45,15 +51,15 @@ class UserAdmin(DjangoObjectActions,
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions',)
 
-    inlines = []
+    # inlines = []
 
-    def get_inline_instances(self, request, obj=None):
-        if obj is not None and obj.user_type == UserType.company.value:
-            self.inlines = [UserDataInline]
-        else:
-            self.inlines = []
+    # def get_inline_instances(self, request, obj=None):
+    #     if obj is not None and obj.user_type == UserType.company.value:
+    #         self.inlines = [UserDataInline]
+    #     else:
+    #         self.inlines = []
 
-        return super(UserAdmin, self).get_inline_instances(request, obj)
+    #     return super(UserAdmin, self).get_inline_instances(request, obj)
 
     def change_password(self, request, user):
         from django.http import HttpResponseRedirect
