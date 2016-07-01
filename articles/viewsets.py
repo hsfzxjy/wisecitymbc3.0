@@ -14,7 +14,7 @@ from watson import search as watson
 class ArticleViewSet(viewsets.ModelViewSet):
 
     queryset = Article.objects.all()
-    filter_fields = ('article_type', )
+    filter_fields = ('article_type', 'author__id')
     keyword_param = 'keyword'
 
     def patch_author(self, request):

@@ -87,3 +87,20 @@ class ArticleTestCase(APITestCase):
             '/api/articles/search/?keyword=%E6%88%91%E6%98%AF')
 
         self.assertEqual(len(res.data['results']), 10)
+
+    def test_filter(self):
+        for i in range(1, 20):
+            Article.objects.create(
+                author=self.user,
+                title='我是中国人',
+                content='content%s asshole' % i,
+            )
+        Article.objects.create(
+            author=self.gov,
+            title='我是中国人',
+            content='contents asshole',
+        )
+        res = self.client.get(
+            '/api/articles/?author__id={0}&limit=100'.format(self.user.id))
+
+        self.assertEqual(len(res.data['results']), 19)
