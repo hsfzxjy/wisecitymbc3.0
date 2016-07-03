@@ -1,7 +1,7 @@
 <template>
     <div>
         <top-nav-bar></top-nav-bar>
-        <div class="container-fluid" id="main-container">
+        <div class="container-fluid" id="main-container" style="margin-top:75px;">
             <router-view class="view" keep-alive transition transition-mode="out-in">
             </router-view>            
         </div>

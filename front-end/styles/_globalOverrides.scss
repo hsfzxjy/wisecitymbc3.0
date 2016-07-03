@@ -14,3 +14,38 @@ button {
 .text-center {
     text-align: center;
 }
+
+
+// Custom
+
+body,html {
+	background-color:$bgc;
+}
+a {
+	color: rgba(155, 140, 103, 1);
+	&:hover,&:focus {
+		color: rgba(155, 140, 103, 1);
+		text-decoration:underline;
+	}
+}
+
+.nav-link.active {
+	background-color:$gre!important
+}
+.card {
+	border:none;
+	background-color:lighten($bgc,5%);
+}
+.card-header {
+	background-color:lighten($bgc,10%);
+	border-radius:0px!important;
+	border-bottom:1px dashed darken(white,60%)
+}
+.card-footer {
+	background-color:lighten($bgc,4%);
+	border-top:1px dashed darken(white,70%)
+}
+.card-block {
+	color:#eee;
+
+}

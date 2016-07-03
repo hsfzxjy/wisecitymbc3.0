@@ -5595,9 +5595,9 @@ webpackJsonp([2],{
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/components/vs-extend/form-button.vue"
+	  var id = "_v-24b4ece2/form-button.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {

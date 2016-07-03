@@ -1,5 +1,5 @@
 <template>
-    <vs-navbar type="light">
+    <vs-navbar style='background-color:#191919' type="dark" fixed="top">
         <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbar-header" aria-controls="navbar-header">
             &#9776;
         </button>

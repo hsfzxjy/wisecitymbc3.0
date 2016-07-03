@@ -2,7 +2,7 @@
     <div>
         <vs-card>
             <div class="card-header">
-                <span class="label label-primary">
+                <span class="label" style="background-color:#209E85">
                     @{{ article.author.nickname }}
                 </span>
                 <span class="label label-danger" v-if="article.is_top">
