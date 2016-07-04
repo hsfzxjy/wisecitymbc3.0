@@ -1,47 +1,42 @@
 <template>
-    <div>
-        <form @submit.prevent="submit">
+    <div class="container">
+        <editor
+            v-if="!$loadingRouteData"
+            name="article-edit"
+            base-url="/api/articles/"
+            :model.sync="article">
             <vs-form-input
-                :model.sync="title"
+                :model.sync="article.title"
                 type="text"
                 name='title'
-                :state='errors.title | state'
-                placeholder="标题">
+                placeholder="标题"
+                slot="fields-before">
             </vs-form-input>
-            <editor name="content" editor-id="articles-editor" :model.sync="content"></editor>
-            <vs-form-button :disabled="loading">发布</vs-form-button>
-        </form>
+        </editor>
     </div>
 </template>
 
 <script>
-    import Editor from '../Editor.vue'
+    import _ from 'lodash'
+    import Editor from 'components/edit/Editor.vue'
+    import EditPageMixin from 'components/mixins/EditPageMixin.es'
 
     export default {
-        components: {
-            Editor
-        },
+        mixins: [EditPageMixin],
+        components: { Editor },
         data: () => ({
-            title: "",
-            content: "",
-            errors: {},
-            loading: false
-        }),
-        methods: {
-            submit () {
-                this.loading = true
-
-                this.$http.post('/api/articles/', this.$data)
-                    .then((res) => {
-
-                    }, (res) => {
-                        if (res.status === 400) {
-                            this.errors = res.data
-                        }
-                    }).then(() => {
-                        this.loading = false;
-                    })
+            article: {
+                id: '',
+                title: '',
+                content: '', 
+                attachments: []
             }
+        }),
+        editConfig: {
+            getInitURL (id) {
+                return `/api/articles/${id}/?fields=title,content,attachments`
+            },
+            objectFieldName: 'article'
         }
     }
 </script>

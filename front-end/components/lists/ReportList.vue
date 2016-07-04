@@ -1,6 +1,6 @@
 <template>
     <vs-list-group flush>
-        <vs-list-group-item v-for="file in objects">
+        <vs-list-group-item v-for="file in reports">
             {{ file.file_name }}
         </vs-list-group-item>
         <infinite-loading :on-infinite="load"></infinite-loading>
@@ -8,27 +8,30 @@
 </template>
 
 <script>
-    import InfiniteLoading from 'vue-infinite-loading'
     import InfiniteLoadingMixin from 'components/mixins/InfiniteLoadingMixin.es'
 
     export default {
-        components: { InfiniteLoading },
         mixins: [InfiniteLoadingMixin],
+        listConfig: {
+            listFieldName: 'reports'
+        },
         data: () => ({
-            objects: [],
             nextURL: ''
         }),
         props: {
+            reports: {
+                type: Array,
+                twoWay: true,
+                required: true
+            },
             userId: {
                 required: true,
                 type: Number
             }
         },
         computed: {
-            baseURL: {
-                get () {
-                    return `/api/users/${this.userId}/reports/`
-                }
+            baseURL () {
+                return `/api/users/${this.userId}/reports/`
             }
         },
         ready () {

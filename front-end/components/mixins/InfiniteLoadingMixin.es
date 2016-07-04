@@ -1,7 +1,10 @@
+import InfiniteLoading from 'vue-infinite-loading'
+
 export default {
+    components: { InfiniteLoading },
     methods: {
         reset () {
-            this.objects = []
+            this[this.$options.listConfig.listFieldName] = []
             this.nextURL = ''
             this.$nextTick(() => {
                 this.$broadcast('$InfiniteLoading:reset')
@@ -9,9 +12,16 @@ export default {
             
         },
         load () {
-            if (this.nextURL === '') 
-                this.nextURL = this.baseURL
-            this.$http.get(this.nextURL)
+            let url, params
+
+            if (this.nextURL === '') {
+                url = this.nextURL = this.baseURL
+                params = this.params
+            } else {
+                url = this.nextURL
+                params = {}
+            }
+            this.$http.get(url, { params })
                 .then((res) => {
                     let data = res.data
 
@@ -20,7 +30,8 @@ export default {
                         this.$broadcast('$InfiniteLoading:noMore')
                     }
 
-                    this.objects = this.objects.concat(data.results)
+                    let list = this[this.$options.listConfig.listFieldName].concat(data.results)
+                    this[this.$options.listConfig.listFieldName] = _.uniq(list, 'id')
                 }, (res) => {
                     if (res.status === 404)
                         this.$broadcast('$InfiniteLoading:noResults')

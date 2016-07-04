@@ -28,10 +28,21 @@
             <div class="col-sm-12 col-md-3">
                 <vs-card>
                     <div class="card-block">
-                        <h4 style="margin-bottom: 0;" class="text-center">报告</h4>
+                        <h4 style="margin-bottom: 0;">报告</h4>
+                        <uploader
+                            :files="reports"
+                            :file-add-url="`/api/users/${id}/reports/`"
+                            browse-button-id="reports-uploader">
+                            <span id="reports-uploader">upload</span>
+                        </uploader>
                     </div>
-                    <report-list :user-id="id"></report-list>
+                    <report-list :user-id="id" :reports.sync="reports"></report-list>
                 </vs-card>
+            </div>
+            <div class="col-sm-12 col-md-9">
+                <article-list
+                    :other-params="{ author__id: id }">
+                </article-list>
             </div>
         </div>
     </div>
@@ -39,15 +50,18 @@
 
 <script>
     import _ from 'lodash'
+    import Uploader from 'components/Uploader.vue'
     import ReportList from 'components/lists/ReportList.vue'
+    import ArticleList from 'components/lists/ArticleList.vue'
     import { StrUtils } from 'utils/index.es'
     import { USER_TYPES } from 'components/consts.es'
  
     export default {
-        components: { ReportList },
+        components: { ReportList, ArticleList, Uploader },
         data: () => ({
             user: null,
-            id: ''
+            id: '',
+            reports: []
         }),
         computed: {
             hasUserData () {

@@ -13,23 +13,19 @@
 </template>
 
 <script>
-    import { StrUtils } from 'utils/index.es'
+    import DetailMixin from 'components/mixins/DetailMixin.es'
     import ArticleNavBar from 'components/navs/ArticleNavBar.vue'
     export default {
         components: {ArticleNavBar},
+        mixins: [DetailMixin],
         data: () => ({
             id: null,
             article: {}
         }),
-        route: {
-            canActivate (transition) {
-                return StrUtils.isDigits(transition.to.params.id)
-            },
-            data (transition) {
-                let id = transition.to.params.id
-                return this.$http.get(`/api/articles/${id}/`)
-                    .then((res) => ({ article: res.data, id }))
-            }
+        detailConfig: {
+            baseURL: `/api/articles/`,
+            objectFieldName: 'article',
+            idFieldName: 'id'
         }
     }
 </script>

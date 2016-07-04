@@ -7,6 +7,34 @@ from .models import Article
 
 from .consts import ArticleType
 
+from unittest.mock import MagicMock
+from qiniu import BucketManager
+BucketManager.stat = MagicMock(return_value=[{'mimeType': 'fuck'}])
+
+
+class AttachmentsTestCase(APITestCase):
+
+    def setUp(self):
+        self.user, self.gov = create_users()
+
+    def test_post(self):
+        file_id = self.client.post(
+            '/api/files/', {
+                'path': '1/1.txt'
+            }, format='json'
+        ).data['id']
+
+        self.client.force_authenticate(self.user)
+        res = self.client.post(
+            '/api/articles/',
+            {
+                'title': 'title',
+                'content': '<b>content',
+                'attachments': [file_id]
+            }, format='json'
+        )
+        self.assertEqual(len(res.data['attachments']), 1)
+
 
 class ArticleTestCase(APITestCase):
 

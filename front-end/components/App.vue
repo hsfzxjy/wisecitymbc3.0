@@ -23,7 +23,7 @@
                 return !!this.user
             }
         },
-        ready () {
+        created () {
             this.$http.get('/api/users/me/').then((res) => {
                 this.user = res.data
             }, (res) => {})

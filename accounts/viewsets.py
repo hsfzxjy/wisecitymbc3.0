@@ -2,6 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.exceptions import ParseError
 from rest_framework.decorators import list_route
 
+from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.http.response import HttpResponseRedirect
 from django.contrib import auth
@@ -67,7 +68,7 @@ class UserNestedGetOwnerMixin(object):
         if arg == 'me':
             user = self.request.user
         else:
-            user = User.objects.get(pk=arg)
+            user = get_object_or_404(User, pk=arg)
 
         if user.user_data is None:
             raise Http404

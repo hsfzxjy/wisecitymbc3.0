@@ -1,7 +1,12 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
 
-from enhancements.rest.urls import register
+from enhancements.rest.urls import register, register_nested
+from enhancements.rest.viewsets import rel_viewset
+
+from files.viewsets import FileViewSet
 
 from .models import Article, Tag
 
@@ -46,3 +51,18 @@ class TagViewSet(viewsets.ModelViewSet):
 
     queryset = Tag.objects.all()
     filter_fields = ('name', )
+
+
+@register_nested(
+    'reports',
+    ArticleViewSet,
+    'articles',
+    'article'
+)
+@rel_viewset
+class AttachmentsViewSet(FileViewSet):
+
+    def get_owner(self, request):
+        pk = request.kwargs['article_pk']
+
+        return get_object_or_404(Article, pk=pk)

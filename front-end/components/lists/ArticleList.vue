@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <article-item 
-            v-for="article in objects" 
+            v-for="article in articles" 
             :article="article" 
             track-by="$index">    
         </article-item>
@@ -14,26 +14,36 @@
     import consts from 'consts.json'
     import ArticleItem from '../items/ArticleItem.vue'
     import InfiniteLoadingMixin from 'components/mixins/InfiniteLoadingMixin.es'
-    import InfiniteLoading from 'vue-infinite-loading'
 
     export default {
-        components: {ArticleItem, InfiniteLoading},
+        listConfig: {
+            listFieldName: 'articles'
+        },
+        components: {ArticleItem},
         mixins: [InfiniteLoadingMixin],
         data: () => ({
-            objects: [],
+            articles: [],
             nextURL: ''
         }),
         computed: {
-            baseURL: {
-                get () {
-                    return `/api/articles/?article_type=${consts.articles.ArticleType[this.category]}`
-                }
+            baseURL () {
+                return `/api/articles/`
+            },
+            params () {
+                let params = {}
+
+                if (this.category) 
+                    params.article_type = consts.articles.ArticleType[this.category]
+
+                return _.assign(params, this.otherParams)
             }
         },
         props: {
             category: {
-                type: String,
-                required: true
+                type: String
+            },
+            otherParams: {
+                type: Object
             }
         },
         ready () {

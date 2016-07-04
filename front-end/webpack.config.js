@@ -1,9 +1,19 @@
 var path = require('path'),
-    BundleTracker = require('webpack-bundle-tracker');
+    BundleTracker = require('webpack-bundle-tracker'),
+    webpack = require('webpack');
 
 module.exports = {
     devtool: "source-map",  
-    entry: './main.es',         
+    entry: {
+        app: 'main.es',
+        vendor: [
+            'jquery',
+            'tether',
+            'bootstrap/dist/js/bootstrap.min.js',
+            //'vendor/plupload.full.min.js',
+            'bower_components/qiniu/dist/qiniu.min.js'
+        ]
+    },         
     output: {
         publicPath: '/static/',
         path: path.join(__dirname, "dest/"), 
@@ -38,6 +48,11 @@ module.exports = {
     },
 
     plugins: [
-        new BundleTracker({filename: './webpack-stats.json'})
+        new BundleTracker({filename: './webpack-stats.json'}),
+        new webpack.ProvidePlugin({
+            jQuery: "jquery",
+            'window.Tether': 'tether',
+        }),
+        new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js', Infinity)
     ]
 };

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <textarea :name="name" :id="editorId" cols="30" rows="10" v-model="model"></textarea>
+        <textarea :id="editorId" cols="30" rows="10" v-model="model"></textarea>
     </div>
 </template>
 
@@ -9,10 +9,6 @@
 
     export default {
         props: {
-            name: {
-                type: String,
-                required: true
-            },
             editorId: {
                 type: String,
                 required: true
