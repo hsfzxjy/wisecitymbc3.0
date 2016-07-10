@@ -10,15 +10,18 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('nickname', 'username', 'bureau_type',
-                  'user_type', 'user_data', 'id')
+                  'user_type', 'user_data', 'id', 'url', 'perms')
         read_only_fields = ('user_data', )
 
+    def get_url(self, user):
+        return '/users/{0}/'.format(user.id)
 
-class UserDataSerialiser(serializers.ModelSerializer):
+
+class UserDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserData
         exclude = ('id',)
 
 rest.registry.register(User, UserSerializer)
-rest.registry.register(UserData, UserDataSerialiser)
+rest.registry.register(UserData, UserDataSerializer)

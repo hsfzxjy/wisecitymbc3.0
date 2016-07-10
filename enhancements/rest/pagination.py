@@ -1,4 +1,4 @@
-from rest_framework.pagination import CursorPagination
+from rest_framework.pagination import CursorPagination, _reverse_ordering
 
 
 def _int(integer_string, strict=False, cutoff=None):

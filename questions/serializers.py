@@ -15,6 +15,9 @@ class TopicSerializer(serializers.ModelSerializer):
             }
         }
 
+    def get_url(self, topic):
+        return '/detail/topics/{0}/'.format(topic.id)
+
 
 class ReplySerializer(serializers.ModelSerializer):
 

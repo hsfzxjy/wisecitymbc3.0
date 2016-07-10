@@ -5,15 +5,16 @@ var path = require('path'),
 module.exports = {
     devtool: "source-map",  
     entry: {
-        app: 'main.es',
+        app: 'js/main.es',
         vendor: [
             'jquery',
             'tether',
+            'lodash',
             'bootstrap/dist/js/bootstrap.min.js',
             //'vendor/plupload.full.min.js',
             'bower_components/qiniu/dist/qiniu.min.js'
         ]
-    },         
+    },
     output: {
         publicPath: '/static/',
         path: path.join(__dirname, "dest/"), 
@@ -38,12 +39,20 @@ module.exports = {
         }, {
             test: /\.scss$/,
             loader: 'style!css!sass'
+        }, { 
+            test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
+            loader: "url-loader?limit=10000&mimetype=application/font-woff" 
+        }, { 
+            test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
+            loader: "file-loader" 
         }]
     },
 
     resolve: {
         root: [
-            path.resolve('.')
+            path.resolve('.'),
+            path.resolve('./js'),
+            path.resolve('./js/components')
         ]
     },
 
@@ -52,6 +61,7 @@ module.exports = {
         new webpack.ProvidePlugin({
             jQuery: "jquery",
             'window.Tether': 'tether',
+            _: 'lodash'
         }),
         new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js', Infinity)
     ]

@@ -1,10 +1,11 @@
 from rest_framework import viewsets, mixins
-from rest_framework.exceptions import ParseError
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import list_route
 
 from django.shortcuts import get_object_or_404
 from django.http import Http404
-from django.http.response import HttpResponseRedirect
 from django.contrib import auth
 
 from enhancements.rest import urls
@@ -14,6 +15,27 @@ from files.viewsets import FileViewSet
 
 from .models import User, UserData
 
+
+@urls.register_view('^perms/$')
+class PermsView(APIView):
+
+    _ignore_model_permissions = True
+
+    def get(self, request):
+        from .utils import get_perms
+
+        return Response(get_perms(request.user))
+
+
+@urls.register_view(r'^object_perms/(?P<model_path>[\w\.]+)/(?P<id>\d+)/$')
+class ObjectPermsView(APIView):
+
+    _ignore_model_permissions = True
+
+    def get(self, request, model_path, id, *args, **kwargs):
+        from .utils import get_object_perms
+
+        return Response(get_object_perms(request.user, model_path, id))
 
 @urls.register(
     'users',
@@ -45,10 +67,13 @@ class UserViewSet(
         username = request.data.get('username', '')
         password = request.data.get('password', '')
 
+        if not User.objects.filter(username=username).exists():
+            raise ValidationError({'username': 'not exists.'})
+
         user = auth.authenticate(username=username, password=password)
 
         if user is None:
-            raise ParseError('username or password error.')
+            raise ValidationError({'password': 'password error.'})
         else:
             auth.login(request, user)
             return self.render_object(user)
@@ -57,7 +82,7 @@ class UserViewSet(
     def logout(self, request, *args, **kwargs):
         auth.logout(request)
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return Response({'status': 'OK'})
 
 
 class UserNestedGetOwnerMixin(object):

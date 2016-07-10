@@ -74,6 +74,9 @@ class Topic(AutoURLMixin, LockMixin, FilterContentMixin, models.Model):
         verbose_name = _('topic')
         verbose_name_plural = _('topics')
 
+    def get_absolute_url(self):
+        return '/detail/topics/{0}/'.format(self.id)
+
 
 class Reply(AutoURLMixin, FilterContentMixin, models.Model):
     topic = models.ForeignKey(
@@ -97,6 +100,9 @@ class Reply(AutoURLMixin, FilterContentMixin, models.Model):
     class Meta:
         verbose_name_plural = _('replies')
         verbose_name = _('reply')
+
+    def get_absolute_url(self):
+        return '/detail/topics/{0}/'.format(self.topic.id)
 
 
 @receiver(signals.post_save, sender=Reply)

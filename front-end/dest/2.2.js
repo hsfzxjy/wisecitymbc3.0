@@ -1,6 +1,6 @@
 webpackJsonp([2],{
 
-/***/ 88:
+/***/ 246:
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -5578,16 +5578,16 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 89:
+/***/ 247:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(90)
+	__vue_script__ = __webpack_require__(248)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
-	  console.warn("[vue-loader] components/vs-extend/form-button.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(91)
+	  console.warn("[vue-loader] js/components/vs-extend/form-button.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(249)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -5597,7 +5597,7 @@ webpackJsonp([2],{
 	  var hotAPI = require("vue-hot-reload-api")
 	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/components/vs-extend/form-button.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/vs-extend/form-button.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -5607,7 +5607,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 90:
+/***/ 248:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5672,10 +5672,740 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 91:
+/***/ 249:
 /***/ function(module, exports) {
 
 	module.exports = "\n<fieldset class=\"form-group {{inputState}}\">\n    <div class=\"inputClass\">\n        <button \n            type=\"{{type}}\" \n            class=\"btn {{btnVariant}} {{btnSize}} {{btnBlock}} {{inactive ? 'btn-inactive' : ''}} {{btnDisabled}}\">\n            <slot></slot>\n        </button>\n    </div>\n</fieldset>\n";
+
+/***/ },
+
+/***/ 250:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(251)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] js/components/vs-extend/expansion.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(252)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/vs-extend/expansion.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+
+/***/ 251:
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _defineProperty2 = __webpack_require__(72);
+	
+	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+	
+	var _index = __webpack_require__(111);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.default = {
+	    computed: {
+	        id: function id() {
+	            return _index.StrUtils.randStr();
+	        }
+	    },
+	    props: {
+	        title: {
+	            type: String,
+	            default: ''
+	        }
+	    },
+	    events: (0, _defineProperty3.default)({}, 'toggled::collapse', function toggledCollapse(_ref) {
+	        var id = _ref.id;
+	
+	        if (id === this.id) {
+	            this.$dispatch('toggled');
+	        }
+	
+	        return true;
+	    })
+	};
+
+/***/ },
+
+/***/ 252:
+/***/ function(module, exports) {
+
+	module.exports = "\n<vs-collapse-toggle \n    :target=\"id\">\n    <slot name=\"title\">\n        <a href=\"javascript:void 0\" style=\"display: block;\">{{ title }}</a>\n    </slot>\n</vs-collapse-toggle>\n<vs-collapse\n    :id=\"id\">\n    <slot name=\"content\"></slot>\n</vs-collapse>\n";
+
+/***/ },
+
+/***/ 253:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__webpack_require__(254)
+	__vue_script__ = __webpack_require__(256)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] js/components/vs-extend/Editable.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(257)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/vs-extend/Editable.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+
+/***/ 254:
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(255);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(116)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-23bf0d23&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Editable.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-23bf0d23&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Editable.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+
+/***/ 255:
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(81)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\ndiv.wrapper[_v-23bf0d23] {\n    position: relative;\n}\n\nspan.btn-action[_v-23bf0d23] {\n    position: absolute;\n    top: -1rem;\n    right: 0;\n}\n", "", {"version":3,"sources":["/./js/components/vs-extend/Editable.vue?e8e37c7a"],"names":[],"mappings":";AAeA;IACA,mBAAA;CACA;;AAEA;IACA,mBAAA;IACA,WAAA;IACA,SAAA;CACA","file":"Editable.vue","sourcesContent":["<template>\n    <div class=\"wrapper\">\n        <slot></slot>\n        <vs-buttons\n            @click=\"action\"\n            v-if=\"editable\"\n            size=\"sm\"\n            :disabled=\"loading\"\n            class=\"btn-action\">\n            {{ buttonText }}\n        </vs-buttons>\n    </div>\n</template>\n\n<style scoped>\n    div.wrapper {\n        position: relative;\n    }\n\n    span.btn-action {\n        position: absolute;\n        top: -1rem;\n        right: 0;\n    }\n</style>\n\n<script>\n    const TYPE_MAP = {\n        text: 'vs-form-input',\n        textarea: 'vs-form-textarea'\n    }\n\n    export default {\n        data: () => ({\n            editing: false,\n            loading: false,\n            editElements: [],\n            inputElements: []\n        }),\n        computed: {\n            buttonText () {\n                return this.editing ? '保存' : '编辑'\n            }\n        },\n        watch: {\n            editing (newValue) {\n                jQuery(this.editElements).toggle(!newValue)\n            },\n            editable (newValue) {\n                if (!newValue && this.editing) \n                    this.editing = false\n            }\n        },\n        props: {\n            options: {\n                type: Object,\n                default: () => ({})\n            },\n            editable: {\n                type: Boolean,\n                default: true\n            },\n            model: {\n                type: Object,\n                required: true,\n                twoWay: true\n            },\n            saveAction: {\n                type: Object,\n                default: () => ({\n                    url: '',\n                    method: '',\n                    dropArray: true\n                })\n            }\n        },\n        methods: {\n            init () {\n                this.editElements = []\n                this.getEditElements(this.$el, this.editElements)\n                _.forEach(this.editElements, this.initElement)\n            },\n            initElement ($element) {\n                let type = TYPE_MAP[$element._option.type || 'text']\n                let modelPath = $element._editableName\n                let className = $element.className\n\n                let $input = jQuery(`<${type}\n                    size=\"sm\"\n                    class=\"${className}\"\n                    type=\"text\"\n                    v-show=\"editing\"\n                    :model.sync=\"model.${modelPath}\">\n                </${type}>`)\n                jQuery($element).after($input)\n                $input.hide()\n\n                let inputElement = $input.get(0)\n                this.inputElements.push(inputElement)\n                this.$compile(inputElement)\n            },\n            getEditElements (parent, results) {\n                _.forEach(parent.children, child => {\n                    let attr\n                    if (attr = _.find(child.attributes, { name: 'edit' })) {\n                        child._editableName = attr.value\n                        child._option = this.options[attr.value] || {}\n                        results.push(child)\n                    }\n                    else\n                        this.getEditElements(child, results)\n                })\n            },\n            action () {\n                this.editing = !this.editing\n\n                if (!this.editing && this.saveAction.url) this.save()\n            },\n            save () {\n                let data = _.cloneDeep(this.model)\n                let { url, method, dropArray } = this.saveAction\n\n                if (dropArray)\n                    _.forEach(data, (value, key) => {\n                        if (_.isArray(value))\n                            delete data[key]\n                    })\n\n                this.$http[method](url, data)\n            }\n        },\n        ready () {\n            this.init()\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
+
+/***/ 256:
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(jQuery, _) {'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var TYPE_MAP = {
+	    text: 'vs-form-input',
+	    textarea: 'vs-form-textarea'
+	};
+	
+	exports.default = {
+	    data: function data() {
+	        return {
+	            editing: false,
+	            loading: false,
+	            editElements: [],
+	            inputElements: []
+	        };
+	    },
+	    computed: {
+	        buttonText: function buttonText() {
+	            return this.editing ? '保存' : '编辑';
+	        }
+	    },
+	    watch: {
+	        editing: function editing(newValue) {
+	            jQuery(this.editElements).toggle(!newValue);
+	        },
+	        editable: function editable(newValue) {
+	            if (!newValue && this.editing) this.editing = false;
+	        }
+	    },
+	    props: {
+	        options: {
+	            type: Object,
+	            default: function _default() {
+	                return {};
+	            }
+	        },
+	        editable: {
+	            type: Boolean,
+	            default: true
+	        },
+	        model: {
+	            type: Object,
+	            required: true,
+	            twoWay: true
+	        },
+	        saveAction: {
+	            type: Object,
+	            default: function _default() {
+	                return {
+	                    url: '',
+	                    method: '',
+	                    dropArray: true
+	                };
+	            }
+	        }
+	    },
+	    methods: {
+	        init: function init() {
+	            this.editElements = [];
+	            this.getEditElements(this.$el, this.editElements);
+	            _.forEach(this.editElements, this.initElement);
+	        },
+	        initElement: function initElement($element) {
+	            var type = TYPE_MAP[$element._option.type || 'text'];
+	            var modelPath = $element._editableName;
+	            var className = $element.className;
+	
+	            var $input = jQuery('<' + type + '\n                size="sm"\n                class="' + className + '"\n                type="text"\n                v-show="editing"\n                :model.sync="model.' + modelPath + '">\n            </' + type + '>');
+	            jQuery($element).after($input);
+	            $input.hide();
+	
+	            var inputElement = $input.get(0);
+	            this.inputElements.push(inputElement);
+	            this.$compile(inputElement);
+	        },
+	        getEditElements: function getEditElements(parent, results) {
+	            var _this = this;
+	
+	            _.forEach(parent.children, function (child) {
+	                var attr = void 0;
+	                if (attr = _.find(child.attributes, { name: 'edit' })) {
+	                    child._editableName = attr.value;
+	                    child._option = _this.options[attr.value] || {};
+	                    results.push(child);
+	                } else _this.getEditElements(child, results);
+	            });
+	        },
+	        action: function action() {
+	            this.editing = !this.editing;
+	
+	            if (!this.editing && this.saveAction.url) this.save();
+	        },
+	        save: function save() {
+	            var data = _.cloneDeep(this.model);
+	            var _saveAction = this.saveAction;
+	            var url = _saveAction.url;
+	            var method = _saveAction.method;
+	            var dropArray = _saveAction.dropArray;
+	
+	
+	            if (dropArray) _.forEach(data, function (value, key) {
+	                if (_.isArray(value)) delete data[key];
+	            });
+	
+	            this.$http[method](url, data);
+	        }
+	    },
+	    ready: function ready() {
+	        this.init();
+	    }
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94), __webpack_require__(3)))
+
+/***/ },
+
+/***/ 257:
+/***/ function(module, exports) {
+
+	module.exports = "\n<div class=\"wrapper\" _v-23bf0d23=\"\">\n    <slot _v-23bf0d23=\"\"></slot>\n    <vs-buttons @click=\"action\" v-if=\"editable\" size=\"sm\" :disabled=\"loading\" class=\"btn-action\" _v-23bf0d23=\"\">\n        {{ buttonText }}\n    </vs-buttons>\n</div>\n";
+
+/***/ },
+
+/***/ 258:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__webpack_require__(259)
+	__vue_script__ = __webpack_require__(261)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] js/components/vs-extend/BlockA.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(262)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/vs-extend/BlockA.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+
+/***/ 259:
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(260);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(116)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-76eb51d3&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BlockA.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-76eb51d3&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BlockA.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+
+/***/ 260:
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(81)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\na[_v-76eb51d3] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/vs-extend/BlockA.vue?258e769c"],"names":[],"mappings":";AAOA;IACA,eAAA;CACA","file":"BlockA.vue","sourcesContent":["<template>\n    <a v-link=\"link\" @click=\"clicked\">\n        <i v-if=\"icon\" class=\"fa fa-{{icon}}\"></i> {{title}}\n    </a>\n</template>\n\n<style scoped>\n    a {\n        display: block;\n    }\n</style>\n\n<script>\n    export default {\n        props: {\n            title: {\n                type: String,\n                required: true\n            },\n            icon: {\n                type: String,\n                default: ''\n            },\n            link: {\n                type: String,\n                required: true\n            }\n        },\n        methods: {\n            clicked () {\n                this.$dispatch('BlockA:click', this)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
+
+/***/ 261:
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = {
+	    props: {
+	        title: {
+	            type: String,
+	            required: true
+	        },
+	        icon: {
+	            type: String,
+	            default: ''
+	        },
+	        link: {
+	            type: String,
+	            required: true
+	        }
+	    },
+	    methods: {
+	        clicked: function clicked() {
+	            this.$dispatch('BlockA:click', this);
+	        }
+	    }
+	};
+
+/***/ },
+
+/***/ 262:
+/***/ function(module, exports) {
+
+	module.exports = "\n<a v-link=\"link\" @click=\"clicked\" _v-76eb51d3=\"\">\n    <i v-if=\"icon\" class=\"fa fa-{{icon}}\" _v-76eb51d3=\"\"></i> {{title}}\n</a>\n";
+
+/***/ },
+
+/***/ 263:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(264)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] js/components/vs-extend/form.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(265)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/vs-extend/form.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+
+/***/ 264:
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	
+	function getName(el) {
+	    var attr = _.find(el.attributes, { name: 'name' }) || null;
+	    return attr ? attr.value : null;
+	}
+	
+	exports.default = {
+	    props: {
+	        errors: {
+	            type: Object,
+	            default: {}
+	        }
+	    },
+	    watch: {
+	        errors: {
+	            deep: true,
+	            handler: function handler(value, oldValue) {
+	                this.setErrors();
+	            }
+	        }
+	    },
+	    methods: {
+	        setErrors: function setErrors() {
+	            var _this = this;
+	
+	            console.log(this);
+	            _.forEach(this.$el, function ($child) {
+	                var name = getName($child);
+	                if (!name || !$child.__vue__) return;
+	                $child.__vue__.state = _this.$interpolate('{{ errors.' + name + ' | state }}');
+	            });
+	        }
+	    }
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+
+/***/ },
+
+/***/ 265:
+/***/ function(module, exports) {
+
+	module.exports = "\n<form>\n    <slot></slot>\n</form>\n";
+
+/***/ },
+
+/***/ 266:
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__webpack_require__(267)
+	__vue_script__ = __webpack_require__(269)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] node_modules/vue-strap/src/Aside.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(273)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/node_modules/vue-strap/src/Aside.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+
+/***/ 267:
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(268);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(116)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../css-loader/index.js?sourceMap!./../../vue-loader/lib/style-rewriter.js!./../../vue-loader/lib/selector.js?type=style&index=0!./Aside.vue", function() {
+				var newContent = require("!!./../../css-loader/index.js?sourceMap!./../../vue-loader/lib/style-rewriter.js!./../../vue-loader/lib/selector.js?type=style&index=0!./Aside.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+
+/***/ 268:
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(81)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\n.aside-open {\n  -webkit-transition: -webkit-transform 0.3s;\n  transition: -webkit-transform 0.3s;\n  transition: transform 0.3s;\n  transition: transform 0.3s, -webkit-transform 0.3s;\n}\n.aside-open.has-push-right {\n  -webkit-transform: translateX(-300px);\n          transform: translateX(-300px);\n}\n.aside {\n    position: fixed;\n    top: 0;\n    bottom: 0;\n    z-index: 1049;\n    overflow: auto;\n    background: #fff;\n}\n.aside.left {\n  left: 0;\n  right: auto;\n}\n.aside.right {\n  left: auto;\n  right: 0;\n}\n\n.slideleft-enter {\n  -webkit-animation:slideleft-in .3s;\n          animation:slideleft-in .3s;\n}\n.slideleft-leave {\n  -webkit-animation:slideleft-out .3s;\n          animation:slideleft-out .3s;\n}\n@-webkit-keyframes slideleft-in {\n  0% {\n    -webkit-transform: translateX(-100%);\n            transform: translateX(-100%);\n    opacity: 0;\n  }\n  100% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n}\n@keyframes slideleft-in {\n  0% {\n    -webkit-transform: translateX(-100%);\n            transform: translateX(-100%);\n    opacity: 0;\n  }\n  100% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n}\n@-webkit-keyframes slideleft-out {\n  0% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n  100% {\n    -webkit-transform: translateX(-100%);\n            transform: translateX(-100%);\n    opacity: 0;\n  }\n}\n@keyframes slideleft-out {\n  0% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n  100% {\n    -webkit-transform: translateX(-100%);\n            transform: translateX(-100%);\n    opacity: 0;\n  }\n}\n.slideright-enter {\n  -webkit-animation:slideright-in .3s;\n          animation:slideright-in .3s;\n}\n.slideright-leave {\n  -webkit-animation:slideright-out .3s;\n          animation:slideright-out .3s;\n}\n@-webkit-keyframes slideright-in {\n  0% {\n    -webkit-transform: translateX(100%);\n            transform: translateX(100%);\n    opacity: 0;\n  }\n  100% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n}\n@keyframes slideright-in {\n  0% {\n    -webkit-transform: translateX(100%);\n            transform: translateX(100%);\n    opacity: 0;\n  }\n  100% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n}\n@-webkit-keyframes slideright-out {\n  0% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n  100% {\n    -webkit-transform: translateX(100%);\n            transform: translateX(100%);\n    opacity: 0;\n  }\n}\n@keyframes slideright-out {\n  0% {\n    -webkit-transform: translateX(0);\n            transform: translateX(0);\n    opacity: 1;\n  }\n  100% {\n    -webkit-transform: translateX(100%);\n            transform: translateX(100%);\n    opacity: 0;\n  }\n}\n\n.aside:focus {\n    outline: 0\n}\n\n@media (max-width: 991px) {\n    .aside {\n        min-width:240px\n    }\n}\n\n.aside.left {\n    right: auto;\n    left: 0\n}\n\n.aside.right {\n    right: 0;\n    left: auto\n}\n\n.aside .aside-dialog .aside-header {\n    border-bottom: 1px solid #e5e5e5;\n    min-height: 16.43px;\n    padding: 6px 15px;\n    background: #337ab7;\n    color: #fff\n}\n\n.aside .aside-dialog .aside-header .close {\n    margin-right: -8px;\n    padding: 4px 8px;\n    color: #fff;\n    font-size: 25px;\n    opacity: .8\n}\n\n.aside .aside-dialog .aside-body {\n    position: relative;\n    padding: 15px\n}\n\n.aside .aside-dialog .aside-footer {\n    padding: 15px;\n    text-align: right;\n    border-top: 1px solid #e5e5e5\n}\n\n.aside .aside-dialog .aside-footer .btn+.btn {\n    margin-left: 5px;\n    margin-bottom: 0\n}\n\n.aside .aside-dialog .aside-footer .btn-group .btn+.btn {\n    margin-left: -1px\n}\n\n.aside .aside-dialog .aside-footer .btn-block+.btn-block {\n    margin-left: 0\n}\n\n.aside-backdrop {\n    position: fixed;\n    top: 0;\n    right: 0;\n    bottom: 0;\n    left: 0;\n    z-index: 1040;\n    opacity: 0;\n    -webkit-transition: opacity .3s ease;\n    transition: opacity .3s ease;\n    background-color: #000\n}\n\n\n.aside-backdrop.in {\n    opacity: .5;\n    filter: alpha(opacity=50)\n}\n", "", {"version":3,"sources":["/./node_modules/vue-strap/src/Aside.vue?1353dfe0"],"names":[],"mappings":";AAyFA;EACA,2CAAA;EAAA,mCAAA;EAAA,2BAAA;EAAA,mDAAA;CACA;AACA;EACA,sCAAA;UAAA,8BAAA;CACA;AACA;IACA,gBAAA;IACA,OAAA;IACA,UAAA;IACA,cAAA;IACA,eAAA;IACA,iBAAA;CACA;AACA;EACA,QAAA;EACA,YAAA;CACA;AACA;EACA,WAAA;EACA,SAAA;CACA;;AAEA;EACA,mCAAA;UAAA,2BAAA;CACA;AACA;EACA,oCAAA;UAAA,4BAAA;CACA;AACA;EACA;IACA,qCAAA;YAAA,6BAAA;IACA,WAAA;GACA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;CACA;AATA;EACA;IACA,qCAAA;YAAA,6BAAA;IACA,WAAA;GACA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;CACA;AACA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;EACA;IACA,qCAAA;YAAA,6BAAA;IACA,WAAA;GACA;CACA;AATA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;EACA;IACA,qCAAA;YAAA,6BAAA;IACA,WAAA;GACA;CACA;AACA;EACA,oCAAA;UAAA,4BAAA;CACA;AACA;EACA,qCAAA;UAAA,6BAAA;CACA;AACA;EACA;IACA,oCAAA;YAAA,4BAAA;IACA,WAAA;GACA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;CACA;AATA;EACA;IACA,oCAAA;YAAA,4BAAA;IACA,WAAA;GACA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;CACA;AACA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;EACA;IACA,oCAAA;YAAA,4BAAA;IACA,WAAA;GACA;CACA;AATA;EACA;IACA,iCAAA;YAAA,yBAAA;IACA,WAAA;GACA;EACA;IACA,oCAAA;YAAA,4BAAA;IACA,WAAA;GACA;CACA;;AAEA;IACA,UAAA;CACA;;AAEA;IACA;QACA,eAAA;KACA;CACA;;AAEA;IACA,YAAA;IACA,OAAA;CACA;;AAEA;IACA,SAAA;IACA,UAAA;CACA;;AAEA;IACA,iCAAA;IACA,oBAAA;IACA,kBAAA;IACA,oBAAA;IACA,WAAA;CACA;;AAEA;IACA,mBAAA;IACA,iBAAA;IACA,YAAA;IACA,gBAAA;IACA,WAAA;CACA;;AAEA;IACA,mBAAA;IACA,aAAA;CACA;;AAEA;IACA,cAAA;IACA,kBAAA;IACA,6BAAA;CACA;;AAEA;IACA,iBAAA;IACA,gBAAA;CACA;;AAEA;IACA,iBAAA;CACA;;AAEA;IACA,cAAA;CACA;;AAEA;IACA,gBAAA;IACA,OAAA;IACA,SAAA;IACA,UAAA;IACA,QAAA;IACA,cAAA;IACA,WAAA;IACA,qCAAA;IAAA,6BAAA;IACA,sBAAA;CACA;;;AAGA;IACA,YAAA;IACA,yBAAA;CACA","file":"Aside.vue","sourcesContent":["<template>\n  <div class=\"aside\"\n    v-bind:style=\"{width:width + 'px'}\"\n    v-bind:class=\"{\n    left:placement === 'left',\n    right:placement === 'right'\n    }\"\n    v-show=\"show\"\n    :transition=\"(this.placement === 'left') ? 'slideleft' : 'slideright'\">\n    <div class=\"aside-dialog\">\n      <div class=\"aside-content\">\n        <div class=\"aside-header\">\n          <button type=\"button\" class=\"close\" @click='close'><span>&times;</span></button>\n          <h4 class=\"aside-title\">   \n          <slot name=\"header\"> \n            {{ header }}\n          </slot>\n          </h4>\n        </div>\n        <div class=\"aside-body\">\n          <slot></slot>\n        </div>\n      </div>\n    </div>\n  </div>\n</template>\n\n<script>\nimport EventListener from './utils/EventListener.js'\nimport getScrollBarWidth from './utils/getScrollBarWidth.js'\nimport coerceBoolean from './utils/coerceBoolean.js'\n\n  export default {\n    props: {\n      show: {\n        type: Boolean,\n        coerce: coerceBoolean,\n        require: true,\n        twoWay: true\n      },\n      placement: {\n        type: String,\n        default: 'right'\n      },\n      header: {\n        type: String\n      },\n      width: {\n        type: Number,\n        default: '320'\n      }\n    },\n    watch: {\n      show(val) {\n        let backdrop = document.createElement('div')\n        const body = document.body\n        backdrop.className = 'aside-backdrop'\n        const scrollBarWidth =  getScrollBarWidth()\n        if (val) {\n          body.appendChild(backdrop)\n          body.classList.add('modal-open')\n          if (scrollBarWidth !== 0) {\n            body.style.paddingRight = scrollBarWidth + 'px'\n          }\n          // request property that requires layout to force a layout\n          var x = backdrop.clientHeight\n          backdrop.className += ' in'\n          this._clickEvent = EventListener.listen(backdrop, 'click', this.close)\n        } else {\n          if (this._clickEvent) this._clickEvent.remove()\n          backdrop = document.querySelector('.aside-backdrop')\n          try {\n              backdrop.className = 'aside-backdrop'\n              body.classList.remove('modal-open')\n              body.style.paddingRight = '0'\n              body.removeChild(backdrop)\n          } catch(e) {}\n        }\n      }\n    },\n    methods: {\n      close() {\n        this.show = false\n      }\n    }\n  }\n</script>\n\n<style>\n  .aside-open {\n    transition: transform 0.3s;\n  }\n  .aside-open.has-push-right {\n    transform: translateX(-300px);\n  }\n  .aside {\n      position: fixed;\n      top: 0;\n      bottom: 0;\n      z-index: 1049;\n      overflow: auto;\n      background: #fff;\n  }\n  .aside.left {\n    left: 0;\n    right: auto;\n  }\n  .aside.right {\n    left: auto;\n    right: 0;\n  }\n\n  .slideleft-enter {\n    animation:slideleft-in .3s;\n  }\n  .slideleft-leave {\n    animation:slideleft-out .3s;\n  }\n  @keyframes slideleft-in {\n    0% {\n      transform: translateX(-100%);\n      opacity: 0;\n    }\n    100% {\n      transform: translateX(0);\n      opacity: 1;\n    }\n  }\n  @keyframes slideleft-out {\n    0% {\n      transform: translateX(0);\n      opacity: 1;\n    }\n    100% {\n      transform: translateX(-100%);\n      opacity: 0;\n    }\n  }\n  .slideright-enter {\n    animation:slideright-in .3s;\n  }\n  .slideright-leave {\n    animation:slideright-out .3s;\n  }\n  @keyframes slideright-in {\n    0% {\n      transform: translateX(100%);\n      opacity: 0;\n    }\n    100% {\n      transform: translateX(0);\n      opacity: 1;\n    }\n  }\n  @keyframes slideright-out {\n    0% {\n      transform: translateX(0);\n      opacity: 1;\n    }\n    100% {\n      transform: translateX(100%);\n      opacity: 0;\n    }\n  }\n\n  .aside:focus {\n      outline: 0\n  }\n\n  @media (max-width: 991px) {\n      .aside {\n          min-width:240px\n      }\n  }\n\n  .aside.left {\n      right: auto;\n      left: 0\n  }\n\n  .aside.right {\n      right: 0;\n      left: auto\n  }\n\n  .aside .aside-dialog .aside-header {\n      border-bottom: 1px solid #e5e5e5;\n      min-height: 16.43px;\n      padding: 6px 15px;\n      background: #337ab7;\n      color: #fff\n  }\n\n  .aside .aside-dialog .aside-header .close {\n      margin-right: -8px;\n      padding: 4px 8px;\n      color: #fff;\n      font-size: 25px;\n      opacity: .8\n  }\n\n  .aside .aside-dialog .aside-body {\n      position: relative;\n      padding: 15px\n  }\n\n  .aside .aside-dialog .aside-footer {\n      padding: 15px;\n      text-align: right;\n      border-top: 1px solid #e5e5e5\n  }\n\n  .aside .aside-dialog .aside-footer .btn+.btn {\n      margin-left: 5px;\n      margin-bottom: 0\n  }\n\n  .aside .aside-dialog .aside-footer .btn-group .btn+.btn {\n      margin-left: -1px\n  }\n\n  .aside .aside-dialog .aside-footer .btn-block+.btn-block {\n      margin-left: 0\n  }\n\n  .aside-backdrop {\n      position: fixed;\n      top: 0;\n      right: 0;\n      bottom: 0;\n      left: 0;\n      z-index: 1040;\n      opacity: 0;\n      transition: opacity .3s ease;\n      background-color: #000\n  }\n\n\n  .aside-backdrop.in {\n      opacity: .5;\n      filter: alpha(opacity=50)\n  }\n</style>\n"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
+
+/***/ 269:
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _EventListener = __webpack_require__(270);
+	
+	var _EventListener2 = _interopRequireDefault(_EventListener);
+	
+	var _getScrollBarWidth = __webpack_require__(271);
+	
+	var _getScrollBarWidth2 = _interopRequireDefault(_getScrollBarWidth);
+	
+	var _coerceBoolean = __webpack_require__(272);
+	
+	var _coerceBoolean2 = _interopRequireDefault(_coerceBoolean);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.default = {
+	  props: {
+	    show: {
+	      type: Boolean,
+	      coerce: _coerceBoolean2.default,
+	      require: true,
+	      twoWay: true
+	    },
+	    placement: {
+	      type: String,
+	      default: 'right'
+	    },
+	    header: {
+	      type: String
+	    },
+	    width: {
+	      type: Number,
+	      default: '320'
+	    }
+	  },
+	  watch: {
+	    show: function show(val) {
+	      var backdrop = document.createElement('div');
+	      var body = document.body;
+	      backdrop.className = 'aside-backdrop';
+	      var scrollBarWidth = (0, _getScrollBarWidth2.default)();
+	      if (val) {
+	        body.appendChild(backdrop);
+	        body.classList.add('modal-open');
+	        if (scrollBarWidth !== 0) {
+	          body.style.paddingRight = scrollBarWidth + 'px';
+	        }
+	
+	        var x = backdrop.clientHeight;
+	        backdrop.className += ' in';
+	        this._clickEvent = _EventListener2.default.listen(backdrop, 'click', this.close);
+	      } else {
+	        if (this._clickEvent) this._clickEvent.remove();
+	        backdrop = document.querySelector('.aside-backdrop');
+	        try {
+	          backdrop.className = 'aside-backdrop';
+	          body.classList.remove('modal-open');
+	          body.style.paddingRight = '0';
+	          body.removeChild(backdrop);
+	        } catch (e) {}
+	      }
+	    }
+	  },
+	  methods: {
+	    close: function close() {
+	      this.show = false;
+	    }
+	  }
+	};
+
+/***/ },
+
+/***/ 270:
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var EventListener = {
+	  /**
+	   * Listen to DOM events during the bubble phase.
+	   *
+	   * @param {DOMEventTarget} target DOM element to register listener on.
+	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
+	   * @param {function} callback Callback function.
+	   * @return {object} Object with a `remove` method.
+	   */
+	
+	  listen: function listen(target, eventType, callback) {
+	    if (target.addEventListener) {
+	      target.addEventListener(eventType, callback, false);
+	      return {
+	        remove: function remove() {
+	          target.removeEventListener(eventType, callback, false);
+	        }
+	      };
+	    } else if (target.attachEvent) {
+	      target.attachEvent('on' + eventType, callback);
+	      return {
+	        remove: function remove() {
+	          target.detachEvent('on' + eventType, callback);
+	        }
+	      };
+	    }
+	  }
+	};
+	
+	exports.default = EventListener;
+
+/***/ },
+
+/***/ 271:
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	exports.default = function () {
+	  if (document.documentElement.scrollHeight <= document.documentElement.clientHeight) {
+	    return 0;
+	  }
+	  var inner = document.createElement('p');
+	  inner.style.width = '100%';
+	  inner.style.height = '200px';
+	
+	  var outer = document.createElement('div');
+	  outer.style.position = 'absolute';
+	  outer.style.top = '0px';
+	  outer.style.left = '0px';
+	  outer.style.visibility = 'hidden';
+	  outer.style.width = '200px';
+	  outer.style.height = '150px';
+	  outer.style.overflow = 'hidden';
+	  outer.appendChild(inner);
+	
+	  document.body.appendChild(outer);
+	  var w1 = inner.offsetWidth;
+	  outer.style.overflow = 'scroll';
+	  var w2 = inner.offsetWidth;
+	  if (w1 === w2) w2 = outer.clientWidth;
+	
+	  document.body.removeChild(outer);
+	
+	  return w1 - w2;
+	};
+
+/***/ },
+
+/***/ 272:
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	// Attempt to convert a string value to a Boolean. Otherwise, return the value
+	// without modification so Vue can throw a warning.
+	
+	exports.default = function (val) {
+	  return typeof val !== "string" ? val : val === "true" ? true : val === "false" ? false : val === "null" ? false : val === "undefined" ? false : val;
+	};
+
+/***/ },
+
+/***/ 273:
+/***/ function(module, exports) {
+
+	module.exports = "\n<div class=\"aside\"\n  v-bind:style=\"{width:width + 'px'}\"\n  v-bind:class=\"{\n  left:placement === 'left',\n  right:placement === 'right'\n  }\"\n  v-show=\"show\"\n  :transition=\"(this.placement === 'left') ? 'slideleft' : 'slideright'\">\n  <div class=\"aside-dialog\">\n    <div class=\"aside-content\">\n      <div class=\"aside-header\">\n        <button type=\"button\" class=\"close\" @click='close'><span>&times;</span></button>\n        <h4 class=\"aside-title\">   \n        <slot name=\"header\"> \n          {{ header }}\n        </slot>\n        </h4>\n      </div>\n      <div class=\"aside-body\">\n        <slot></slot>\n      </div>\n    </div>\n  </div>\n</div>\n";
 
 /***/ }
 

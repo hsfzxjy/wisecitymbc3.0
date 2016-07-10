@@ -12,8 +12,12 @@ class ArticleSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'author': {
                 'fields': ['id', 'username', 'nickname']
+            },
+            'tags': {
+                'slug_field': 'name'
             }
         }
+        slug_relations = ['tags']
 
 
 class TagSerializer(serializers.ModelSerializer):

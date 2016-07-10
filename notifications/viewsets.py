@@ -18,6 +18,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     filter_fields = ('module', 'has_read')
 
     def get_queryset(self):
+        return self.queryset
         if not self.request.user.is_authenticated():
             raise Http404
 

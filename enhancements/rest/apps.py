@@ -1,7 +1,8 @@
 from django.apps import AppConfig
 
-from . import viewsets, serializers
+from . import viewsets, serializers, serializer_fields
 
+serializer_fields.monkey_patch()
 serializers.monkey_patch()
 viewsets.monkey_patch()
 

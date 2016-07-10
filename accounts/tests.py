@@ -187,6 +187,7 @@ class UserAPITestCase(APITestCase):
             'username': 'user1',
             'user_type': UserType.company.value,
             'bureau_type': BureauType.none.value,
+            'url': '/users/1/'
         })
 
         res = self.client.get('/api/users/2/')
@@ -197,6 +198,7 @@ class UserAPITestCase(APITestCase):
             'username': 'user2',
             'user_type': UserType.government.value,
             'bureau_type': BureauType.none.value,
+            'url': '/users/2/'
         })
 
         self.client.force_authenticate(self.gov)
@@ -209,6 +211,7 @@ class UserAPITestCase(APITestCase):
             'username': 'user1',
             'user_type': UserType.company.value,
             'bureau_type': BureauType.none.value,
+            'url': '/users/1/',
             'user_data': {
                 'name': '',
                 'industry': '',
@@ -228,6 +231,7 @@ class UserAPITestCase(APITestCase):
             'username': 'user1',
             'user_type': UserType.company.value,
             'bureau_type': BureauType.none.value,
+            'url': '/users/1/',
             'user_data': {
                 'name': '',
                 'industry': '',

@@ -1,4 +1,5 @@
 import re
+import html
 
 from django.utils.encoding import force_text
 
@@ -10,7 +11,11 @@ re_expression = re.compile(r'{{(.*?)}}')
 def extract_variables(template, **kwargs):
     expressions = re_expression.findall(template)
     return {
-        exp: eval(exp, {}, kwargs)
+        exp: html.escape(str(eval(exp, {}, kwargs)))
+        .replace('(', '&lpar;')
+        .replace(')', '&rpar;')
+        .replace('[', '&lsqb;')
+        .replace(']', '&rsqb;')
         for exp in expressions
     }
 

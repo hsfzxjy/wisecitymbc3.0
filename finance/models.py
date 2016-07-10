@@ -18,7 +18,7 @@ Stock, StockLog = create_revision_model(
         volume=models.FloatField(_('volume')),
         company_info=models.TextField(_('company info')),
         comments=models.ManyToManyField(
-            Comment, verbose_name=_('brokerage comments'))
+            Comment, verbose_name=_('brokerage comments'), blank=True)
     ),
     ['price', 'volume'],
     __name__,

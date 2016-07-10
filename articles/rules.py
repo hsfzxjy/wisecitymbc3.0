@@ -24,3 +24,6 @@ rules.add_perm('articles.change_article',
                logined_and_government | logined_and_my_article)
 rules.add_perm('articles.delete_article',
                logined_and_government | logined_and_my_article)
+
+for action in ['view', 'add', 'change', 'delete']:
+    rules.add_perm('articles.%s_tag' % action, rules.always_true)

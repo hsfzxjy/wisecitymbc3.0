@@ -41,7 +41,7 @@ class ArticleTestCase(APITestCase):
     def setUp(self):
         self.user, self.gov = create_users()
 
-    def test_filter(self):
+    def test_filter_(self):
         self.client.force_authenticate(self.user)
         res = self.client.post(
             '/api/articles/',
@@ -54,7 +54,6 @@ class ArticleTestCase(APITestCase):
         self.assertEqual(res.status_code, 201)
 
         res = self.client.get('/api/articles/?article_type=1')
-        print(Article.objects.all()[0].article_type)
 
         self.assertEqual(len(res.data['results']), 1)
 
@@ -149,3 +148,29 @@ class ArticleTestCase(APITestCase):
             '/api/articles/?author__id={0}&limit=100'.format(self.user.id))
 
         self.assertEqual(len(res.data['results']), 19)
+
+    def test_slug_fields(self):
+        self.client.force_authenticate(self.user)
+        res = self.client.post(
+            '/api/articles/',
+            {
+                'title': 'title',
+                'content': '<b>content',
+                'tags': ['1', '1']
+            }, format='json'
+        )
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.data['tags'], ['1'])
+
+    def test_url(self):
+        self.client.force_authenticate(self.user)
+        res = self.client.post(
+            '/api/articles/',
+            {
+                'title': 'title',
+                'content': '<b>content',
+                'tags': ['1', '1']
+            }, format='json'
+        )
+        self.assertEqual(
+            res.data['url'], '/detail/articles/{0}/'.format(res.data['id']))

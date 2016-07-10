@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Stock, Bond, Futures, RawMaterials
+from .models import Stock, Bond, Futures, RawMaterials, Comment
 
 from django_object_actions import DjangoObjectActions
 
@@ -21,3 +21,4 @@ admin.site.register(Stock, BaseAdmin)
 admin.site.register(Bond, BaseAdmin)
 admin.site.register(Futures, BaseAdmin)
 admin.site.register(RawMaterials, BaseAdmin)
+admin.site.register(Comment)

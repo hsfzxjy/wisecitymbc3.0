@@ -30,13 +30,13 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
         UserType,
         verbose_name=_('user type'),
         default=UserType.company,
-        editable=False
+        editable=True
     )
     bureau_type = EnumField(
         BureauType,
         verbose_name=_('bureau type'),
         default=BureauType.none,
-        editable=False
+        editable=True
     )
     user_data = models.OneToOneField(
         'UserData',

@@ -48,7 +48,7 @@ class EnumField(models.PositiveIntegerField):
         Take an int and parse it into enum value.
         """
 
-        assert isinstance(value, int)
+        value = int(value)
 
         return self._enum(value)
 

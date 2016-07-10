@@ -56,6 +56,8 @@ class NestedEnhancementMixin(object):
     def __init__(self, *args, **kwargs):
         self.pk_relations = set(getattr(self.Meta, 'pk_relations', []))
         self.url_relations = getattr(self.Meta, 'url_relations', [])
+        self.slug_relations = getattr(self.Meta, 'slug_relations', [])
+
         self.Meta.list_serializer_class = EnhancedListSerializer
 
         super(NestedEnhancementMixin, self).__init__(*args, **kwargs)
@@ -152,7 +154,8 @@ class NestedEnhancementMixin(object):
         elif field_name in info.relations:
             relation_info = info.relations[field_name]
             if field_name in self.url_relations or \
-                    field_name in self.pk_relations:
+                    field_name in self.pk_relations or \
+                    field_name in self.slug_relations:
                 return self.build_relational_field(
                     field_name, relation_info)
             else:
@@ -196,6 +199,8 @@ class NestedEnhancementMixin(object):
             field_class = serializers_.PrimaryKeyRelatedField
         elif field_name in self.url_relations:
             field_class = serializers_.HyperlinkedRelatedField
+        elif field_name in self.slug_relations:
+            field_class = serializers_.SlugRelatedField
 
         field_kwargs = get_relation_kwargs(
             field_name, relation_info)
@@ -242,7 +247,6 @@ class PartialFieldsMixin(object):
 
     def __init__(self, *args, **kwargs):
         super(PartialFieldsMixin, self).__init__(*args, **kwargs)
-        # print(args, kwargs)
 
         if 'request' not in self._context:
             return
@@ -254,8 +258,40 @@ class PartialFieldsMixin(object):
         if not hasattr(model, 'get_fields_by_user'):
             return
 
-        allowed = model.get_fields_by_user(request.user, self.instance)
+        allowed = model.get_fields_by_user(request.user, self.instance) | \
+            set(self._declared_fields.keys())
         remove_fields(self, allowed, disallowed=False)
+
+
+class AdditionalFieldsMixin(serializers_.ModelSerializer):
+
+    url = serializers_.SerializerMethodField()
+    perms = serializers_.SerializerMethodField()
+
+    def get_url(self, instance):
+        if hasattr(instance, 'get_absolute_url'):
+            return instance.get_absolute_url()
+        else:
+            return ''
+
+    def get_perms(self, instance):
+        request = self._context.get('request', None)
+
+        if request is None:
+            return {}
+
+        user = request.user
+        model_meta = self.Meta.model._meta
+        app_label, model_name = model_meta.app_label, model_meta.model_name
+
+        perms = {}
+        for action in ['add', 'change', 'delete', 'view']:
+            perms[action] = user.has_perm(
+                '{0}.{1}_{2}'.format(app_label, action, model_name.lower()),
+                instance
+            )
+
+        return perms
 
 
 class EnhancedListSerializer(serializers_.ListSerializer):
@@ -289,8 +325,6 @@ def monkey_patch():
 
     old_model_serializer = serializers.ModelSerializer
 
-    old_list_serializer = serializers.ListSerializer
-
     for object_name in dir(serializers):
         if not object_name.endswith('Serializer'):
             continue
@@ -304,6 +338,7 @@ def monkey_patch():
             (DynamicSerializerMixin,
                 NestedEnhancementMixin,
                 PartialFieldsMixin,
+                AdditionalFieldsMixin,
                 old_class),
             {}
         )

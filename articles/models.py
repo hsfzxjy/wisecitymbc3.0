@@ -38,6 +38,12 @@ class Article(PermsMixin, AutoCleanMixin, models.Model):
         self._clean_type()
         self._clean_content()
 
+    def get_absolute_url(self):
+        return '/detail/articles/{0}/'.format(self.id)
+
 
 class Tag(models.Model):
     name = models.CharField(_('name'), max_length=255, unique=True)
+
+    def get_absolute_url(self):
+        return '/tags/{0}/'.format(self.id)
