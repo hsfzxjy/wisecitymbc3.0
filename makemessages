@@ -1,0 +1,1 @@
+./manage.py makemessages --ignore=node_modules/* --ignore=*.txt --ignore=*.html --ignore=enhancements/* --ignore=manage.py --ignore=apps/* -l zh_Hans

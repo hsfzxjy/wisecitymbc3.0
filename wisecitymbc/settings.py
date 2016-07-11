@@ -26,6 +26,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+LANGUAGES = [
+    ('zh-Hans', 'Chinese')
+]
 
 # Application definition
 

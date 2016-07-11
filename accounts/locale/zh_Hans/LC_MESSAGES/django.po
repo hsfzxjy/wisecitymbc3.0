@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-07 13:00+0000\n"
+"POT-Creation-Date: 2016-07-11 12:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,98 +17,97 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: admin.py:21
-msgid "Permissions"
-msgstr "权限"
-
-#: admin.py:52
+#: accounts/admin.py:61
 msgid "Change Password"
 msgstr "修改密码"
 
-#: admin.py:54
+#: accounts/admin.py:63
 msgid "Click here to change your password."
 msgstr "单击此处修改密码"
 
-#: apps.py:8
+#: accounts/apps.py:8
 msgid "accounts"
 msgstr "账户系统"
 
-#: consts.py:14
+#: accounts/consts.py:14
 msgid "government"
 msgstr "政府"
 
-#: consts.py:15
+#: accounts/consts.py:15
 msgid "company"
 msgstr "公司"
 
-#: consts.py:16
+#: accounts/consts.py:16
 msgid "bureau"
 msgstr "主席团"
 
-#: consts.py:32
+#: accounts/consts.py:34
 msgid "none"
 msgstr "无"
 
-#: consts.py:33
+#: accounts/consts.py:35
 msgid "real_estate"
 msgstr "房地产"
 
-#: consts.py:34
+#: accounts/consts.py:36
 msgid "car"
 msgstr "汽车"
 
-#: consts.py:35
+#: accounts/consts.py:37
 msgid "electronic_technology"
 msgstr "电子科技"
 
-#: consts.py:36
+#: accounts/consts.py:38
 msgid "bank"
 msgstr "银行"
 
-#: consts.py:37
-msgid "enegry_and_raw_materials"
+#: accounts/consts.py:39
+msgid "energy_and_raw_materials"
 msgstr "能源和原材料"
 
-#: consts.py:38
+#: accounts/consts.py:40
 msgid "financial_system"
 msgstr "金融系统"
 
-#: consts.py:39
+#: accounts/consts.py:41
 msgid "media"
 msgstr "媒体"
 
-#: models.py:14
+#: accounts/models.py:32
 msgid "nickname"
 msgstr "昵称"
 
-#: models.py:16
+#: accounts/models.py:35
 msgid "user type"
 msgstr "用户类型"
 
-#: models.py:19
+#: accounts/models.py:41
 msgid "bureau type"
 msgstr "主席团"
 
-#: models.py:62
+#: accounts/models.py:47 accounts/models.py:97 accounts/models.py:98
+msgid "user data"
+msgstr "用户信息"
+
+#: accounts/models.py:89
 msgid "name"
 msgstr "名称"
 
-#: models.py:63
+#: accounts/models.py:90
 msgid "industry"
 msgstr "行业"
 
-#: models.py:64
+#: accounts/models.py:91
 msgid "sector"
 msgstr "板块"
 
-#: models.py:65
+#: accounts/models.py:92
 msgid "description"
 msgstr "描述"
 
-#: models.py:66
+#: accounts/models.py:94
 msgid "reports"
 msgstr "报告"
 
-#: models.py:69 models.py:70
-msgid "user data"
-msgstr "用户信息"
+#~ msgid "Permissions"
+#~ msgstr "权限"
