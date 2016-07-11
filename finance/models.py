@@ -9,6 +9,10 @@ class Comment(models.Model):
 
     created_time = models.DateTimeField(_('created time'), auto_now_add=True)
     content = models.TextField(_('content'))
+    stock = models.ForeignKey('Stock', related_name='comments', null=True)
+
+    def __str__(self):
+        return _('comment %s') % self.id
 
     class Meta:
         verbose_name = _('comment')
@@ -20,9 +24,7 @@ Stock, StockLog = create_revision_model(
         name=models.CharField(_('name'), max_length=255),
         price=models.FloatField(_('price')),
         volume=models.FloatField(_('volume')),
-        company_info=models.TextField(_('company info')),
-        comments=models.ManyToManyField(
-            Comment, verbose_name=_('brokerage comments'), blank=True)
+        company_info=models.TextField(_('company info'))
     ),
     ['price', 'volume'],
     __name__,

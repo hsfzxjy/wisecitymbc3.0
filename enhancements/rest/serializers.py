@@ -62,6 +62,14 @@ class NestedEnhancementMixin(object):
 
         super(NestedEnhancementMixin, self).__init__(*args, **kwargs)
 
+    def get_default_field_names(self, *args, **kwargs):
+        default = super(NestedEnhancementMixin,
+                        self).get_default_field_names(*args, **kwargs)
+
+        default += getattr(self.Meta, 'reverse_fields', [])
+
+        return default
+
     def get_fields(self):
         """
         NOTICE: COPYING FROM `rest_framework.serializers.Serializer`.

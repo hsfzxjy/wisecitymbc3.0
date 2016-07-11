@@ -29,8 +29,6 @@ class UserAdmin(DjangoObjectActions,
                 auth_admin.UserAdmin, ObjectPermissionsModelAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'nickname')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
-                                       )}),
     )
     add_fieldsets = (
         (None, {

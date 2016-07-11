@@ -40,7 +40,9 @@ def create_serializer(name, meta_fields=None):
     return serializer, log_serializer
 
 
-StockSerializer, StockLogSerializer = create_serializer('Stock', {})
+StockSerializer, StockLogSerializer = create_serializer('Stock', {
+    'reverse_fields': ['comments']
+})
 
 BondSerializer, BondLogSerializer = create_serializer('Bond', {})
 
@@ -48,3 +50,12 @@ FuturesSerializer, FuturesLogSerializer = create_serializer('Futures', {})
 
 RawMaterialsSerializer, RawMaterialsLogSerializer = create_serializer(
     'RawMaterials', {})
+
+
+class CommentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Comment
+        exclude = ('stock', 'perms')
+
+registry.register(models.Comment, CommentSerializer)

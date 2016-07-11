@@ -9,7 +9,8 @@ from enhancements.shortcuts import _
 
 class CommentInline(admin.TabularInline):
 
-    model = Stock.comments.through
+    model = Comment
+    extra = 0
 
 
 class BaseAdmin(DjangoObjectActions, admin.ModelAdmin):

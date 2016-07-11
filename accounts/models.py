@@ -1,7 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
 
-from enhancements.auth.models import AbstractUser, UserManager
+from enhancements.auth.models import AbstractUser, UserManager as UserManager_
 from enhancements.models.fields import EnumField
 from enhancements.shortcuts import _
 from enhancements.models import QuerySet
@@ -21,6 +21,10 @@ class UserQuerySet(QuerySet):
             models.Q(user_type=UserType.government) |
             models.Q(pk=user.pk)
         )
+
+class UserManager(UserManager_.from_queryset(UserQuerySet)):
+
+    use_in_migrations = True
 
 
 class User(AutoCleanMixin, PermsMixin, AbstractUser):
@@ -45,7 +49,7 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
         blank=True
     )
 
-    objects = UserQuerySet.as_manager(UserManager)
+    objects = UserManager()
 
     REQUIRED_FIELDS = ['nickname']
 
