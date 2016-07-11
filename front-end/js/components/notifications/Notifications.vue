@@ -23,7 +23,6 @@
         filters: {
             render: message => message
                 .replace(/\[(.*)\]\((.*)\)/g, (ignore, text, url) => {
-                    console.log(ignore, text, url)
                     return `<a href="#!${url}">${text}</a>`
                 })
         },

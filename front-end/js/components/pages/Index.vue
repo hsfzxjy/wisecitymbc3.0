@@ -1,7 +1,7 @@
 <template>
     <div>
         <vs-jumbotron fluid>
-            <div class="col-md-8 hidden-sm-down">
+            <div class="col-md-8 col-sm-12">
                 <h1 class="display-3">
                     WiseCity
                 </h1>

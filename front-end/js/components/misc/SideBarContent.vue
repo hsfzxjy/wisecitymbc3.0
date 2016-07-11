@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="$root.user" class="clearfix">
+        <div v-if="$root.user" class="clearfix top-btn-group">
             <div class="col-xs-6">
                 <vs-link link="/me/" title="个人主页" icon="user"></vs-link>
             </div>
@@ -59,6 +59,12 @@
         </vs-list-group>
     </div>
 </template>
+
+<style scoped>
+    .top-btn-group {
+        margin-bottom: 0.9375rem;
+    }
+</style>
 
 <script>
     import { AVAILABLE_CATEGORIES } from 'consts.es'

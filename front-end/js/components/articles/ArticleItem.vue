@@ -37,9 +37,13 @@
                         </div>
                     </div>
                     <p v-if="!expanded" @click="expanded = true">
-                        {{ article.summary }}<span style='color:rgba(155, 140, 103, 1)'> |点击展开阅读</span>
+                        {{ article.summary }}
+                        <span style='color:rgba(155, 140, 103, 1);cursor:pointer'> |点击展开阅读</span>
                     </p>
                 </div>
+                <file-list
+                    :model.sync="article.attachments">
+                </file-list>
                 <p class="card-text">
                     <small class="text-muted">
                         {{ article.created_time | timesince }}
@@ -66,7 +70,10 @@
 </style>
 
 <script>
+    import FileList from 'files/FileList.vue'
+
     export default {
+        components: { FileList },
         props: {
             article: {
                 type: Object,

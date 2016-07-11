@@ -82,6 +82,12 @@ button {
 }
 
 // Custom
+
+.jumbotron {
+    background-color:lighten($bgc,5%);
+    color:#eee;
+}
+
 .label-1 {
     background-color:$gre;
     color:#eee;
@@ -140,17 +146,23 @@ a {
     color:darken(white,2%);
 
 }
+.aside {
+    background-color: inherit!important;
+}
 .aside-content {
     background-color:$bgc;
+    min-height: 100%;
 }
 .aside-body {
     background-color:$bgc;
     border-top:1px solid darken($bgc,5%)!important;
+    min-height: 100%;
 }
-.aside-body {
+ul.list-group {
     li {
         background-color:darken($bgc,5%);
-        border-top:1px solid darken($bgc,2%);
+        border:1px solid darken($bgc,2%);
+        color: #eee!important;
     }
     li:hover{
         background-color:darken($bgc,3%)!important;

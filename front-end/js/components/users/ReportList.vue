@@ -1,23 +1,22 @@
 <template>
-    <vs-list-group flush>
-        <vs-list-group-item v-for="file in reports">
-            {{ file.file_name }}
-            <a
-                href="#"
-                class="pull-xs-right"
-                @click.stop.prevent="removeFile($index)">
-                删除
-            </a>
-        </vs-list-group-item>
+    <file-list :model.sync="reports" :base-url='baseURL' :delete-link="true">
         <infinite-loading :on-infinite="load"></infinite-loading>
-    </vs-list-group>
+    </file-list>
 </template>
+
+<style scoped>
+    li a {
+        margin: 0 .2rem;
+    }
+</style>
 
 <script>
     import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'
+    import FileList from 'files/FileList.vue'
 
     export default {
         mixins: [InfiniteLoadingMixin],
+        components: { FileList },
         listConfig: {
             listFieldName: 'reports'
         },
@@ -44,11 +43,6 @@
             this.$watch('userId', () => {
                 this.reset()
             })
-        },
-        methods: {
-            removeFile (index) {
-                this.reports.splice(index, 1)
-            }
         }
     }
 </script>

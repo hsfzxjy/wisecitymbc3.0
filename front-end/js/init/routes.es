@@ -163,13 +163,12 @@ export default function (Vue) {
     router.beforeEach(function ({ to, next, redirect }) {
         if (to.auth) {
             if (to.auth.login) {
-                router.app.hasLogined ? next() : redirect('/')
-                return
+                return router.app.checkLogined()
             } else
                 return router.app.getPerm(
                     to.auth.model,
                     to.auth.action,
-                    parseInt(to.id) || undefined
+                    parseInt(to.params.id) || undefined
                 )
         } else next()
     })

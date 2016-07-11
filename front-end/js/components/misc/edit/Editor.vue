@@ -25,7 +25,7 @@
                 <slot name="submit-name">发布</slot>
             </vs-buttons>
         </div>
-        <div class="col-xs-12">
+        <div class="col-xs-12 sm-no-padding">
             <vs-progress 
                 v-show="uploadStatus.uploading"
                 variant="success"
