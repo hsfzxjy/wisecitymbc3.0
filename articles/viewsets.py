@@ -21,6 +21,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     filter_fields = ('article_type', 'author__id', 'tags__id')
     keyword_param = 'keyword'
+    ordering = ('-is_top', '-created_time',)
 
     def patch_author(self, request):
         request.data.update(dict(author=request.user.id))
@@ -61,6 +62,8 @@ class TagViewSet(viewsets.ModelViewSet):
 )
 @rel_viewset
 class AttachmentsViewSet(FileViewSet):
+
+    ordering = ('-created_time',)
 
     def get_owner(self, request):
         pk = request.kwargs['article_pk']

@@ -16,9 +16,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     queryset = Notification.objects.all()
     filter_fields = ('module', 'has_read')
+    ordering = ('has_read', '-created_time')
 
     def get_queryset(self):
-        return self.queryset
         if not self.request.user.is_authenticated():
             raise Http404
 

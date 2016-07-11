@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 class TopicViewSet(viewsets.ModelViewSet):
 
     queryset = Topic.objects.all()
+    ordeing = ('-updated_time',)
 
     def get_queryset(self):
         user = self.request.user
@@ -56,6 +57,7 @@ class TopicViewSet(viewsets.ModelViewSet):
 class ReplyViewSet(viewsets.ModelViewSet):
 
     queryset = Reply.objects.all()
+    ordering = ('-created_time',)
 
     def get_queryset(self):
         topic = self.topic = get_object_or_404(
