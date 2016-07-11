@@ -36,6 +36,9 @@ class RevisionBase(models.Model):
 
         return super(RevisionBase, self).__init__(*args, **kwargs)
 
+    def __str__(self):
+        return self.name
+
     def _recover(self, data):
         for key, value in data.items():
             setattr(self, key, value)
@@ -96,8 +99,9 @@ def create_revision_model(name, fields, log_fields_names, module,
 
     fields.update({
         '__module__': module,
-        'current_log': models.ForeignKey(log_class_name, null=True, blank=True,
-                                         on_delete=models.SET_NULL)
+        'current_log': models.ForeignKey(
+            log_class_name, null=True, blank=True,
+            on_delete=models.SET_NULL, editable=False)
     })
 
     if meta is not None:

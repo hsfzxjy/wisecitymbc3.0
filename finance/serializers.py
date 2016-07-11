@@ -9,7 +9,7 @@ def create_serializer(name, meta_fields=None):
 
     model, log_model = getattr(models, name), getattr(models, name + 'Log')
 
-    meta_fields.update(dict(model=model))
+    meta_fields.update(dict(model=model, exclude=('current_log',)))
 
     serializer = type(
         '{name}Serializer'.format(name=name),

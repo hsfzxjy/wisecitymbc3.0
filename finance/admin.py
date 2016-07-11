@@ -7,6 +7,11 @@ from django_object_actions import DjangoObjectActions
 from enhancements.shortcuts import _
 
 
+class CommentInline(admin.TabularInline):
+
+    model = Stock.comments.through
+
+
 class BaseAdmin(DjangoObjectActions, admin.ModelAdmin):
 
     def undo(self, request, obj):
@@ -17,8 +22,27 @@ class BaseAdmin(DjangoObjectActions, admin.ModelAdmin):
 
     change_actions = ('undo', )
 
-admin.site.register(Stock, BaseAdmin)
-admin.site.register(Bond, BaseAdmin)
-admin.site.register(Futures, BaseAdmin)
-admin.site.register(RawMaterials, BaseAdmin)
+
+def create_admin(model, bases=()):
+
+    admin_class = type(
+        model.__class__.__name__ + 'Admin',
+        bases + (BaseAdmin,),
+        {}
+    )
+
+    admin.site.register(model, admin_class)
+
+    return admin
+
+
+class StockAdminMixin(object):
+
+    inlines = [CommentInline]
+
+create_admin(Stock, (StockAdminMixin,))
+create_admin(Bond)
+create_admin(Futures)
+create_admin(RawMaterials)
+
 admin.site.register(Comment)

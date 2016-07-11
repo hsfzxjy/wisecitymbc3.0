@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth import admin as auth_admin, forms as auth_forms
+from django.contrib.auth import admin as auth_admin, forms as auth_forms, models as auth_models
 
 from .models import User, UserData
 
@@ -22,12 +22,6 @@ class UserDataInline(ObjectPermissionsStackedInline):
     model = UserData
 
     can_delete = False
-
-
-@admin.register(UserData)
-class UserDataAdmin(DjangoObjectActions, admin.ModelAdmin):
-
-    model = UserData
 
 
 @admin.register(User)
@@ -73,3 +67,5 @@ class UserAdmin(DjangoObjectActions,
     change_actions = ['change_password']
 
 monkey_patch()
+
+admin.site.unregister(auth_models.Group)

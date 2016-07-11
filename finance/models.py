@@ -10,6 +10,10 @@ class Comment(models.Model):
     created_time = models.DateTimeField(_('created time'), auto_now_add=True)
     content = models.TextField(_('content'))
 
+    class Meta:
+        verbose_name = _('comment')
+        verbose_name_plural = _('comments')
+
 Stock, StockLog = create_revision_model(
     'Stock',
     dict(
