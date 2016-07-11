@@ -9,6 +9,8 @@ from contextlib import contextmanager
 
 class RevisionBase(models.Model):
 
+    updated_time = models.DateTimeField(auto_now_add=True, editable=False)
+
     class Meta:
         abstract = True
 
@@ -24,6 +26,7 @@ class RevisionBase(models.Model):
             self.current_log.delete()
 
             self.current_log = last_log
+            self.updated_time = last_log.created_time
             self._recover(last_log.serialized_data)
 
             self.save()
@@ -59,6 +62,7 @@ class RevisionBase(models.Model):
             new_log = self.log_class.objects.create(
                 owner=self, serialized_data=log_values, **log_values)
             self.current_log = new_log
+            self.updated_time = new_log.created_time
             self.save()
 
     @contextmanager

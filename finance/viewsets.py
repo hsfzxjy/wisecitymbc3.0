@@ -23,7 +23,8 @@ def create_viewset(name, prefix, parent_lookup):
             mixins.RetrieveModelMixin
         ),
         {
-            'queryset': model.objects.all()
+            'queryset': model.objects.all(),
+            'ordering': ('-updated_time',)
         }
     )
     register(prefix)(viewset)
