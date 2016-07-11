@@ -1,6 +1,7 @@
 body {
     font-family: Georgia, "Times New Roman", Times, serif;
     overflow-x: hidden;
+    margin-top:50px;
 }
 
 button {
@@ -33,6 +34,10 @@ button {
         margin-bottom: .25rem;
         font-size: 2.5rem;
         text-align: center;
+        color:#ddd;
+        padding-bottom:30px;
+        padding-top:15px;
+        border-bottom:1px solid #666;
     }
 
     .article-meta {
@@ -41,6 +46,7 @@ button {
 
     .article-content {
         margin-top: 1.2rem;
+        color:#ccc;
         p {
             text-indent: 2em;
         }
@@ -76,13 +82,17 @@ button {
 }
 
 // Custom
+.label-1 {
+    background-color:$gre;
+    color:#eee;
+}
 body,html {
     background-color:$bgc;
 }
 a {
-    color: rgba(155, 140, 103, 1);
+    color: $hyp;
     &:hover,&:focus {
-        color: rgba(155, 140, 103, 1);
+        color: $hyp;
         text-decoration:underline;
     }
 }
@@ -106,4 +116,43 @@ a {
 .card-block {
     color:#eee;
 
+}
+.aside-header {
+    background-color:lighten($bgc,5%)!important;
+    border-bottom:none!important;
+}
+.ALGI {
+    background-color:darken($bgc,3%);
+    border-top:1px solid darken($bgc,7%);
+    &:hover {
+        background-color:darken($bgc,2%)!important;
+    }
+}
+.ALGI:last-child {
+    border-bottom:none;
+}
+.ALGB {
+    padding-top:3px;
+    padding-bottom:1px;
+    padding-left:5px;
+    padding-right:5px;
+    background-color:$hyp!important;
+    color:darken(white,2%);
+
+}
+.aside-content {
+    background-color:$bgc;
+}
+.aside-body {
+    background-color:$bgc;
+    border-top:1px solid darken($bgc,5%)!important;
+}
+.aside-body {
+    li {
+        background-color:darken($bgc,5%);
+        border-top:1px solid darken($bgc,2%);
+    }
+    li:hover{
+        background-color:darken($bgc,3%)!important;
+    }
 }
