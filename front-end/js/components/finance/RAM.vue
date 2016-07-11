@@ -1,6 +1,7 @@
 <template>
     <div class="clearfix">
         <div class="col-xs-12 col-sm-6 col-md-8">
+            <h3 style="color:#ccc">原材料</h3>
             <ram-item
                 v-if="page.results"
                 v-for="item in page.results"

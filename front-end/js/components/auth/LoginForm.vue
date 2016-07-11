@@ -18,7 +18,7 @@
         </vs-form-input>
         <div class="form-group row">
             <div class="col-md-12">
-                <button type="submit" class="btn btn-success" :disabled="loading">Sign in</button>
+                <button type="submit" class="btn btn-success" :disabled="loading">登录</button>
             </div>
         </div>
     </vs-form>

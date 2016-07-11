@@ -1,5 +1,5 @@
 <template>
-    <div class="container article-list sm-no-padding">
+    <div class="article-list sm-no-padding">
         <article-item 
             v-for="article in articles" 
             :article="article" 

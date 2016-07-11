@@ -1,5 +1,8 @@
 <template>
     <div>
+        <slot name="no-results" v-if="!model.results || !model.results.length">
+            <p class="text-xs-center">空空如也～～</p>
+        </slot>
         <vs-pager v-if="model">
             <li v-show="model.previous" :class="!loading || 'disabled'">
                 <a @click.stop="load(model.previous)" href="javascript:void(0);">Previous</a>

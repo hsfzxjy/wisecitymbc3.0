@@ -7,7 +7,7 @@
         props: {
             params: {
                 type: Object,
-                default: {}
+                default: () => ({})
             },
             model: {
                 type: Array,
@@ -23,7 +23,11 @@
             load () {
                 this.$http
                     .get(this.url, { params: this.params })
-                    .then(res => this.model = res.data.results)
+                    .then(res => {
+                        this.model = res.data.results
+                        if (!this.model.length)
+                            this.$emit('ListLoader:no-results')
+                    })
             }
         },
         events: {

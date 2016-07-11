@@ -1,11 +1,13 @@
 <template>
     <vs-form @submit.prevent="submit" class="col-md-8 sm-no-padding" :errors="errors">
         <slot name="fields-before"></slot>
-        <ck-editor :editor-id="`${name}-editor`" :model.sync="model.content"></ck-editor>
+        <fieldset class="form-group">
+            <ck-editor :editor-id="`${name}-editor`" :model.sync="model.content"></ck-editor>
+        </fieldset>
         <slot name="fields-after"></slot>
     </vs-form>
     <div class="col-md-4 sm-no-padding">
-        <div class="col-xs-12 col-sm-6 col-md-12 sm-no-padding">
+        <div class="col-xs-6 col-md-12 sm-no-padding">
             <uploader
                 @file-uploaded="insertFileToEditor"
                 :upload-status.sync="uploadStatus"
@@ -20,7 +22,7 @@
                 </vs-buttons>
             </uploader>
         </div>
-        <div class="col-xs-12 col-sm-6 col-md-12 sm-no-padding">
+        <div class="col-xs-6 col-md-12 sm-no-padding">
             <vs-buttons :disabled="loading" @click="submit" block>
                 <slot name="submit-name">发布</slot>
             </vs-buttons>

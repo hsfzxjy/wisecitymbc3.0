@@ -8,7 +8,7 @@
                 {{{ article.content }}}
             </div>
         </article>       
-        <article-nav-bar class="col-md-4" vertical :current-category="article.article_type"></article-nav-bar>
+        <article-nav-bar class="col-md-4 hidden-sm-down" vertical :current-category="article.article_type"></article-nav-bar>
     </div>
 </template>
 

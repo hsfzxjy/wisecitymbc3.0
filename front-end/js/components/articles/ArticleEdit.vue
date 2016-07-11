@@ -10,6 +10,7 @@
                 :model.sync="article.title"
                 type="text"
                 name='title'
+                label="标题"
                 placeholder="标题"
                 slot="fields-before">
             </vs-form-input>
@@ -17,6 +18,8 @@
                 :model.sync="tagsDisplay"
                 type="text"
                 name='tags'
+                label='标签'
+                help-text="以空格分隔"
                 placeholder="标签"
                 slot="fields-before">
             </vs-form-input>
@@ -31,6 +34,12 @@
         </editor>
     </div>
 </template>
+
+<style scoped>
+    div.checkbox label {
+        display: block;
+    }
+</style>
 
 <script>
     import Editor from 'misc/edit/Editor.vue'

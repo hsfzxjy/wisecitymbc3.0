@@ -9,6 +9,7 @@
   "author": "hsfzxjy, hfercc",
   "license": "ISC",
   "dependencies": {
+    "autoprefixer": "^6.3.7",
     "babel-core": "^6.7.6",
     "babel-loader": "^6.2.4",
     "babel-plugin-transform-runtime": "^6.7.5",
@@ -30,6 +31,8 @@
     "json-loader": "^0.5.4",
     "lodash": "^4.13.1",
     "node-sass": "^3.8.0",
+    "postcss-loader": "^0.9.1",
+    "precss": "^1.4.0",
     "qiniu-js": "^1.0.14-beta",
     "sass-loader": "^4.0.0",
     "scriptjs": "^2.5.8",

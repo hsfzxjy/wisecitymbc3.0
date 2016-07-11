@@ -2,6 +2,7 @@ body {
     font-family: Georgia, "Times New Roman", Times, serif;
     overflow-x: hidden;
     margin-top:50px;
+    color: #ccc;
 }
 
 button {
@@ -167,4 +168,8 @@ ul.list-group {
     li:hover{
         background-color:darken($bgc,3%)!important;
     }
+}
+
+label {
+    color: #eee!important;
 }

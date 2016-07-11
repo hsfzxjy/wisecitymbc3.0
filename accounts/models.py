@@ -1,5 +1,4 @@
 from django.db import models
-from django.dispatch import receiver
 
 from enhancements.auth.models import AbstractUser, UserManager as UserManager_
 from enhancements.models.fields import EnumField
@@ -22,9 +21,16 @@ class UserQuerySet(QuerySet):
             models.Q(pk=user.pk)
         )
 
+
 class UserManager(UserManager_.from_queryset(UserQuerySet)):
 
     use_in_migrations = True
+
+    def create_superuser(self, username, password, **extra_fields):
+        extra_fields.setdefault('user_type', UserType.government)
+
+        return super(UserManager, self).create_superuser(
+            username, password, **extra_fields)
 
 
 class User(AutoCleanMixin, PermsMixin, AbstractUser):
@@ -57,6 +63,13 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
         'accounts.view_userdata': ['user_data']
     }
 
+    def _clean_user_type(self):
+        if self.is_superuser:
+            self.user_type = UserType.government
+
+    def _clean_staff(self):
+        self.is_staff = self.user_type != UserType.company
+
     def _clean_bureau_type(self):
         if self.user_type != UserType.bureau:
             self.bureau_type = BureauType.none
@@ -65,11 +78,12 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
         if self.user_type == UserType.company:
             if self.user_data is None:
                 self.user_data = UserData.objects.create()
-                self.save()
         elif self.user_data is not None:
             self.user_data.delete()
 
     def clean(self):
+        self._clean_user_type()
+        self._clean_staff()
         self._clean_bureau_type()
         self._check_user_data()
 

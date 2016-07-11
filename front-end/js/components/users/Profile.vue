@@ -30,7 +30,7 @@
             </div>
         </vs-jumbotron>
         <div class="rows" v-if="!$loadingRouteData">
-            <div class="col-sm-12 col-md-3" v-if="hasUserData">
+            <div class="col-sm-12 col-md-3 xs-no-padding" v-if="hasUserData">
                 <vs-card>
                     <div class="card-block">
                         <h4>
@@ -61,7 +61,7 @@
                     <report-list :user-id="id" :reports.sync="reports"></report-list>
                 </vs-card>
             </div>
-            <div class="col-sm-12 col-md-{{ hasUserData ? 9 : 12}} sm-no-padding">
+            <div class="col-sm-12 col-md-{{ hasUserData ? 9 : 12}} xs-no-padding">
                 <article-list
                     :other-params="{ author__id: id }">
                 </article-list>

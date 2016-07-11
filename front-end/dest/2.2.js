@@ -1,6 +1,6 @@
 webpackJsonp([2],{
 
-/***/ 246:
+/***/ 257:
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -5578,16 +5578,16 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 247:
+/***/ 258:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(248)
+	__vue_script__ = __webpack_require__(259)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/vs-extend/form-button.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(249)
+	__vue_template__ = __webpack_require__(260)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -5607,7 +5607,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 248:
+/***/ 259:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5672,23 +5672,23 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 249:
+/***/ 260:
 /***/ function(module, exports) {
 
 	module.exports = "\n<fieldset class=\"form-group {{inputState}}\">\n    <div class=\"inputClass\">\n        <button \n            type=\"{{type}}\" \n            class=\"btn {{btnVariant}} {{btnSize}} {{btnBlock}} {{inactive ? 'btn-inactive' : ''}} {{btnDisabled}}\">\n            <slot></slot>\n        </button>\n    </div>\n</fieldset>\n";
 
 /***/ },
 
-/***/ 250:
+/***/ 261:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(251)
+	__vue_script__ = __webpack_require__(262)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/vs-extend/expansion.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(252)
+	__vue_template__ = __webpack_require__(263)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -5708,7 +5708,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 251:
+/***/ 262:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5717,11 +5717,11 @@ webpackJsonp([2],{
 	    value: true
 	});
 	
-	var _defineProperty2 = __webpack_require__(72);
+	var _defineProperty2 = __webpack_require__(76);
 	
 	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 	
-	var _index = __webpack_require__(111);
+	var _index = __webpack_require__(122);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -5750,24 +5750,24 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 252:
+/***/ 263:
 /***/ function(module, exports) {
 
 	module.exports = "\n<vs-collapse-toggle \n    :target=\"id\">\n    <slot name=\"title\">\n        <a href=\"javascript:void 0\" style=\"display: block;\">{{ title }}</a>\n    </slot>\n</vs-collapse-toggle>\n<vs-collapse\n    :id=\"id\">\n    <slot name=\"content\"></slot>\n</vs-collapse>\n";
 
 /***/ },
 
-/***/ 253:
+/***/ 264:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(254)
-	__vue_script__ = __webpack_require__(256)
+	__webpack_require__(265)
+	__vue_script__ = __webpack_require__(267)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/vs-extend/Editable.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(257)
+	__vue_template__ = __webpack_require__(268)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -5787,16 +5787,16 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 254:
+/***/ 265:
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(255);
+	var content = __webpack_require__(266);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -5814,22 +5814,22 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 255:
+/***/ 266:
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\ndiv.wrapper[_v-23bf0d23] {\n    position: relative;\n}\n\nspan.btn-action[_v-23bf0d23] {\n    position: absolute;\n    top: -1rem;\n    right: 0;\n}\n", "", {"version":3,"sources":["/./js/components/vs-extend/Editable.vue?e8e37c7a"],"names":[],"mappings":";AAeA;IACA,mBAAA;CACA;;AAEA;IACA,mBAAA;IACA,WAAA;IACA,SAAA;CACA","file":"Editable.vue","sourcesContent":["<template>\n    <div class=\"wrapper\">\n        <slot></slot>\n        <vs-buttons\n            @click=\"action\"\n            v-if=\"editable\"\n            size=\"sm\"\n            :disabled=\"loading\"\n            class=\"btn-action\">\n            {{ buttonText }}\n        </vs-buttons>\n    </div>\n</template>\n\n<style scoped>\n    div.wrapper {\n        position: relative;\n    }\n\n    span.btn-action {\n        position: absolute;\n        top: -1rem;\n        right: 0;\n    }\n</style>\n\n<script>\n    const TYPE_MAP = {\n        text: 'vs-form-input',\n        textarea: 'vs-form-textarea'\n    }\n\n    export default {\n        data: () => ({\n            editing: false,\n            loading: false,\n            editElements: [],\n            inputElements: []\n        }),\n        computed: {\n            buttonText () {\n                return this.editing ? '保存' : '编辑'\n            }\n        },\n        watch: {\n            editing (newValue) {\n                jQuery(this.editElements).toggle(!newValue)\n            },\n            editable (newValue) {\n                if (!newValue && this.editing) \n                    this.editing = false\n            }\n        },\n        props: {\n            options: {\n                type: Object,\n                default: () => ({})\n            },\n            editable: {\n                type: Boolean,\n                default: true\n            },\n            model: {\n                type: Object,\n                required: true,\n                twoWay: true\n            },\n            saveAction: {\n                type: Object,\n                default: () => ({\n                    url: '',\n                    method: '',\n                    dropArray: true\n                })\n            }\n        },\n        methods: {\n            init () {\n                this.editElements = []\n                this.getEditElements(this.$el, this.editElements)\n                _.forEach(this.editElements, this.initElement)\n            },\n            initElement ($element) {\n                let type = TYPE_MAP[$element._option.type || 'text']\n                let modelPath = $element._editableName\n                let className = $element.className\n\n                let $input = jQuery(`<${type}\n                    size=\"sm\"\n                    class=\"${className}\"\n                    type=\"text\"\n                    v-show=\"editing\"\n                    :model.sync=\"model.${modelPath}\">\n                </${type}>`)\n                jQuery($element).after($input)\n                $input.hide()\n\n                let inputElement = $input.get(0)\n                this.inputElements.push(inputElement)\n                this.$compile(inputElement)\n            },\n            getEditElements (parent, results) {\n                _.forEach(parent.children, child => {\n                    let attr\n                    if (attr = _.find(child.attributes, { name: 'edit' })) {\n                        child._editableName = attr.value\n                        child._option = this.options[attr.value] || {}\n                        results.push(child)\n                    }\n                    else\n                        this.getEditElements(child, results)\n                })\n            },\n            action () {\n                this.editing = !this.editing\n\n                if (!this.editing && this.saveAction.url) this.save()\n            },\n            save () {\n                let data = _.cloneDeep(this.model)\n                let { url, method, dropArray } = this.saveAction\n\n                if (dropArray)\n                    _.forEach(data, (value, key) => {\n                        if (_.isArray(value))\n                            delete data[key]\n                    })\n\n                this.$http[method](url, data)\n            }\n        },\n        ready () {\n            this.init()\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\ndiv.wrapper[_v-23bf0d23] {\n    position: relative;\n}\n\nspan.btn-action[_v-23bf0d23] {\n    position: absolute;\n    top: -1rem;\n    right: 0;\n}\n", "", {"version":3,"sources":["/./js/components/vs-extend/Editable.vue?46351f52"],"names":[],"mappings":";AAgBA;IACA,mBAAA;CACA;;AAEA;IACA,mBAAA;IACA,WAAA;IACA,SAAA;CACA","file":"Editable.vue","sourcesContent":["<template>\n    <div class=\"wrapper\">\n        <slot></slot>\n        <vs-buttons\n            @click=\"action\"\n            v-if=\"editable\"\n            size=\"sm\"\n            variant=\"default-outline\"\n            :disabled=\"loading\"\n            class=\"btn-action\">\n            {{ buttonText }}\n        </vs-buttons>\n    </div>\n</template>\n\n<style scoped>\n    div.wrapper {\n        position: relative;\n    }\n\n    span.btn-action {\n        position: absolute;\n        top: -1rem;\n        right: 0;\n    }\n</style>\n\n<script>\n    const TYPE_MAP = {\n        text: 'vs-form-input',\n        textarea: 'vs-form-textarea'\n    }\n\n    export default {\n        data: () => ({\n            editing: false,\n            loading: false,\n            editElements: [],\n            inputElements: []\n        }),\n        computed: {\n            buttonText () {\n                return this.editing ? '保存' : '编辑'\n            }\n        },\n        watch: {\n            editing (newValue) {\n                jQuery(this.editElements).toggle(!newValue)\n            },\n            editable (newValue) {\n                if (!newValue && this.editing) \n                    this.editing = false\n            }\n        },\n        props: {\n            options: {\n                type: Object,\n                default: () => ({})\n            },\n            editable: {\n                type: Boolean,\n                default: true\n            },\n            model: {\n                type: Object,\n                required: true,\n                twoWay: true\n            },\n            saveAction: {\n                type: Object,\n                default: () => ({\n                    url: '',\n                    method: '',\n                    dropArray: true\n                })\n            }\n        },\n        methods: {\n            init () {\n                this.editElements = []\n                this.getEditElements(this.$el, this.editElements)\n                _.forEach(this.editElements, this.initElement)\n            },\n            initElement ($element) {\n                let type = TYPE_MAP[$element._option.type || 'text']\n                let modelPath = $element._editableName\n                let className = $element.className\n\n                let $input = jQuery(`<${type}\n                    size=\"sm\"\n                    class=\"${className}\"\n                    type=\"text\"\n                    v-show=\"editing\"\n                    :model.sync=\"model.${modelPath}\">\n                </${type}>`)\n                jQuery($element).after($input)\n                $input.hide()\n\n                let inputElement = $input.get(0)\n                this.inputElements.push(inputElement)\n                this.$compile(inputElement)\n            },\n            getEditElements (parent, results) {\n                _.forEach(parent.children, child => {\n                    let attr\n                    if (attr = _.find(child.attributes, { name: 'edit' })) {\n                        child._editableName = attr.value\n                        child._option = this.options[attr.value] || {}\n                        results.push(child)\n                    }\n                    else\n                        this.getEditElements(child, results)\n                })\n            },\n            action () {\n                this.editing = !this.editing\n\n                if (!this.editing && this.saveAction.url) this.save()\n            },\n            save () {\n                let data = _.cloneDeep(this.model)\n                let { url, method, dropArray } = this.saveAction\n\n                if (dropArray)\n                    _.forEach(data, (value, key) => {\n                        if (_.isArray(value))\n                            delete data[key]\n                    })\n\n                this.$http[method](url, data)\n            }\n        },\n        ready () {\n            this.init()\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
 
-/***/ 256:
+/***/ 267:
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(jQuery, _) {'use strict';
@@ -5947,28 +5947,28 @@ webpackJsonp([2],{
 	        this.init();
 	    }
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94), __webpack_require__(3)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(97), __webpack_require__(3)))
 
 /***/ },
 
-/***/ 257:
+/***/ 268:
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"wrapper\" _v-23bf0d23=\"\">\n    <slot _v-23bf0d23=\"\"></slot>\n    <vs-buttons @click=\"action\" v-if=\"editable\" size=\"sm\" :disabled=\"loading\" class=\"btn-action\" _v-23bf0d23=\"\">\n        {{ buttonText }}\n    </vs-buttons>\n</div>\n";
+	module.exports = "\n<div class=\"wrapper\" _v-23bf0d23=\"\">\n    <slot _v-23bf0d23=\"\"></slot>\n    <vs-buttons @click=\"action\" v-if=\"editable\" size=\"sm\" variant=\"default-outline\" :disabled=\"loading\" class=\"btn-action\" _v-23bf0d23=\"\">\n        {{ buttonText }}\n    </vs-buttons>\n</div>\n";
 
 /***/ },
 
-/***/ 258:
+/***/ 269:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(259)
-	__vue_script__ = __webpack_require__(261)
+	__webpack_require__(270)
+	__vue_script__ = __webpack_require__(272)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/vs-extend/BlockA.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(262)
+	__vue_template__ = __webpack_require__(273)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -5988,16 +5988,16 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 259:
+/***/ 270:
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(260);
+	var content = __webpack_require__(271);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6015,10 +6015,10 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 260:
+/***/ 271:
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
@@ -6030,7 +6030,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 261:
+/***/ 272:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6062,23 +6062,23 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 262:
+/***/ 273:
 /***/ function(module, exports) {
 
 	module.exports = "\n<a v-link=\"link\" @click=\"clicked\" _v-76eb51d3=\"\">\n    <i v-if=\"icon\" class=\"fa fa-{{icon}}\" _v-76eb51d3=\"\"></i> {{title}}\n</a>\n";
 
 /***/ },
 
-/***/ 263:
+/***/ 274:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(264)
+	__vue_script__ = __webpack_require__(275)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/vs-extend/form.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(265)
+	__vue_template__ = __webpack_require__(276)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -6098,7 +6098,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 264:
+/***/ 275:
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -6145,24 +6145,24 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 265:
+/***/ 276:
 /***/ function(module, exports) {
 
 	module.exports = "\n<form>\n    <slot></slot>\n</form>\n";
 
 /***/ },
 
-/***/ 266:
+/***/ 277:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(267)
-	__vue_script__ = __webpack_require__(269)
+	__webpack_require__(278)
+	__vue_script__ = __webpack_require__(280)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] node_modules/vue-strap/src/Aside.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(273)
+	__vue_template__ = __webpack_require__(284)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -6182,16 +6182,16 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 267:
+/***/ 278:
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(268);
+	var content = __webpack_require__(279);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6209,10 +6209,10 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 268:
+/***/ 279:
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
@@ -6224,7 +6224,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 269:
+/***/ 280:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6233,15 +6233,15 @@ webpackJsonp([2],{
 	  value: true
 	});
 	
-	var _EventListener = __webpack_require__(270);
+	var _EventListener = __webpack_require__(281);
 	
 	var _EventListener2 = _interopRequireDefault(_EventListener);
 	
-	var _getScrollBarWidth = __webpack_require__(271);
+	var _getScrollBarWidth = __webpack_require__(282);
 	
 	var _getScrollBarWidth2 = _interopRequireDefault(_getScrollBarWidth);
 	
-	var _coerceBoolean = __webpack_require__(272);
+	var _coerceBoolean = __webpack_require__(283);
 	
 	var _coerceBoolean2 = _interopRequireDefault(_coerceBoolean);
 	
@@ -6304,7 +6304,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 270:
+/***/ 281:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6345,7 +6345,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 271:
+/***/ 282:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6385,7 +6385,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 272:
+/***/ 283:
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6402,7 +6402,7 @@ webpackJsonp([2],{
 
 /***/ },
 
-/***/ 273:
+/***/ 284:
 /***/ function(module, exports) {
 
 	module.exports = "\n<div class=\"aside\"\n  v-bind:style=\"{width:width + 'px'}\"\n  v-bind:class=\"{\n  left:placement === 'left',\n  right:placement === 'right'\n  }\"\n  v-show=\"show\"\n  :transition=\"(this.placement === 'left') ? 'slideleft' : 'slideright'\">\n  <div class=\"aside-dialog\">\n    <div class=\"aside-content\">\n      <div class=\"aside-header\">\n        <button type=\"button\" class=\"close\" @click='close'><span>&times;</span></button>\n        <h4 class=\"aside-title\">   \n        <slot name=\"header\"> \n          {{ header }}\n        </slot>\n        </h4>\n      </div>\n      <div class=\"aside-body\">\n        <slot></slot>\n      </div>\n    </div>\n  </div>\n</div>\n";

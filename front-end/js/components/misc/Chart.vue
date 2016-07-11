@@ -4,10 +4,9 @@
         <vs-buttons 
             block 
             size="sm" 
-            variant="info"
+            variant="info-outline"
             @click="loadData"
-            :disabled="(loading || !initiated)"
-            v-show="url">
+            :disabled="!url || (loading || !initiated)">
             加载更多
         </vs-buttons>
     </div>
@@ -60,6 +59,9 @@
                 })
 
                 this.chart = Highcharts.StockChart(this.containerId, {
+                    chart: {
+                        backgroundColor: null
+                    },
                     rangeSelector: {
                         enabled: false
                     },
@@ -71,10 +73,20 @@
                     tooltip: {
                         valueDecimals: 2
                     },
+                    xAxis: {
+                        labels: {
+                            style: {
+                                color: '#eee'
+                            }
+                        }
+                    },
                     yAxis: {
                         labels: {
                             formatter: function () {
                                 return (this.value > 0 ? '+' : '') + this.value + '%';
+                            },
+                            style: {
+                                color: '#eee'
                             }
                         },
                         plotLines: [{

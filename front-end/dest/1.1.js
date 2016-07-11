@@ -1,9 +1,9 @@
-webpackJsonp([1],Array(92).concat([
-/* 92 */
+webpackJsonp([1],Array(95).concat([
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process, jQuery) {/*!
-	 * Vue.js v1.0.26
+	 * Vue.js v1.0.21
 	 * (c) 2016 Evan You
 	 * Released under the MIT License.
 	 */
@@ -50,10 +50,6 @@ webpackJsonp([1],Array(92).concat([
 	  delete obj[key];
 	  var ob = obj.__ob__;
 	  if (!ob) {
-	    if (obj._isVue) {
-	      delete obj._data[key];
-	      obj._digest();
-	    }
 	    return;
 	  }
 	  ob.dep.notify();
@@ -402,15 +398,8 @@ webpackJsonp([1],Array(92).concat([
 	
 	// UA sniffing for working around browser-specific quirks
 	var UA = inBrowser && window.navigator.userAgent.toLowerCase();
-	var isIE = UA && UA.indexOf('trident') > 0;
 	var isIE9 = UA && UA.indexOf('msie 9.0') > 0;
 	var isAndroid = UA && UA.indexOf('android') > 0;
-	var isIos = UA && /(iphone|ipad|ipod|ios)/i.test(UA);
-	var iosVersionMatch = isIos && UA.match(/os ([\d_]+)/);
-	var iosVersion = iosVersionMatch && iosVersionMatch[1].split('_');
-	
-	// detecting iOS UIWebView by indexedDB
-	var hasMutationObserverBug = iosVersion && Number(iosVersion[0]) >= 9 && Number(iosVersion[1]) >= 3 && !window.indexedDB;
 	
 	var transitionProp = undefined;
 	var transitionEndEvent = undefined;
@@ -451,7 +440,7 @@ webpackJsonp([1],Array(92).concat([
 	  }
 	
 	  /* istanbul ignore if */
-	  if (typeof MutationObserver !== 'undefined' && !hasMutationObserverBug) {
+	  if (typeof MutationObserver !== 'undefined') {
 	    var counter = 1;
 	    var observer = new MutationObserver(nextTickHandler);
 	    var textNode = document.createTextNode(counter);
@@ -480,27 +469,6 @@ webpackJsonp([1],Array(92).concat([
 	  };
 	})();
 	
-	var _Set = undefined;
-	/* istanbul ignore if */
-	if (typeof Set !== 'undefined' && Set.toString().match(/native code/)) {
-	  // use native Set when available.
-	  _Set = Set;
-	} else {
-	  // a non-standard Set polyfill that only works with primitive keys.
-	  _Set = function () {
-	    this.set = Object.create(null);
-	  };
-	  _Set.prototype.has = function (key) {
-	    return this.set[key] !== undefined;
-	  };
-	  _Set.prototype.add = function (key) {
-	    this.set[key] = 1;
-	  };
-	  _Set.prototype.clear = function () {
-	    this.set = Object.create(null);
-	  };
-	}
-	
 	function Cache(limit) {
 	  this.size = 0;
 	  this.limit = limit;
@@ -523,12 +491,12 @@ webpackJsonp([1],Array(92).concat([
 	
 	p.put = function (key, value) {
 	  var removed;
+	  if (this.size === this.limit) {
+	    removed = this.shift();
+	  }
 	
 	  var entry = this.get(key, true);
 	  if (!entry) {
-	    if (this.size === this.limit) {
-	      removed = this.shift();
-	    }
 	    entry = {
 	      key: key
 	    };
@@ -773,7 +741,7 @@ webpackJsonp([1],Array(92).concat([
 	  var unsafeOpen = escapeRegex(config.unsafeDelimiters[0]);
 	  var unsafeClose = escapeRegex(config.unsafeDelimiters[1]);
 	  tagRE = new RegExp(unsafeOpen + '((?:.|\\n)+?)' + unsafeClose + '|' + open + '((?:.|\\n)+?)' + close, 'g');
-	  htmlRE = new RegExp('^' + unsafeOpen + '((?:.|\\n)+?)' + unsafeClose + '$');
+	  htmlRE = new RegExp('^' + unsafeOpen + '.*' + unsafeClose + '$');
 	  // reset cache
 	  cache = new Cache(1000);
 	}
@@ -1145,9 +1113,8 @@ webpackJsonp([1],Array(92).concat([
 	 */
 	
 	function inDoc(node) {
-	  if (!node) return false;
-	  var doc = node.ownerDocument.documentElement;
-	  var parent = node.parentNode;
+	  var doc = document.documentElement;
+	  var parent = node && node.parentNode;
 	  return doc === node || doc === parent || !!(parent && parent.nodeType === 1 && doc.contains(parent));
 	}
 	
@@ -1560,8 +1527,7 @@ webpackJsonp([1],Array(92).concat([
 	      return (/HTMLUnknownElement/.test(el.toString()) &&
 	        // Chrome returns unknown for several HTML5 elements.
 	        // https://code.google.com/p/chromium/issues/detail?id=540526
-	        // Firefox returns unknown for some "Interactive elements."
-	        !/^(data|time|rtc|rb|details|dialog|summary)$/.test(tag)
+	        !/^(data|time|rtc|rb)$/.test(tag)
 	      );
 	    }
 	  };
@@ -1583,7 +1549,7 @@ webpackJsonp([1],Array(92).concat([
 	    if (resolveAsset(options, 'components', tag)) {
 	      return { id: tag };
 	    } else {
-	      var is = hasAttrs && getIsBinding(el, options);
+	      var is = hasAttrs && getIsBinding(el);
 	      if (is) {
 	        return is;
 	      } else if (process.env.NODE_ENV !== 'production') {
@@ -1596,7 +1562,7 @@ webpackJsonp([1],Array(92).concat([
 	      }
 	    }
 	  } else if (hasAttrs) {
-	    return getIsBinding(el, options);
+	    return getIsBinding(el);
 	  }
 	}
 	
@@ -1604,18 +1570,14 @@ webpackJsonp([1],Array(92).concat([
 	 * Get "is" binding from an element.
 	 *
 	 * @param {Element} el
-	 * @param {Object} options
 	 * @return {Object|undefined}
 	 */
 	
-	function getIsBinding(el, options) {
+	function getIsBinding(el) {
 	  // dynamic syntax
-	  var exp = el.getAttribute('is');
+	  var exp = getAttr(el, 'is');
 	  if (exp != null) {
-	    if (resolveAsset(options, 'components', exp)) {
-	      el.removeAttribute('is');
-	      return { id: exp };
-	    }
+	    return { id: exp };
 	  } else {
 	    exp = getBindAttr(el, 'is');
 	    if (exp != null) {
@@ -1726,7 +1688,7 @@ webpackJsonp([1],Array(92).concat([
 	 */
 	
 	function mergeAssets(parentVal, childVal) {
-	  var res = Object.create(parentVal || null);
+	  var res = Object.create(parentVal);
 	  return childVal ? extend(res, guardArrayAssets(childVal)) : res;
 	}
 	
@@ -1885,21 +1847,11 @@ webpackJsonp([1],Array(92).concat([
 	function mergeOptions(parent, child, vm) {
 	  guardComponents(child);
 	  guardProps(child);
-	  if (process.env.NODE_ENV !== 'production') {
-	    if (child.propsData && !vm) {
-	      warn('propsData can only be used as an instantiation option.');
-	    }
-	  }
 	  var options = {};
 	  var key;
-	  if (child['extends']) {
-	    parent = typeof child['extends'] === 'function' ? mergeOptions(parent, child['extends'].options, vm) : mergeOptions(parent, child['extends'], vm);
-	  }
 	  if (child.mixins) {
 	    for (var i = 0, l = child.mixins.length; i < l; i++) {
-	      var mixin = child.mixins[i];
-	      var mixinOptions = mixin.prototype instanceof Vue ? mixin.options : mixin;
-	      parent = mergeOptions(parent, mixinOptions, vm);
+	      parent = mergeOptions(parent, child.mixins[i], vm);
 	    }
 	  }
 	  for (key in parent) {
@@ -2327,19 +2279,13 @@ webpackJsonp([1],Array(92).concat([
 		hasProto: hasProto,
 		inBrowser: inBrowser,
 		devtools: devtools,
-		isIE: isIE,
 		isIE9: isIE9,
 		isAndroid: isAndroid,
-		isIos: isIos,
-		iosVersionMatch: iosVersionMatch,
-		iosVersion: iosVersion,
-		hasMutationObserverBug: hasMutationObserverBug,
 		get transitionProp () { return transitionProp; },
 		get transitionEndEvent () { return transitionEndEvent; },
 		get animationProp () { return animationProp; },
 		get animationEndEvent () { return animationEndEvent; },
 		nextTick: nextTick,
-		get _Set () { return _Set; },
 		query: query,
 		inDoc: inDoc,
 		getAttr: getAttr,
@@ -2452,8 +2398,13 @@ webpackJsonp([1],Array(92).concat([
 	    this._updateRef();
 	
 	    // initialize data as empty object.
-	    // it will be filled up in _initData().
+	    // it will be filled up in _initScope().
 	    this._data = {};
+	
+	    // save raw constructor data before merge
+	    // so that we know which properties are provided at
+	    // instantiation.
+	    this._runtimeData = options.data;
 	
 	    // call init hook
 	    this._callHook('init');
@@ -2821,9 +2772,7 @@ webpackJsonp([1],Array(92).concat([
 	var restoreRE = /"(\d+)"/g;
 	var pathTestRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['.*?'\]|\[".*?"\]|\[\d+\]|\[[A-Za-z_$][\w$]*\])*$/;
 	var identRE = /[^\w$\.](?:[A-Za-z_$][\w$]*)/g;
-	var literalValueRE$1 = /^(?:true|false|null|undefined|Infinity|NaN)$/;
-	
-	function noop() {}
+	var booleanLiteralRE = /^(?:true|false)$/;
 	
 	/**
 	 * Save / Rewrite / Restore
@@ -2905,7 +2854,7 @@ webpackJsonp([1],Array(92).concat([
 	  // save strings and object literal keys
 	  var body = exp.replace(saveRE, save).replace(wsRE, '');
 	  // rewrite all paths
-	  // pad 1 space here because the regex matches 1 extra char
+	  // pad 1 space here becaue the regex matches 1 extra char
 	  body = (' ' + body).replace(identRE, rewrite).replace(restoreRE, restore);
 	  return makeGetterFn(body);
 	}
@@ -2926,15 +2875,7 @@ webpackJsonp([1],Array(92).concat([
 	    return new Function('scope', 'return ' + body + ';');
 	    /* eslint-enable no-new-func */
 	  } catch (e) {
-	    if (process.env.NODE_ENV !== 'production') {
-	      /* istanbul ignore if */
-	      if (e.toString().match(/unsafe-eval|CSP/)) {
-	        warn('It seems you are using the default build of Vue.js in an environment ' + 'with Content Security Policy that prohibits unsafe-eval. ' + 'Use the CSP-compliant build instead: ' + 'http://vuejs.org/guide/installation.html#CSP-compliant-build');
-	      } else {
-	        warn('Invalid expression. ' + 'Generated function body: ' + body);
-	      }
-	    }
-	    return noop;
+	    process.env.NODE_ENV !== 'production' && warn('Invalid expression. ' + 'Generated function body: ' + body);
 	  }
 	}
 	
@@ -2996,8 +2937,8 @@ webpackJsonp([1],Array(92).concat([
 	
 	function isSimplePath(exp) {
 	  return pathTestRE.test(exp) &&
-	  // don't treat literal values as paths
-	  !literalValueRE$1.test(exp) &&
+	  // don't treat true/false as paths
+	  !booleanLiteralRE.test(exp) &&
 	  // Math constants e.g. Math.PI, Math.E etc.
 	  exp.slice(0, 5) !== 'Math.';
 	}
@@ -3014,22 +2955,24 @@ webpackJsonp([1],Array(92).concat([
 	// triggered, the DOM would have already been in updated
 	// state.
 	
+	var queueIndex;
 	var queue = [];
 	var userQueue = [];
 	var has = {};
 	var circular = {};
 	var waiting = false;
+	var internalQueueDepleted = false;
 	
 	/**
 	 * Reset the batcher's state.
 	 */
 	
 	function resetBatcherState() {
-	  queue.length = 0;
-	  userQueue.length = 0;
+	  queue = [];
+	  userQueue = [];
 	  has = {};
 	  circular = {};
-	  waiting = false;
+	  waiting = internalQueueDepleted = false;
 	}
 	
 	/**
@@ -3037,26 +2980,15 @@ webpackJsonp([1],Array(92).concat([
 	 */
 	
 	function flushBatcherQueue() {
-	  var _again = true;
-	
-	  _function: while (_again) {
-	    _again = false;
-	
-	    runBatcherQueue(queue);
-	    runBatcherQueue(userQueue);
-	    // user watchers triggered more watchers,
-	    // keep flushing until it depletes
-	    if (queue.length) {
-	      _again = true;
-	      continue _function;
-	    }
-	    // dev tool hook
-	    /* istanbul ignore if */
-	    if (devtools && config.devtools) {
-	      devtools.emit('flush');
-	    }
-	    resetBatcherState();
+	  runBatcherQueue(queue);
+	  internalQueueDepleted = true;
+	  runBatcherQueue(userQueue);
+	  // dev tool hook
+	  /* istanbul ignore if */
+	  if (devtools && config.devtools) {
+	    devtools.emit('flush');
 	  }
+	  resetBatcherState();
 	}
 	
 	/**
@@ -3068,8 +3000,8 @@ webpackJsonp([1],Array(92).concat([
 	function runBatcherQueue(queue) {
 	  // do not cache length because more watchers might be pushed
 	  // as we run existing watchers
-	  for (var i = 0; i < queue.length; i++) {
-	    var watcher = queue[i];
+	  for (queueIndex = 0; queueIndex < queue.length; queueIndex++) {
+	    var watcher = queue[queueIndex];
 	    var id = watcher.id;
 	    has[id] = null;
 	    watcher.run();
@@ -3082,7 +3014,6 @@ webpackJsonp([1],Array(92).concat([
 	      }
 	    }
 	  }
-	  queue.length = 0;
 	}
 	
 	/**
@@ -3099,14 +3030,20 @@ webpackJsonp([1],Array(92).concat([
 	function pushWatcher(watcher) {
 	  var id = watcher.id;
 	  if (has[id] == null) {
-	    // push watcher into appropriate queue
-	    var q = watcher.user ? userQueue : queue;
-	    has[id] = q.length;
-	    q.push(watcher);
-	    // queue the flush
-	    if (!waiting) {
-	      waiting = true;
-	      nextTick(flushBatcherQueue);
+	    if (internalQueueDepleted && !watcher.user) {
+	      // an internal watcher triggered by a user watcher...
+	      // let's run it immediately after current user watcher is done.
+	      userQueue.splice(queueIndex + 1, 0, watcher);
+	    } else {
+	      // push watcher into appropriate queue
+	      var q = watcher.user ? userQueue : queue;
+	      has[id] = q.length;
+	      q.push(watcher);
+	      // queue the flush
+	      if (!waiting) {
+	        waiting = true;
+	        nextTick(flushBatcherQueue);
+	      }
 	    }
 	  }
 	}
@@ -3147,8 +3084,8 @@ webpackJsonp([1],Array(92).concat([
 	  this.dirty = this.lazy; // for lazy watchers
 	  this.deps = [];
 	  this.newDeps = [];
-	  this.depIds = new _Set();
-	  this.newDepIds = new _Set();
+	  this.depIds = Object.create(null);
+	  this.newDepIds = null;
 	  this.prevError = null; // for async error stacks
 	  // parse expression for getter/setter
 	  if (isFn) {
@@ -3240,6 +3177,8 @@ webpackJsonp([1],Array(92).concat([
 	
 	Watcher.prototype.beforeGet = function () {
 	  Dep.target = this;
+	  this.newDepIds = Object.create(null);
+	  this.newDeps.length = 0;
 	};
 	
 	/**
@@ -3250,10 +3189,10 @@ webpackJsonp([1],Array(92).concat([
 	
 	Watcher.prototype.addDep = function (dep) {
 	  var id = dep.id;
-	  if (!this.newDepIds.has(id)) {
-	    this.newDepIds.add(id);
+	  if (!this.newDepIds[id]) {
+	    this.newDepIds[id] = true;
 	    this.newDeps.push(dep);
-	    if (!this.depIds.has(id)) {
+	    if (!this.depIds[id]) {
 	      dep.addSub(this);
 	    }
 	  }
@@ -3268,18 +3207,14 @@ webpackJsonp([1],Array(92).concat([
 	  var i = this.deps.length;
 	  while (i--) {
 	    var dep = this.deps[i];
-	    if (!this.newDepIds.has(dep.id)) {
+	    if (!this.newDepIds[dep.id]) {
 	      dep.removeSub(this);
 	    }
 	  }
-	  var tmp = this.depIds;
 	  this.depIds = this.newDepIds;
-	  this.newDepIds = tmp;
-	  this.newDepIds.clear();
-	  tmp = this.deps;
+	  var tmp = this.deps;
 	  this.deps = this.newDeps;
 	  this.newDeps = tmp;
-	  this.newDeps.length = 0;
 	};
 	
 	/**
@@ -3403,33 +3338,15 @@ webpackJsonp([1],Array(92).concat([
 	 * @param {*} val
 	 */
 	
-	var seenObjects = new _Set();
-	function traverse(val, seen) {
-	  var i = undefined,
-	      keys = undefined;
-	  if (!seen) {
-	    seen = seenObjects;
-	    seen.clear();
-	  }
-	  var isA = isArray(val);
-	  var isO = isObject(val);
-	  if ((isA || isO) && Object.isExtensible(val)) {
-	    if (val.__ob__) {
-	      var depId = val.__ob__.dep.id;
-	      if (seen.has(depId)) {
-	        return;
-	      } else {
-	        seen.add(depId);
-	      }
-	    }
-	    if (isA) {
-	      i = val.length;
-	      while (i--) traverse(val[i], seen);
-	    } else if (isO) {
-	      keys = Object.keys(val);
-	      i = keys.length;
-	      while (i--) traverse(val[keys[i]], seen);
-	    }
+	function traverse(val) {
+	  var i, keys;
+	  if (isArray(val)) {
+	    i = val.length;
+	    while (i--) traverse(val[i]);
+	  } else if (isObject(val)) {
+	    keys = Object.keys(val);
+	    i = keys.length;
+	    while (i--) traverse(val[keys[i]]);
 	  }
 	}
 	
@@ -3476,7 +3393,6 @@ webpackJsonp([1],Array(92).concat([
 	
 	var tagRE$1 = /<([\w:-]+)/;
 	var entityRE = /&#?\w+?;/;
-	var commentRE = /<!--/;
 	
 	/**
 	 * Convert a string template to a DocumentFragment.
@@ -3499,9 +3415,8 @@ webpackJsonp([1],Array(92).concat([
 	  var frag = document.createDocumentFragment();
 	  var tagMatch = templateString.match(tagRE$1);
 	  var entityMatch = entityRE.test(templateString);
-	  var commentMatch = commentRE.test(templateString);
 	
-	  if (!tagMatch && !entityMatch && !commentMatch) {
+	  if (!tagMatch && !entityMatch) {
 	    // text only, return a single text node.
 	    frag.appendChild(document.createTextNode(templateString));
 	  } else {
@@ -3540,13 +3455,10 @@ webpackJsonp([1],Array(92).concat([
 	
 	function nodeToFragment(node) {
 	  // if its a template tag and the browser supports it,
-	  // its content is already a document fragment. However, iOS Safari has
-	  // bug when using directly cloned template content with touch
-	  // events and can cause crashes when the nodes are removed from DOM, so we
-	  // have to treat template elements as string templates. (#2805)
-	  /* istanbul ignore if */
+	  // its content is already a document fragment.
 	  if (isRealTemplate(node)) {
-	    return stringToFragment(node.innerHTML);
+	    trimNode(node.content);
+	    return node.content;
 	  }
 	  // script template
 	  if (node.tagName === 'SCRIPT') {
@@ -3942,7 +3854,7 @@ webpackJsonp([1],Array(92).concat([
 	  this.vm = vm;
 	  var template;
 	  var isString = typeof el === 'string';
-	  if (isString || isTemplate(el) && !el.hasAttribute('v-if')) {
+	  if (isString || isTemplate(el)) {
 	    template = parseTemplate(el, true);
 	  } else {
 	    template = document.createDocumentFragment();
@@ -4284,15 +4196,7 @@ webpackJsonp([1],Array(92).concat([
 	      });
 	      setTimeout(op, staggerAmount);
 	    } else {
-	      var target = prevEl.nextSibling;
-	      /* istanbul ignore if */
-	      if (!target) {
-	        // reset end anchor position in case the position was messed up
-	        // by an external drag-n-drop library.
-	        after(this.end, prevEl);
-	        target = this.end;
-	      }
-	      frag.before(target);
+	      frag.before(prevEl.nextSibling);
 	    }
 	  },
 	
@@ -4363,7 +4267,7 @@ webpackJsonp([1],Array(92).concat([
 	    var primitive = !isObject(value);
 	    var id;
 	    if (key || trackByKey || primitive) {
-	      id = getTrackByKey(index, key, value, trackByKey);
+	      id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
 	      if (!cache[id]) {
 	        cache[id] = frag;
 	      } else if (trackByKey !== '$index') {
@@ -4377,10 +4281,8 @@ webpackJsonp([1],Array(92).concat([
 	        } else {
 	          process.env.NODE_ENV !== 'production' && this.warnDuplicate(value);
 	        }
-	      } else if (Object.isExtensible(value)) {
+	      } else {
 	        def(value, id, frag);
-	      } else if (process.env.NODE_ENV !== 'production') {
-	        warn('Frozen v-for objects cannot be automatically tracked, make sure to ' + 'provide a track-by key.');
 	      }
 	    }
 	    frag.raw = value;
@@ -4400,7 +4302,7 @@ webpackJsonp([1],Array(92).concat([
 	    var primitive = !isObject(value);
 	    var frag;
 	    if (key || trackByKey || primitive) {
-	      var id = getTrackByKey(index, key, value, trackByKey);
+	      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
 	      frag = this.cache[id];
 	    } else {
 	      frag = value[this.id];
@@ -4427,7 +4329,7 @@ webpackJsonp([1],Array(92).concat([
 	    var key = hasOwn(scope, '$key') && scope.$key;
 	    var primitive = !isObject(value);
 	    if (trackByKey || key || primitive) {
-	      var id = getTrackByKey(index, key, value, trackByKey);
+	      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
 	      this.cache[id] = null;
 	    } else {
 	      value[this.id] = null;
@@ -4468,7 +4370,7 @@ webpackJsonp([1],Array(92).concat([
 	   * the filters. This is passed to and called by the watcher.
 	   *
 	   * It is necessary for this to be called during the
-	   * watcher's dependency collection phase because we want
+	   * wathcer's dependency collection phase because we want
 	   * the v-for to update when the source Object is mutated.
 	   */
 	
@@ -4575,19 +4477,6 @@ webpackJsonp([1],Array(92).concat([
 	    ret[i] = i;
 	  }
 	  return ret;
-	}
-	
-	/**
-	 * Get the track by key for an item.
-	 *
-	 * @param {Number} index
-	 * @param {String} key
-	 * @param {*} value
-	 * @param {String} [trackByKey]
-	 */
-	
-	function getTrackByKey(index, key, value, trackByKey) {
-	  return trackByKey ? trackByKey === '$index' ? index : trackByKey.charAt(0).match(/\w/) ? getPath(value, trackByKey) : value[trackByKey] : key || value;
 	}
 	
 	if (process.env.NODE_ENV !== 'production') {
@@ -4811,10 +4700,7 @@ webpackJsonp([1],Array(92).concat([
 	  },
 	
 	  update: function update(value) {
-	    // #3029 only update when the value changes. This prevent
-	    // browsers from overwriting values like selectionStart
-	    value = _toString(value);
-	    if (value !== this.el.value) this.el.value = value;
+	    this.el.value = _toString(value);
 	  },
 	
 	  unbind: function unbind() {
@@ -4863,8 +4749,6 @@ webpackJsonp([1],Array(92).concat([
 	var select = {
 	
 	  bind: function bind() {
-	    var _this = this;
-	
 	    var self = this;
 	    var el = this.el;
 	
@@ -4896,12 +4780,7 @@ webpackJsonp([1],Array(92).concat([
 	    // selectedIndex with value -1 to 0 when the element
 	    // is appended to a new parent, therefore we have to
 	    // force a DOM update whenever that happens...
-	    this.vm.$on('hook:attached', function () {
-	      nextTick(_this.forceUpdate);
-	    });
-	    if (!inDoc(el)) {
-	      nextTick(this.forceUpdate);
-	    }
+	    this.vm.$on('hook:attached', this.forceUpdate);
 	  },
 	
 	  update: function update(value) {
@@ -5201,7 +5080,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    // key filter
 	    var keys = Object.keys(this.modifiers).filter(function (key) {
-	      return key !== 'stop' && key !== 'prevent' && key !== 'self' && key !== 'capture';
+	      return key !== 'stop' && key !== 'prevent' && key !== 'self';
 	    });
 	    if (keys.length) {
 	      handler = keyFilter(handler, keys);
@@ -5330,12 +5209,6 @@ webpackJsonp([1],Array(92).concat([
 	  }
 	  var i = prefixes.length;
 	  var prefixed;
-	  if (camel !== 'filter' && camel in testEl.style) {
-	    return {
-	      kebab: prop,
-	      camel: camel
-	    };
-	  }
 	  while (i--) {
 	    prefixed = camelPrefixes[i] + upper;
 	    if (prefixed in testEl.style) {
@@ -5344,6 +5217,12 @@ webpackJsonp([1],Array(92).concat([
 	        camel: prefixed
 	      };
 	    }
+	  }
+	  if (camel in testEl.style) {
+	    return {
+	      kebab: prop,
+	      camel: camel
+	    };
 	  }
 	}
 	
@@ -5433,12 +5312,8 @@ webpackJsonp([1],Array(92).concat([
 	      attr = camelize(attr);
 	    }
 	    if (!interp && attrWithPropsRE.test(attr) && attr in el) {
-	      var attrValue = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
+	      el[attr] = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
 	      ? '' : value : value;
-	
-	      if (el[attr] !== attrValue) {
-	        el[attr] = attrValue;
-	      }
 	    }
 	    // set model props
 	    var modelProp = modelProps[attr];
@@ -5538,66 +5413,66 @@ webpackJsonp([1],Array(92).concat([
 	  deep: true,
 	
 	  update: function update(value) {
-	    if (!value) {
-	      this.cleanup();
-	    } else if (typeof value === 'string') {
-	      this.setClass(value.trim().split(/\s+/));
+	    if (value && typeof value === 'string') {
+	      this.handleObject(stringToObject(value));
+	    } else if (isPlainObject(value)) {
+	      this.handleObject(value);
+	    } else if (isArray(value)) {
+	      this.handleArray(value);
 	    } else {
-	      this.setClass(normalize$1(value));
+	      this.cleanup();
 	    }
 	  },
 	
-	  setClass: function setClass(value) {
+	  handleObject: function handleObject(value) {
+	    this.cleanup(value);
+	    this.prevKeys = Object.keys(value);
+	    setObjectClasses(this.el, value);
+	  },
+	
+	  handleArray: function handleArray(value) {
 	    this.cleanup(value);
 	    for (var i = 0, l = value.length; i < l; i++) {
 	      var val = value[i];
-	      if (val) {
-	        apply(this.el, val, addClass);
+	      if (val && isPlainObject(val)) {
+	        setObjectClasses(this.el, val);
+	      } else if (val && typeof val === 'string') {
+	        addClass(this.el, val);
 	      }
 	    }
-	    this.prevKeys = value;
+	    this.prevKeys = value.slice();
 	  },
 	
 	  cleanup: function cleanup(value) {
-	    var prevKeys = this.prevKeys;
-	    if (!prevKeys) return;
-	    var i = prevKeys.length;
+	    if (!this.prevKeys) return;
+	
+	    var i = this.prevKeys.length;
 	    while (i--) {
-	      var key = prevKeys[i];
-	      if (!value || value.indexOf(key) < 0) {
-	        apply(this.el, key, removeClass);
+	      var key = this.prevKeys[i];
+	      if (!key) continue;
+	
+	      var keys = isPlainObject(key) ? Object.keys(key) : [key];
+	      for (var j = 0, l = keys.length; j < l; j++) {
+	        toggleClasses(this.el, keys[j], removeClass);
 	      }
 	    }
 	  }
 	};
 	
-	/**
-	 * Normalize objects and arrays (potentially containing objects)
-	 * into array of strings.
-	 *
-	 * @param {Object|Array<String|Object>} value
-	 * @return {Array<String>}
-	 */
+	function setObjectClasses(el, obj) {
+	  var keys = Object.keys(obj);
+	  for (var i = 0, l = keys.length; i < l; i++) {
+	    var key = keys[i];
+	    if (!obj[key]) continue;
+	    toggleClasses(el, key, addClass);
+	  }
+	}
 	
-	function normalize$1(value) {
-	  var res = [];
-	  if (isArray(value)) {
-	    for (var i = 0, l = value.length; i < l; i++) {
-	      var _key = value[i];
-	      if (_key) {
-	        if (typeof _key === 'string') {
-	          res.push(_key);
-	        } else {
-	          for (var k in _key) {
-	            if (_key[k]) res.push(k);
-	          }
-	        }
-	      }
-	    }
-	  } else if (isObject(value)) {
-	    for (var key in value) {
-	      if (value[key]) res.push(key);
-	    }
+	function stringToObject(value) {
+	  var res = {};
+	  var keys = value.trim().split(/\s+/);
+	  for (var i = 0, l = keys.length; i < l; i++) {
+	    res[keys[i]] = true;
 	  }
 	  return res;
 	}
@@ -5613,12 +5488,14 @@ webpackJsonp([1],Array(92).concat([
 	 * @param {Function} fn
 	 */
 	
-	function apply(el, key, fn) {
+	function toggleClasses(el, key, fn) {
 	  key = key.trim();
+	
 	  if (key.indexOf(' ') === -1) {
 	    fn(el, key);
 	    return;
 	  }
+	
 	  // The key contains one or more space characters.
 	  // Since a class name doesn't accept such characters, we
 	  // treat it as multiple classes.
@@ -5669,7 +5546,6 @@ webpackJsonp([1],Array(92).concat([
 	      // cached, when the component is used elsewhere this attribute
 	      // will remain at link time.
 	      this.el.removeAttribute('is');
-	      this.el.removeAttribute(':is');
 	      // remove ref, same as above
 	      if (this.descriptor.ref) {
 	        this.el.removeAttribute('v-ref:' + hyphenate(this.descriptor.ref));
@@ -6104,7 +5980,6 @@ webpackJsonp([1],Array(92).concat([
 	  return function propsLinkFn(vm, scope) {
 	    // store resolved props info
 	    vm._props = {};
-	    var inlineProps = vm.$options.propsData;
 	    var i = props.length;
 	    var prop, path, options, value, raw;
 	    while (i--) {
@@ -6113,9 +5988,7 @@ webpackJsonp([1],Array(92).concat([
 	      path = prop.path;
 	      options = prop.options;
 	      vm._props[path] = prop;
-	      if (inlineProps && hasOwn(inlineProps, path)) {
-	        initProp(vm, prop, inlineProps[path]);
-	      }if (raw === null) {
+	      if (raw === null) {
 	        // initialize absent prop
 	        initProp(vm, prop, undefined);
 	      } else if (prop.dynamic) {
@@ -6171,7 +6044,7 @@ webpackJsonp([1],Array(92).concat([
 	  if (value === undefined) {
 	    value = getPropDefaultValue(vm, prop);
 	  }
-	  value = coerceProp(prop, value, vm);
+	  value = coerceProp(prop, value);
 	  var coerced = value !== rawValue;
 	  if (!assertProp(prop, value, vm)) {
 	    value = undefined;
@@ -6290,17 +6163,13 @@ webpackJsonp([1],Array(92).concat([
 	 * @return {*}
 	 */
 	
-	function coerceProp(prop, value, vm) {
+	function coerceProp(prop, value) {
 	  var coerce = prop.options.coerce;
 	  if (!coerce) {
 	    return value;
 	  }
-	  if (typeof coerce === 'function') {
-	    return coerce(value);
-	  } else {
-	    process.env.NODE_ENV !== 'production' && warn('Invalid coerce for prop "' + prop.name + '": expected function, got ' + typeof coerce + '.', vm);
-	    return value;
-	  }
+	  // coerce is a function
+	  return coerce(value);
 	}
 	
 	/**
@@ -6832,9 +6701,10 @@ webpackJsonp([1],Array(92).concat([
 	    // resolve on owner vm
 	    var hooks = resolveAsset(this.vm.$options, 'transitions', id);
 	    id = id || 'v';
-	    oldId = oldId || 'v';
 	    el.__v_trans = new Transition(el, id, hooks, this.vm);
-	    removeClass(el, oldId + '-transition');
+	    if (oldId) {
+	      removeClass(el, oldId + '-transition');
+	    }
 	    addClass(el, id + '-transition');
 	  }
 	};
@@ -6879,7 +6749,7 @@ webpackJsonp([1],Array(92).concat([
 	  // link function for the node itself.
 	  var nodeLinkFn = partial || !options._asComponent ? compileNode(el, options) : null;
 	  // link function for the childNodes
-	  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && !isScript(el) && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
+	  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && el.tagName !== 'SCRIPT' && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
 	
 	  /**
 	   * A composite linker function to be called on a already
@@ -7062,7 +6932,7 @@ webpackJsonp([1],Array(92).concat([
 	    });
 	    if (names.length) {
 	      var plural = names.length > 1;
-	      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment-Instance');
+	      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment_Instance');
 	    }
 	  }
 	
@@ -7099,7 +6969,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	function compileNode(node, options) {
 	  var type = node.nodeType;
-	  if (type === 1 && !isScript(node)) {
+	  if (type === 1 && node.tagName !== 'SCRIPT') {
 	    return compileElement(node, options);
 	  } else if (type === 3 && node.data.trim()) {
 	    return compileTextNode(node, options);
@@ -7259,7 +7129,7 @@ webpackJsonp([1],Array(92).concat([
 	          if (token.html) {
 	            replace(node, parseTemplate(value, true));
 	          } else {
-	            node.data = _toString(value);
+	            node.data = value;
 	          }
 	        } else {
 	          vm._bindDir(token.descriptor, node, host, scope);
@@ -7394,6 +7264,7 @@ webpackJsonp([1],Array(92).concat([
 	  var attr, name, value, modifiers, matched, dirName, rawName, arg, def, termDef;
 	  for (var i = 0, j = attrs.length; i < j; i++) {
 	    attr = attrs[i];
+	    modifiers = parseModifiers(attr.name);
 	    name = attr.name.replace(modifierRE, '');
 	    if (matched = name.match(dirAttrRE)) {
 	      def = resolveAsset(options, 'directives', matched[1]);
@@ -7401,7 +7272,6 @@ webpackJsonp([1],Array(92).concat([
 	        if (!termDef || (def.priority || DEFAULT_TERMINAL_PRIORITY) > termDef.priority) {
 	          termDef = def;
 	          rawName = attr.name;
-	          modifiers = parseModifiers(attr.name);
 	          value = attr.value;
 	          dirName = matched[1];
 	          arg = matched[2];
@@ -7622,10 +7492,6 @@ webpackJsonp([1],Array(92).concat([
 	  }
 	}
 	
-	function isScript(el) {
-	  return el.tagName === 'SCRIPT' && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript');
-	}
-	
 	var specialCharRE = /[^\w\-:\.]/;
 	
 	/**
@@ -7755,8 +7621,8 @@ webpackJsonp([1],Array(92).concat([
 	    value = attrs[i].value;
 	    if (!to.hasAttribute(name) && !specialCharRE.test(name)) {
 	      to.setAttribute(name, value);
-	    } else if (name === 'class' && !parseText(value) && (value = value.trim())) {
-	      value.split(/\s+/).forEach(function (cls) {
+	    } else if (name === 'class' && !parseText(value)) {
+	      value.trim().split(/\s+/).forEach(function (cls) {
 	        addClass(to, cls);
 	      });
 	    }
@@ -7795,10 +7661,6 @@ webpackJsonp([1],Array(92).concat([
 	    contents[name] = extractFragment(contents[name], content);
 	  }
 	  if (content.hasChildNodes()) {
-	    var nodes = content.childNodes;
-	    if (nodes.length === 1 && nodes[0].nodeType === 3 && !nodes[0].data.trim()) {
-	      return;
-	    }
 	    contents['default'] = extractFragment(content.childNodes, content);
 	  }
 	}
@@ -7817,7 +7679,7 @@ webpackJsonp([1],Array(92).concat([
 	    var node = nodes[i];
 	    if (isTemplate(node) && !node.hasAttribute('v-if') && !node.hasAttribute('v-for')) {
 	      parent.removeChild(node);
-	      node = parseTemplate(node, true);
+	      node = parseTemplate(node);
 	    }
 	    frag.appendChild(node);
 	  }
@@ -7898,6 +7760,7 @@ webpackJsonp([1],Array(92).concat([
 	      process.env.NODE_ENV !== 'production' && warn('data functions should return an object.', this);
 	    }
 	    var props = this._props;
+	    var runtimeData = this._runtimeData ? typeof this._runtimeData === 'function' ? this._runtimeData() : this._runtimeData : null;
 	    // proxy data on instance
 	    var keys = Object.keys(data);
 	    var i, key;
@@ -7908,10 +7771,10 @@ webpackJsonp([1],Array(92).concat([
 	      // 1. it's not already defined as a prop
 	      // 2. it's provided via a instantiation option AND there are no
 	      //    template prop present
-	      if (!props || !hasOwn(props, key)) {
+	      if (!props || !hasOwn(props, key) || runtimeData && hasOwn(runtimeData, key) && props[key].raw === null) {
 	        this._proxy(key);
 	      } else if (process.env.NODE_ENV !== 'production') {
-	        warn('Data field "' + key + '" is already defined ' + 'as a prop. To provide default value for a prop, use the "default" ' + 'prop option; if you want to pass prop values to an instantiation ' + 'call, use the "propsData" option.', this);
+	        warn('Data field "' + key + '" is already defined ' + 'as a prop. Use prop default value instead.', this);
 	      }
 	    }
 	    // observe data
@@ -8101,21 +7964,18 @@ webpackJsonp([1],Array(92).concat([
 	
 	  function registerComponentEvents(vm, el) {
 	    var attrs = el.attributes;
-	    var name, value, handler;
+	    var name, handler;
 	    for (var i = 0, l = attrs.length; i < l; i++) {
 	      name = attrs[i].name;
 	      if (eventRE.test(name)) {
 	        name = name.replace(eventRE, '');
-	        // force the expression into a statement so that
-	        // it always dynamically resolves the method to call (#2670)
-	        // kinda ugly hack, but does the job.
-	        value = attrs[i].value;
-	        if (isSimplePath(value)) {
-	          value += '.apply(this, $arguments)';
+	        handler = (vm._scope || vm._context).$eval(attrs[i].value, true);
+	        if (typeof handler === 'function') {
+	          handler._fromParent = true;
+	          vm.$on(name.replace(eventRE), handler);
+	        } else if (process.env.NODE_ENV !== 'production') {
+	          warn('v-on:' + name + '="' + attrs[i].value + '" ' + 'expects a function value, got ' + handler, vm);
 	        }
-	        handler = (vm._scope || vm._context).$eval(value, true);
-	        handler._fromParent = true;
-	        vm.$on(name.replace(eventRE), handler);
 	      }
 	    }
 	  }
@@ -8243,7 +8103,7 @@ webpackJsonp([1],Array(92).concat([
 	  };
 	}
 	
-	function noop$1() {}
+	function noop() {}
 	
 	/**
 	 * A directive links a DOM element with a piece of data,
@@ -8342,7 +8202,7 @@ webpackJsonp([1],Array(92).concat([
 	        }
 	      };
 	    } else {
-	      this._update = noop$1;
+	      this._update = noop;
 	    }
 	    var preProcess = this._preProcess ? bind(this._preProcess, this) : null;
 	    var postProcess = this._postProcess ? bind(this._postProcess, this) : null;
@@ -8766,7 +8626,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    // remove reference from data ob
 	    // frozen object may not have observer.
-	    if (this._data && this._data.__ob__) {
+	    if (this._data.__ob__) {
 	      this._data.__ob__.removeVm(this);
 	    }
 	    // Clean up references to private properties and other
@@ -8839,7 +8699,6 @@ webpackJsonp([1],Array(92).concat([
 	    } else {
 	      factory = resolveAsset(this.$options, 'components', value, true);
 	    }
-	    /* istanbul ignore if */
 	    if (!factory) {
 	      return;
 	    }
@@ -8889,7 +8748,7 @@ webpackJsonp([1],Array(92).concat([
 	  Vue.prototype.$get = function (exp, asStatement) {
 	    var res = parseExpression(exp);
 	    if (res) {
-	      if (asStatement) {
+	      if (asStatement && !isSimplePath(exp)) {
 	        var self = this;
 	        return function statementHandler() {
 	          self.$arguments = toArray(arguments);
@@ -9780,7 +9639,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	  json: {
 	    read: function read(value, indent) {
-	      return typeof value === 'string' ? value : JSON.stringify(value, null, arguments.length > 1 ? indent : 2);
+	      return typeof value === 'string' ? value : JSON.stringify(value, null, Number(indent) || 2);
 	    },
 	    write: function write(value) {
 	      try {
@@ -9821,19 +9680,17 @@ webpackJsonp([1],Array(92).concat([
 	   * 12345 => $12,345.00
 	   *
 	   * @param {String} sign
-	   * @param {Number} decimals Decimal places
 	   */
 	
-	  currency: function currency(value, _currency, decimals) {
+	  currency: function currency(value, _currency) {
 	    value = parseFloat(value);
 	    if (!isFinite(value) || !value && value !== 0) return '';
 	    _currency = _currency != null ? _currency : '$';
-	    decimals = decimals != null ? decimals : 2;
-	    var stringified = Math.abs(value).toFixed(decimals);
-	    var _int = decimals ? stringified.slice(0, -1 - decimals) : stringified;
+	    var stringified = Math.abs(value).toFixed(2);
+	    var _int = stringified.slice(0, -3);
 	    var i = _int.length % 3;
 	    var head = i > 0 ? _int.slice(0, i) + (_int.length > 3 ? ',' : '') : '';
-	    var _float = decimals ? stringified.slice(-1 - decimals) : '';
+	    var _float = stringified.slice(-3);
 	    var sign = value < 0 ? '-' : '';
 	    return sign + _currency + head + _int.slice(i).replace(digitsRE, '$1,') + _float;
 	  },
@@ -9853,13 +9710,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	  pluralize: function pluralize(value) {
 	    var args = toArray(arguments, 1);
-	    var length = args.length;
-	    if (length > 1) {
-	      var index = value % 10 - 1;
-	      return index in args ? args[index] : args[length - 1];
-	    } else {
-	      return args[0] + (value === 1 ? '' : 's');
-	    }
+	    return args.length > 1 ? args[value % 10 - 1] || args[args.length - 1] : args[0] + (value === 1 ? '' : 's');
 	  },
 	
 	  /**
@@ -10044,9 +9895,7 @@ webpackJsonp([1],Array(92).concat([
 	          }
 	        }
 	        if (type === 'component' && isPlainObject(definition)) {
-	          if (!definition.name) {
-	            definition.name = id;
-	          }
+	          definition.name = id;
 	          definition = Vue.extend(definition);
 	        }
 	        this.options[type + 's'][id] = definition;
@@ -10061,7 +9910,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	installGlobalAPI(Vue);
 	
-	Vue.version = '1.0.26';
+	Vue.version = '1.0.21';
 	
 	// devtools global hook
 	/* istanbul ignore next */
@@ -10076,49 +9925,21 @@ webpackJsonp([1],Array(92).concat([
 	}, 0);
 	
 	module.exports = Vue;
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(93), __webpack_require__(94)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(96), __webpack_require__(97)))
 
 /***/ },
-/* 93 */
+/* 96 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
 	
 	var process = module.exports = {};
-	
-	// cached from whatever global is present so that test runners that stub it
-	// don't break things.  But we need to wrap it in a try catch in case it is
-	// wrapped in strict mode code which doesn't define any globals.  It's inside a
-	// function because try/catches deoptimize in certain engines.
-	
-	var cachedSetTimeout;
-	var cachedClearTimeout;
-	
-	(function () {
-	  try {
-	    cachedSetTimeout = setTimeout;
-	  } catch (e) {
-	    cachedSetTimeout = function () {
-	      throw new Error('setTimeout is not defined');
-	    }
-	  }
-	  try {
-	    cachedClearTimeout = clearTimeout;
-	  } catch (e) {
-	    cachedClearTimeout = function () {
-	      throw new Error('clearTimeout is not defined');
-	    }
-	  }
-	} ())
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 	
 	function cleanUpNextTick() {
-	    if (!draining || !currentQueue) {
-	        return;
-	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -10134,7 +9955,7 @@ webpackJsonp([1],Array(92).concat([
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = cachedSetTimeout(cleanUpNextTick);
+	    var timeout = setTimeout(cleanUpNextTick);
 	    draining = true;
 	
 	    var len = queue.length;
@@ -10151,7 +9972,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    cachedClearTimeout(timeout);
+	    clearTimeout(timeout);
 	}
 	
 	process.nextTick = function (fun) {
@@ -10163,7 +9984,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        cachedSetTimeout(drainQueue, 0);
+	        setTimeout(drainQueue, 0);
 	    }
 	};
 	
@@ -10204,8 +10025,8 @@ webpackJsonp([1],Array(92).concat([
 
 
 /***/ },
-/* 94 */,
-/* 95 */
+/* 97 */,
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -10372,94 +10193,94 @@ webpackJsonp([1],Array(92).concat([
 	    return router;
 	};
 	
-	var _vueRouter = __webpack_require__(96);
+	var _vueRouter = __webpack_require__(99);
 	
 	var _vueRouter2 = _interopRequireDefault(_vueRouter);
 	
-	var _Index = __webpack_require__(97);
+	var _Index = __webpack_require__(100);
 	
 	var _Index2 = _interopRequireDefault(_Index);
 	
-	var _Login = __webpack_require__(103);
+	var _Login = __webpack_require__(114);
 	
 	var _Login2 = _interopRequireDefault(_Login);
 	
-	var _Logout = __webpack_require__(106);
+	var _Logout = __webpack_require__(117);
 	
 	var _Logout2 = _interopRequireDefault(_Logout);
 	
-	var _Articles = __webpack_require__(109);
+	var _Articles = __webpack_require__(120);
 	
 	var _Articles2 = _interopRequireDefault(_Articles);
 	
-	var _Tags = __webpack_require__(130);
+	var _Tags = __webpack_require__(145);
 	
 	var _Tags2 = _interopRequireDefault(_Tags);
 	
-	var _ArticleDetail = __webpack_require__(135);
+	var _ArticleDetail = __webpack_require__(150);
 	
 	var _ArticleDetail2 = _interopRequireDefault(_ArticleDetail);
 	
-	var _ArticleEdit = __webpack_require__(139);
+	var _ArticleEdit = __webpack_require__(154);
 	
 	var _ArticleEdit2 = _interopRequireDefault(_ArticleEdit);
 	
-	var _Profile = __webpack_require__(155);
+	var _Profile = __webpack_require__(172);
 	
 	var _Profile2 = _interopRequireDefault(_Profile);
 	
-	var _Companies = __webpack_require__(161);
+	var _Companies = __webpack_require__(180);
 	
 	var _Companies2 = _interopRequireDefault(_Companies);
 	
-	var _Notifications = __webpack_require__(164);
+	var _Notifications = __webpack_require__(183);
 	
 	var _Notifications2 = _interopRequireDefault(_Notifications);
 	
-	var _Topics = __webpack_require__(170);
+	var _Topics = __webpack_require__(189);
 	
 	var _Topics2 = _interopRequireDefault(_Topics);
 	
-	var _TopicEdit = __webpack_require__(176);
+	var _TopicEdit = __webpack_require__(195);
 	
 	var _TopicEdit2 = _interopRequireDefault(_TopicEdit);
 	
-	var _TopicDetail = __webpack_require__(179);
+	var _TopicDetail = __webpack_require__(198);
 	
 	var _TopicDetail2 = _interopRequireDefault(_TopicDetail);
 	
-	var _Finance = __webpack_require__(184);
+	var _Finance = __webpack_require__(203);
 	
 	var _Finance2 = _interopRequireDefault(_Finance);
 	
-	var _FinanceIndex = __webpack_require__(197);
+	var _FinanceIndex = __webpack_require__(208);
 	
 	var _FinanceIndex2 = _interopRequireDefault(_FinanceIndex);
 	
-	var _Stocks = __webpack_require__(221);
+	var _Stocks = __webpack_require__(232);
 	
 	var _Stocks2 = _interopRequireDefault(_Stocks);
 	
-	var _Bonds = __webpack_require__(224);
+	var _Bonds = __webpack_require__(235);
 	
 	var _Bonds2 = _interopRequireDefault(_Bonds);
 	
-	var _Futures = __webpack_require__(227);
+	var _Futures = __webpack_require__(238);
 	
 	var _Futures2 = _interopRequireDefault(_Futures);
 	
-	var _RAM = __webpack_require__(230);
+	var _RAM = __webpack_require__(241);
 	
 	var _RAM2 = _interopRequireDefault(_RAM);
 	
-	var _ = __webpack_require__(240);
+	var _ = __webpack_require__(251);
 	
 	var _2 = _interopRequireDefault(_);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ },
-/* 96 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*!
@@ -13173,16 +12994,16 @@ webpackJsonp([1],Array(92).concat([
 	}));
 
 /***/ },
-/* 97 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(98)
+	__vue_script__ = __webpack_require__(101)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/pages/Index.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(102)
+	__vue_template__ = __webpack_require__(113)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13190,9 +13011,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-20dc447f/Index.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/pages/Index.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13201,7 +13022,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 98 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13210,29 +13031,37 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _LoginForm = __webpack_require__(99);
+	var _LoginForm = __webpack_require__(102);
 	
 	var _LoginForm2 = _interopRequireDefault(_LoginForm);
+	
+	var _ArticleListGroup = __webpack_require__(105);
+	
+	var _ArticleListGroup2 = _interopRequireDefault(_ArticleListGroup);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	exports.default = {
 	    components: {
-	        LoginForm: _LoginForm2.default
+	        LoginForm: _LoginForm2.default,
+	        ArticleListGroup: _ArticleListGroup2.default
+	    },
+	    ready: function ready() {
+	        this.$broadcast('ListLoader:reload');
 	    }
 	};
 
 /***/ },
-/* 99 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(100)
+	__vue_script__ = __webpack_require__(103)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/auth/LoginForm.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(101)
+	__vue_template__ = __webpack_require__(104)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13240,9 +13069,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-7c7c78de/LoginForm.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/auth/LoginForm.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13251,7 +13080,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 100 */
+/* 103 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -13288,28 +13117,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 101 */
+/* 104 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<vs-form v-on:submit.prevent=\"submit\" :errors=\"errors\">\n    <vs-form-input\n        :model.sync=\"username\"\n        type=\"text\"\n        label=\"用户名\"\n        description=\"请输入您的用户名（注意不是昵称）\"\n        name=\"username\"\n        size=\"md\">        \n    </vs-form-input>\n    <vs-form-input\n        :model.sync=\"password\"\n        type=\"password\"\n        label=\"密码\"\n        name=\"password\"\n        description=\"请输入密码\"\n        size=\"md\">        \n    </vs-form-input>\n    <div class=\"form-group row\">\n        <div class=\"col-md-12\">\n            <button type=\"submit\" class=\"btn btn-success\" :disabled=\"loading\">Sign in</button>\n        </div>\n    </div>\n</vs-form>\n";
+	module.exports = "\n<vs-form v-on:submit.prevent=\"submit\" :errors=\"errors\">\n    <vs-form-input\n        :model.sync=\"username\"\n        type=\"text\"\n        label=\"用户名\"\n        description=\"请输入您的用户名（注意不是昵称）\"\n        name=\"username\"\n        size=\"md\">        \n    </vs-form-input>\n    <vs-form-input\n        :model.sync=\"password\"\n        type=\"password\"\n        label=\"密码\"\n        name=\"password\"\n        description=\"请输入密码\"\n        size=\"md\">        \n    </vs-form-input>\n    <div class=\"form-group row\">\n        <div class=\"col-md-12\">\n            <button type=\"submit\" class=\"btn btn-success\" :disabled=\"loading\">登录</button>\n        </div>\n    </div>\n</vs-form>\n";
 
 /***/ },
-/* 102 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div>\n    <vs-jumbotron fluid>\n        <div class=\"col-md-8 col-sm-12\">\n            <h1 class=\"display-3\">\n                WiseCity\n            </h1>\n        </div>\n        <div class=\"col-md-4 col-sm-12\" v-show=\"!$root.hasLogined\">\n            <login-form></login-form>\n        </div>\n    </vs-jumbotron>\n</div>\n";
-
-/***/ },
-/* 103 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(104)
+	__webpack_require__(106)
+	__vue_script__ = __webpack_require__(108)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
-	  console.warn("[vue-loader] js/components/auth/Login.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(105)
+	  console.warn("[vue-loader] js/components/articles/ArticleListGroup.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(112)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13317,9 +13141,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-a3d5ea0c/Login.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleListGroup.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13328,7 +13152,126 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 104 */
+/* 106 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(107);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(74)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-affb591a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-affb591a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 107 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(73)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\nli.list-group-item .wrapper[_v-affb591a] {\n    padding: .25em;\n}\n\nli.list-group-item .label[_v-affb591a] {\n    margin-left: .2em;\n}\n\nli.list-group-item .label.pointer[_v-affb591a] {\n    cursor: pointer;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleListGroup.vue?45112f2e"],"names":[],"mappings":";AA8CA;IACA,eAAA;CACA;;AAEA;IACA,kBAAA;CACA;;AAEA;IACA,gBAAA;CACA","file":"ArticleListGroup.vue","sourcesContent":["<template>\n        <vs-list-group :flush=\"flush\">\n            <vs-list-group-item\n                v-for=\"article in articles\" class='ALGI'>\n                <div class=\"wrapper\">\n                    <a\n                        v-link=\"article.url\">\n                        {{ article.title }}\n                    </a>\n                    <vs-collapse-toggle \n                        :target=\"`collapse-article-${article.id}`\"\n                        :target-group=\"`article-group-${category}`\"\n                        class=\"pull-xs-right\">\n                        <vs-badge\n                            variant=\"success\"\n                            class=\"pull-xs-right pointer ALGB\">\n                            摘要\n                        </vs-badge>\n                    </vs-collapse-toggle>\n                    <vs-badge\n                        variant=\"danger\"\n                        class=\"pull-xs-right\"\n                        v-if=\"article.is_top\">\n                        置顶\n                    </vs-badge>\n                </div>\n                <vs-collapse \n                    :id=\"`collapse-article-${article.id}`\"\n                    :group=\"`article-group-${category}`\">\n                     <div class=\"card card-block\">\n                         {{ article.summary }}\n                     </div>\n                </vs-collapse>\n            </vs-list-group-item>\n        </vs-list-group>   \n        <list-loader\n            url=\"/api/articles/\"\n            :params=\"params\"\n            :model.sync=\"articles\">\n        </list-loader>\n        <slot name=\"no-results\" v-if=\"!articles.length\">\n            <div class=\"text-xs-center\" style=\"color: #eee;\">空空如也～～</div>\n        </slot>\n</template>\n\n<style scoped>\n    li.list-group-item .wrapper {\n        padding: .25em;\n    }\n\n    li.list-group-item .label {\n        margin-left: .2em;\n    }\n\n    li.list-group-item .label.pointer {\n        cursor: pointer;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ListLoader from 'misc/ListLoader.vue'\n\n    export default {\n        components: { ListLoader },\n        data: () => ({\n            articles: [],\n        }),\n        props: {\n            category: {\n                type: String,\n                required: true\n            },\n            flush: {\n                type: Boolean,\n                default: false\n            },\n            otherParams: {\n                type: Object,\n                default: {}\n            }\n        },\n        computed: {\n            params () {\n                let params = _.cloneDeep(this.otherParams)\n\n                params.article_type = articles.ArticleType[this.category]\n\n                return params\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
+/* 108 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _consts = __webpack_require__(79);
+	
+	var _ListLoader = __webpack_require__(109);
+	
+	var _ListLoader2 = _interopRequireDefault(_ListLoader);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.default = {
+	    components: { ListLoader: _ListLoader2.default },
+	    data: function data() {
+	        return {
+	            articles: []
+	        };
+	    },
+	    props: {
+	        category: {
+	            type: String,
+	            required: true
+	        },
+	        flush: {
+	            type: Boolean,
+	            default: false
+	        },
+	        otherParams: {
+	            type: Object,
+	            default: {}
+	        }
+	    },
+	    computed: {
+	        params: function params() {
+	            var params = _.cloneDeep(this.otherParams);
+	
+	            params.article_type = _consts.articles.ArticleType[this.category];
+	
+	            return params;
+	        }
+	    }
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+
+/***/ },
+/* 109 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(110)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] js/components/misc/ListLoader.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(111)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/ListLoader.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13337,7 +13280,102 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _LoginForm = __webpack_require__(99);
+	var _defineProperty2 = __webpack_require__(76);
+	
+	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.default = {
+	    props: {
+	        params: {
+	            type: Object,
+	            default: function _default() {
+	                return {};
+	            }
+	        },
+	        model: {
+	            type: Array,
+	            required: true,
+	            twoWay: true
+	        },
+	        url: {
+	            type: String,
+	            required: true
+	        }
+	    },
+	    methods: {
+	        load: function load() {
+	            var _this = this;
+	
+	            this.$http.get(this.url, { params: this.params }).then(function (res) {
+	                _this.model = res.data.results;
+	                if (!_this.model.length) _this.$emit('ListLoader:no-results');
+	            });
+	        }
+	    },
+	    events: (0, _defineProperty3.default)({}, 'ListLoader:reload', function ListLoaderReload() {
+	        this.load();
+	    })
+	};
+
+/***/ },
+/* 111 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<template></template>\n";
+
+/***/ },
+/* 112 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<vs-list-group :flush=\"flush\" _v-affb591a=\"\">\n    <vs-list-group-item v-for=\"article in articles\" class=\"ALGI\" _v-affb591a=\"\">\n        <div class=\"wrapper\" _v-affb591a=\"\">\n            <a v-link=\"article.url\" _v-affb591a=\"\">\n                {{ article.title }}\n            </a>\n            <vs-collapse-toggle :target=\"`collapse-article-${article.id}`\" :target-group=\"`article-group-${category}`\" class=\"pull-xs-right\" _v-affb591a=\"\">\n                <vs-badge variant=\"success\" class=\"pull-xs-right pointer ALGB\" _v-affb591a=\"\">\n                    摘要\n                </vs-badge>\n            </vs-collapse-toggle>\n            <vs-badge variant=\"danger\" class=\"pull-xs-right\" v-if=\"article.is_top\" _v-affb591a=\"\">\n                置顶\n            </vs-badge>\n        </div>\n        <vs-collapse :id=\"`collapse-article-${article.id}`\" :group=\"`article-group-${category}`\" _v-affb591a=\"\">\n             <div class=\"card card-block\" _v-affb591a=\"\">\n                 {{ article.summary }}\n             </div>\n        </vs-collapse>\n    </vs-list-group-item>\n</vs-list-group>   \n<list-loader url=\"/api/articles/\" :params=\"params\" :model.sync=\"articles\" _v-affb591a=\"\">\n</list-loader>\n<slot name=\"no-results\" v-if=\"!articles.length\" _v-affb591a=\"\">\n    <div class=\"text-xs-center\" style=\"color: #eee;\" _v-affb591a=\"\">空空如也～～</div>\n</slot>\n";
+
+/***/ },
+/* 113 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<div>\n    <vs-jumbotron fluid>\n        <div class=\"col-md-8 col-sm-12\">\n            <h1 class=\"display-3\">\n                WiseCity\n            </h1>\n        </div>\n        <div class=\"col-md-4 col-sm-12\">\n            <div v-show=\"!$root.hasLogined\">\n                <login-form></login-form>    \n            </div>\n            <div v-else>\n                <h1 class=\"display-5\">欢迎您，{{ $root.user.nickname }}</h1>\n            </div>\n        </div>\n    </vs-jumbotron>\n    <div class=\"container\">\n        <div class=\"col-sm-6 col-xs-12\">\n            <vs-card>\n                <h4 class=\"card-block card-title text-xs-center\">资讯·政府</h4>\n                <article-list-group\n                    category=\"government\"\n                    :other-params=\"{limit:3}\"\n                    flush>\n                    <div slot=\"no-results\" class=\"card-block card-text\">\n                        空空如也～～\n                    </div>\n                </article-list-group>\n            </vs-card>\n            <vs-card>\n                <h4 class=\"card-block card-title text-xs-center\">资讯·媒体</h4>\n                <article-list-group\n                    category=\"media\"\n                    :other-params=\"{limit:5}\"\n                    flush>\n                    <div slot=\"no-results\" class=\"card-block card-text\">\n                        空空如也～～\n                    </div>\n                </article-list-group>\n            </vs-card>\n        </div>\n        <div class=\"col-sm-6 col-xs-12\">\n            <vs-card>\n                <h4 class=\"card-block card-title text-xs-center\">金融</h4>\n                <article-list-group\n                    category=\"finance\"\n                    :other-params=\"{limit:2}\"\n                    flush>\n                    <div slot=\"no-results\" class=\"card-block card-text\">\n                        空空如也～～\n                    </div>\n                </article-list-group>\n            </vs-card>\n            <vs-card>\n                <h4 class=\"card-block card-title text-xs-center\">能源及原材料</h4>\n                <article-list-group\n                    category=\"energy_and_raw_materials\"\n                    :other-params=\"{limit:2}\"\n                    flush>\n                    <div slot=\"no-results\" class=\"card-block card-text\">\n                        空空如也～～\n                    </div>\n                </article-list-group>\n            </vs-card>\n        </div>\n    </div>\n</div>\n";
+
+/***/ },
+/* 114 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__vue_script__ = __webpack_require__(115)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] js/components/auth/Login.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(116)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/auth/Login.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+/* 115 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _LoginForm = __webpack_require__(102);
 	
 	var _LoginForm2 = _interopRequireDefault(_LoginForm);
 	
@@ -13355,22 +13393,22 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 105 */
+/* 116 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div class=\"col-md-6 col-md-offset-3 col-sm-12\">\n    <login-form @logined=\"logined\"></login-form>\n</div>\n";
 
 /***/ },
-/* 106 */
+/* 117 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(107)
+	__vue_script__ = __webpack_require__(118)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/auth/Logout.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(108)
+	__vue_template__ = __webpack_require__(119)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13378,9 +13416,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-619d5cc9/Logout.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/auth/Logout.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13389,7 +13427,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 107 */
+/* 118 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -13412,22 +13450,22 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 108 */
+/* 119 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div></div>\n";
 
 /***/ },
-/* 109 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(110)
+	__vue_script__ = __webpack_require__(121)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/articles/Articles.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(129)
+	__vue_template__ = __webpack_require__(144)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13435,9 +13473,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-95418072/Articles.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/Articles.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13446,7 +13484,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 110 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13455,17 +13493,17 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _index = __webpack_require__(111);
+	var _index = __webpack_require__(122);
 	
-	var _ArticleList = __webpack_require__(113);
+	var _ArticleList = __webpack_require__(124);
 	
 	var _ArticleList2 = _interopRequireDefault(_ArticleList);
 	
-	var _ArticleNavBar = __webpack_require__(126);
+	var _ArticleNavBar = __webpack_require__(141);
 	
 	var _ArticleNavBar2 = _interopRequireDefault(_ArticleNavBar);
 	
-	var _consts = __webpack_require__(75);
+	var _consts = __webpack_require__(79);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -13489,7 +13527,7 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 111 */
+/* 122 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -13499,7 +13537,7 @@ webpackJsonp([1],Array(92).concat([
 	});
 	exports.clearObject = exports.StrUtils = undefined;
 	
-	var _string = __webpack_require__(112);
+	var _string = __webpack_require__(123);
 	
 	var _string2 = _interopRequireDefault(_string);
 	
@@ -13514,7 +13552,7 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 112 */
+/* 123 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {"use strict";
@@ -13537,17 +13575,17 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 113 */
+/* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(114)
-	__vue_script__ = __webpack_require__(117)
+	__webpack_require__(125)
+	__vue_script__ = __webpack_require__(127)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/articles/ArticleList.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(125)
+	__vue_template__ = __webpack_require__(140)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13555,9 +13593,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-60865ecc/ArticleList.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleList.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13566,16 +13604,16 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 114 */
+/* 125 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(115);
+	var content = __webpack_require__(126);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -13592,22 +13630,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 115 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n.article-list {\n    padding: 0.9375rem;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleList.vue?40b065bd"],"names":[],"mappings":";;;;;;;;;;;;AAYA;IACA,mBAAA;CACA","file":"ArticleList.vue","sourcesContent":["<template>\n    <div class=\"container article-list sm-no-padding\">\n        <article-item \n            v-for=\"article in articles\" \n            :article=\"article\" \n            track-by=\"$index\">    \n        </article-item>\n    </div>\n    <infinite-loading :on-infinite=\"load\"></infinite-loading>\n</template>\n\n<style>\n    .article-list {\n        padding: 0.9375rem;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ArticleItem from './ArticleItem.vue'\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n\n    export default {\n        listConfig: {\n            listFieldName: 'articles'\n        },\n        components: {ArticleItem},\n        mixins: [InfiniteLoadingMixin],\n        data: () => ({\n            articles: [],\n            nextURL: ''\n        }),\n        computed: {\n            baseURL () {\n                return `/api/articles/`\n            },\n            params () {\n                let params = {}\n\n                if (this.category) \n                    params.article_type = articles.ArticleType[this.category]\n\n                return _.assign(params, this.otherParams)\n            }\n        },\n        props: {\n            category: {\n                type: String\n            },\n            otherParams: {\n                type: Object\n            },\n            once: {\n                type: Boolean,\n                default: false\n            }\n        },\n        watch: {\n            category () {\n                this.reset()\n            }\n        },\n        events: {\n            ['ArticleList:reset'] () {\n                this.reset()\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.article-list {\n    padding: 0.9375rem;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleList.vue?7f55185c"],"names":[],"mappings":";AAYA;IACA,mBAAA;CACA","file":"ArticleList.vue","sourcesContent":["<template>\n    <div class=\"article-list sm-no-padding\">\n        <article-item \n            v-for=\"article in articles\" \n            :article=\"article\" \n            track-by=\"$index\">    \n        </article-item>\n    </div>\n    <infinite-loading :on-infinite=\"load\"></infinite-loading>\n</template>\n\n<style>\n    .article-list {\n        padding: 0.9375rem;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ArticleItem from './ArticleItem.vue'\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n\n    export default {\n        listConfig: {\n            listFieldName: 'articles'\n        },\n        components: {ArticleItem},\n        mixins: [InfiniteLoadingMixin],\n        data: () => ({\n            articles: [],\n            nextURL: ''\n        }),\n        computed: {\n            baseURL () {\n                return `/api/articles/`\n            },\n            params () {\n                let params = {}\n\n                if (this.category) \n                    params.article_type = articles.ArticleType[this.category]\n\n                return _.assign(params, this.otherParams)\n            }\n        },\n        props: {\n            category: {\n                type: String\n            },\n            otherParams: {\n                type: Object\n            },\n            once: {\n                type: Boolean,\n                default: false\n            }\n        },\n        watch: {\n            category () {\n                this.reset()\n            }\n        },\n        events: {\n            ['ArticleList:reset'] () {\n                this.reset()\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 116 */,
-/* 117 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -13616,17 +13653,17 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _defineProperty2 = __webpack_require__(72);
+	var _defineProperty2 = __webpack_require__(76);
 	
 	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 	
-	var _consts = __webpack_require__(75);
+	var _consts = __webpack_require__(79);
 	
-	var _ArticleItem = __webpack_require__(118);
+	var _ArticleItem = __webpack_require__(128);
 	
 	var _ArticleItem2 = _interopRequireDefault(_ArticleItem);
 	
-	var _InfiniteLoadingMixin = __webpack_require__(123);
+	var _InfiniteLoadingMixin = __webpack_require__(138);
 	
 	var _InfiniteLoadingMixin2 = _interopRequireDefault(_InfiniteLoadingMixin);
 	
@@ -13680,17 +13717,17 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 118 */
+/* 128 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(119)
-	__vue_script__ = __webpack_require__(121)
+	__webpack_require__(129)
+	__vue_script__ = __webpack_require__(131)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/articles/ArticleItem.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(122)
+	__vue_template__ = __webpack_require__(137)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13698,9 +13735,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-74914ee2/ArticleItem.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13709,16 +13746,16 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 119 */
+/* 129 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(120);
+	var content = __webpack_require__(130);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -13735,21 +13772,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 120 */
+/* 130 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.operation button {\n    line-height: 1;\n    background: transparent;\n}    \n", "", {"version":3,"sources":["/./js/components/articles/ArticleItem.vue?5fa6bc09"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAiEA;IACA,eAAA;IACA,wBAAA;CACA","file":"ArticleItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block\">\n                <span class=\"label label-1\">\n                    @{{ article.author.nickname }}\n                </span>\n                <span class=\"label label-danger\" v-if=\"article.is_top\">\n                    置顶\n                </span>\n                <div class=\"btn-group operation pull-xs-right\">\n                    <button class=\"btn btn-default dropdown-toggle btn-sm\" data-toggle=\"dropdown\">\n                        <span class=\"caret\"></span>\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-right\">\n                        <li v-if=\"article.perms.change\">\n                            <a \n                                class=\"dropdown-item\" \n                                v-link=\"`/edit/articles/${article.id}/`\">\n                                编辑\n                            </a>\n                        </li>\n                        <li v-if=\"article.perms.delete\">\n                            <a class=\"dropdown-item\" href=\"#\">删除</a>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n            <div class=\"card-block article-main\">\n                <h1 class=\"card-title\" style=\"text-align:center\">\n                    <a v-link=\"article.url\">{{ article.title }}</a>\n                </h1>\n                <div class=\"card-text\">\n                    <div v-if=\"expanded\">\n                        <div class=\"article-content\">\n                            {{{ article.content }}}\n                        </div>\n                    </div>\n                    <p v-if=\"!expanded\" @click=\"expanded = true\">\n                        {{ article.summary }}\n                        <span style='color:rgba(155, 140, 103, 1);cursor:pointer'> |点击展开阅读</span>\n                    </p>\n                </div>\n                <file-list\n                    :model.sync=\"article.attachments\">\n                </file-list>\n                <p class=\"card-text\">\n                    <small class=\"text-muted\">\n                        {{ article.created_time | timesince }}\n                    </small>\n                </p>\n                <div class=\"card-text\" v-if=\"article.tags.length\">\n                    <i class=\"fa fa-tags\"></i>\n                    <vs-badge\n                        v-for=\"tag in article.tags\"\n                        variant=\"info\">\n                        {{tag}}\n                    </vs-badge>\n                </div>\n            </div>\n        </vs-card>        \n    </div>\n</template>\n\n<style>\n    .operation button {\n        line-height: 1;\n        background: transparent;\n    }    \n</style>\n\n<script>\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        components: { FileList },\n        props: {\n            article: {\n                type: Object,\n                required: true\n            },\n            expanded: false\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.operation button {\n    line-height: 1;\n    background: transparent;\n}    \n", "", {"version":3,"sources":["/./js/components/articles/ArticleItem.vue?5fa6bc09"],"names":[],"mappings":";AAiEA;IACA,eAAA;IACA,wBAAA;CACA","file":"ArticleItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block\">\n                <span class=\"label label-1\">\n                    @{{ article.author.nickname }}\n                </span>\n                <span class=\"label label-danger\" v-if=\"article.is_top\">\n                    置顶\n                </span>\n                <div class=\"btn-group operation pull-xs-right\">\n                    <button class=\"btn btn-default dropdown-toggle btn-sm\" data-toggle=\"dropdown\">\n                        <span class=\"caret\"></span>\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-right\">\n                        <li v-if=\"article.perms.change\">\n                            <a \n                                class=\"dropdown-item\" \n                                v-link=\"`/edit/articles/${article.id}/`\">\n                                编辑\n                            </a>\n                        </li>\n                        <li v-if=\"article.perms.delete\">\n                            <a class=\"dropdown-item\" href=\"#\">删除</a>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n            <div class=\"card-block article-main\">\n                <h1 class=\"card-title\" style=\"text-align:center\">\n                    <a v-link=\"article.url\">{{ article.title }}</a>\n                </h1>\n                <div class=\"card-text\">\n                    <div v-if=\"expanded\">\n                        <div class=\"article-content\">\n                            {{{ article.content }}}\n                        </div>\n                    </div>\n                    <p v-if=\"!expanded\" @click=\"expanded = true\">\n                        {{ article.summary }}\n                        <span style='color:rgba(155, 140, 103, 1);cursor:pointer'> |点击展开阅读</span>\n                    </p>\n                </div>\n                <file-list\n                    :model.sync=\"article.attachments\">\n                </file-list>\n                <p class=\"card-text\">\n                    <small class=\"text-muted\">\n                        {{ article.created_time | timesince }}\n                    </small>\n                </p>\n                <div class=\"card-text\" v-if=\"article.tags.length\">\n                    <i class=\"fa fa-tags\"></i>\n                    <vs-badge\n                        v-for=\"tag in article.tags\"\n                        variant=\"info\">\n                        {{tag}}\n                    </vs-badge>\n                </div>\n            </div>\n        </vs-card>        \n    </div>\n</template>\n\n<style>\n    .operation button {\n        line-height: 1;\n        background: transparent;\n    }    \n</style>\n\n<script>\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        components: { FileList },\n        props: {\n            article: {\n                type: Object,\n                required: true\n            },\n            expanded: false\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 121 */
+/* 131 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13758,7 +13795,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _FileList = __webpack_require__(280);
+	var _FileList = __webpack_require__(132);
 	
 	var _FileList2 = _interopRequireDefault(_FileList);
 	
@@ -13776,13 +13813,127 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 122 */
+/* 132 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __vue_script__, __vue_template__
+	__webpack_require__(133)
+	__vue_script__ = __webpack_require__(135)
+	if (__vue_script__ &&
+	    __vue_script__.__esModule &&
+	    Object.keys(__vue_script__).length > 1) {
+	  console.warn("[vue-loader] js/components/files/FileList.vue: named exports in *.vue files are ignored.")}
+	__vue_template__ = __webpack_require__(136)
+	module.exports = __vue_script__ || {}
+	if (module.exports.__esModule) module.exports = module.exports.default
+	if (__vue_template__) {
+	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
+	}
+	if (false) {(function () {  module.hot.accept()
+	  var hotAPI = require("vue-hot-reload-api")
+	  hotAPI.install(require("vue"), true)
+	  if (!hotAPI.compatible) return
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/files/FileList.vue"
+	  if (!module.hot.data) {
+	    hotAPI.createRecord(id, module.exports)
+	  } else {
+	    hotAPI.update(id, module.exports, __vue_template__)
+	  }
+	})()}
+
+/***/ },
+/* 133 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(134);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(74)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1259d7cc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1259d7cc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 134 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(73)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\nli a[_v-1259d7cc] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/files/FileList.vue?071a750e"],"names":[],"mappings":";AAuBA;IACA,gBAAA;CACA","file":"FileList.vue","sourcesContent":["<template>\n    <vs-list-group flush>\n        <vs-list-group-item v-for=\"file in model\">\n            {{ file.file_name }}\n            <a\n                href=\"#\"\n                v-if=\"deleteLink\"\n                class=\"pull-xs-right\"\n                @click.stop.prevent=\"removeFile($index)\">\n                删除\n            </a>\n            <a\n                href=\"{{file.storage_url}}\"\n                class=\"pull-xs-right\"\n                target=\"_blank\">\n                下载\n            </a>\n        </vs-list-group-item>\n        <slot></slot>\n    </vs-list-group>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    export default {\n        props: {\n            model: {\n                type: Array,\n                required: true,\n                twoWay: true\n            },\n            baseURL: {\n                type: String,\n                required: false\n            },\n            deleteLink: {\n                type: Boolean,\n                default: false\n            }\n        },\n        methods: {\n            removeFile (index) {\n                console.log(this.model[index].id)\n                let id = this.model[index].id\n\n                this.$http.delete(`${this.baseURL}${id}/`)\n                    .then(() => {\n                        this.model.splice(index, 1)\n                    })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
+/* 135 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = {
+	    props: {
+	        model: {
+	            type: Array,
+	            required: true,
+	            twoWay: true
+	        },
+	        baseURL: {
+	            type: String,
+	            required: false
+	        },
+	        deleteLink: {
+	            type: Boolean,
+	            default: false
+	        }
+	    },
+	    methods: {
+	        removeFile: function removeFile(index) {
+	            var _this = this;
+	
+	            console.log(this.model[index].id);
+	            var id = this.model[index].id;
+	
+	            this.$http.delete("" + this.baseURL + id + "/").then(function () {
+	                _this.model.splice(index, 1);
+	            });
+	        }
+	    }
+	};
+
+/***/ },
+/* 136 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<vs-list-group flush=\"\" _v-1259d7cc=\"\">\n    <vs-list-group-item v-for=\"file in model\" _v-1259d7cc=\"\">\n        {{ file.file_name }}\n        <a href=\"#\" v-if=\"deleteLink\" class=\"pull-xs-right\" @click.stop.prevent=\"removeFile($index)\" _v-1259d7cc=\"\">\n            删除\n        </a>\n        <a href=\"{{file.storage_url}}\" class=\"pull-xs-right\" target=\"_blank\" _v-1259d7cc=\"\">\n            下载\n        </a>\n    </vs-list-group-item>\n    <slot _v-1259d7cc=\"\"></slot>\n</vs-list-group>\n";
+
+/***/ },
+/* 137 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div>\n    <vs-card>\n        <div class=\"card-block\">\n            <span class=\"label label-1\">\n                @{{ article.author.nickname }}\n            </span>\n            <span class=\"label label-danger\" v-if=\"article.is_top\">\n                置顶\n            </span>\n            <div class=\"btn-group operation pull-xs-right\">\n                <button class=\"btn btn-default dropdown-toggle btn-sm\" data-toggle=\"dropdown\">\n                    <span class=\"caret\"></span>\n                </button>\n                <ul class=\"dropdown-menu dropdown-menu-right\">\n                    <li v-if=\"article.perms.change\">\n                        <a \n                            class=\"dropdown-item\" \n                            v-link=\"`/edit/articles/${article.id}/`\">\n                            编辑\n                        </a>\n                    </li>\n                    <li v-if=\"article.perms.delete\">\n                        <a class=\"dropdown-item\" href=\"#\">删除</a>\n                    </li>\n                </ul>\n            </div>\n        </div>\n        <div class=\"card-block article-main\">\n            <h1 class=\"card-title\" style=\"text-align:center\">\n                <a v-link=\"article.url\">{{ article.title }}</a>\n            </h1>\n            <div class=\"card-text\">\n                <div v-if=\"expanded\">\n                    <div class=\"article-content\">\n                        {{{ article.content }}}\n                    </div>\n                </div>\n                <p v-if=\"!expanded\" @click=\"expanded = true\">\n                    {{ article.summary }}\n                    <span style='color:rgba(155, 140, 103, 1);cursor:pointer'> |点击展开阅读</span>\n                </p>\n            </div>\n            <file-list\n                :model.sync=\"article.attachments\">\n            </file-list>\n            <p class=\"card-text\">\n                <small class=\"text-muted\">\n                    {{ article.created_time | timesince }}\n                </small>\n            </p>\n            <div class=\"card-text\" v-if=\"article.tags.length\">\n                <i class=\"fa fa-tags\"></i>\n                <vs-badge\n                    v-for=\"tag in article.tags\"\n                    variant=\"info\">\n                    {{tag}}\n                </vs-badge>\n            </div>\n        </div>\n    </vs-card>        \n</div>\n";
 
 /***/ },
-/* 123 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -13791,7 +13942,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _vueInfiniteLoading = __webpack_require__(124);
+	var _vueInfiniteLoading = __webpack_require__(139);
 	
 	var _vueInfiniteLoading2 = _interopRequireDefault(_vueInfiniteLoading);
 	
@@ -13844,28 +13995,28 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 124 */
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	!function(A,s){ true?module.exports=s():"function"==typeof define&&define.amd?define([],s):"object"==typeof exports?exports.VueInfiniteLoading=s():A.VueInfiniteLoading=s()}(this,function(){return function(A){function s(B){if(g[B])return g[B].exports;var C=g[B]={exports:{},id:B,loaded:!1};return A[B].call(C.exports,C,C.exports,s),C.loaded=!0,C.exports}var g={};return s.m=A,s.c=g,s.p="/",s(0)}([function(A,s,g){"use strict";function B(A){return A&&A.__esModule?A:{"default":A}}Object.defineProperty(s,"__esModule",{value:!0});var C=g(9),I=B(C);s["default"]=I["default"],"undefined"!=typeof window&&window.Vue&&window.Vue.component("infinite-loading",I["default"])},function(A,s){"use strict";function g(A){return"BODY"===A.tagName?window:["scroll","auto"].indexOf(getComputedStyle(A).overflowY)>-1?A:g(A.parentNode)}function B(A){var s=A===window?window.innerHeight:parseInt(getComputedStyle(A).height,10),g=A===window?document.body.scrollHeight:A.scrollHeight,B=isNaN(A.scrollTop)?A.pageYOffset:A.scrollTop;return g-s-B}Object.defineProperty(s,"__esModule",{value:!0}),s["default"]={data:function(){return{isLoading:!1,scrollParent:null,scrollHandler:null,isNoResults:!1,isNoMore:!1}},props:{distance:Number,onInfinite:Function},ready:function(){void 0===this.distance&&this.$set("distance",100),this.scrollParent=g(this.$el),this.scrollHandler=function(){var A=B(this.scrollParent);!this.isLoading&&A<=this.distance&&(this.isLoading=!0,this.onInfinite&&this.onInfinite.call())}.bind(this),setTimeout(this.scrollHandler,1),this.scrollParent.addEventListener("scroll",this.scrollHandler)},events:{"$InfiniteLoading:loaded":function(){this.isLoading=!1},"$InfiniteLoading:noResults":function(){this.isLoading=!1,this.isNoMore=!1,this.isNoResults=!0,this.scrollParent.removeEventListener("scroll",this.scrollHandler)},"$InfiniteLoading:noMore":function(){this.isLoading=!1,this.isNoResults=!1,this.isNoMore=!0,this.scrollParent.removeEventListener("scroll",this.scrollHandler)},"$InfiniteLoading:reset":function(){this.isLoading=!1,this.isNoMore=!1,this.isNoResults=!1,this.scrollParent.addEventListener("scroll",this.scrollHandler),this.scrollHandler()}},destroyed:function(){this.isNoResults||this.isNoMore||this.scrollParent.removeEventListener("scroll",this.scrollHandler)}}},function(A,s,g){s=A.exports=g(3)(),s.push([A.id,"@font-face{font-family:vue-infinite-loading;src:url("+g(4)+");src:url("+g(6)+") format('woff'),url("+g(5)+") format('truetype'),url("+g(7)+"#vue-infinite-loading) format('svg')}.icon-loading[_v-34e13b62]:before{content:\"\\E600\";font-family:vue-infinite-loading!important;font-style:normal;-webkit-font-smoothing:antialiased;-webkit-text-stroke-width:.2px;-moz-osx-font-smoothing:grayscale}.infinite-loading-container[_v-34e13b62]{clear:both;text-align:center}.infinite-loading-container [class^=icon-][_v-34e13b62]{display:inline-block;margin:15px 0;width:30px;height:30px;font-size:30px;line-height:30px;color:#999;border-radius:50%;-webkit-animation:ease loading 1.5s infinite;animation:ease loading 1.5s infinite}.infinite-status-tips[_v-34e13b62]{color:#666;font-size:14px;text-align:center;padding:10px 0}@-webkit-keyframes loading{0%{-webkit-transform:rotate(-38deg);transform:rotate(-38deg)}to{-webkit-transform:rotate(322deg);transform:rotate(322deg)}}@keyframes loading{0%{-webkit-transform:rotate(-38deg);transform:rotate(-38deg)}to{-webkit-transform:rotate(322deg);transform:rotate(322deg)}}",""])},function(A,s){A.exports=function(){var A=[];return A.toString=function(){for(var A=[],s=0;s<this.length;s++){var g=this[s];g[2]?A.push("@media "+g[2]+"{"+g[1]+"}"):A.push(g[1])}return A.join("")},A.i=function(s,g){"string"==typeof s&&(s=[[null,s,""]]);for(var B={},C=0;C<this.length;C++){var I=this[C][0];"number"==typeof I&&(B[I]=!0)}for(C=0;C<s.length;C++){var t=s[C];"number"==typeof t[0]&&B[t[0]]||(g&&!t[2]?t[2]=g:g&&(t[2]="("+t[2]+") and ("+g+")"),A.push(t))}},A}},function(A,s){A.exports="data:application/vnd.ms-fontobject;base64,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"},function(A,s){A.exports="data:application/x-font-ttf;base64,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"},function(A,s){A.exports="data:application/font-woff;base64,d09GRgABAAAAAAyQABAAAAAAFMgAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAABbAAAABoAAAAccu4eSEdERUYAAAGIAAAAHAAAACAAMgAET1MvMgAAAaQAAABNAAAAYFcuXF9jbWFwAAAB9AAAAEoAAAFKy5whr2N2dCAAAAJAAAAAGAAAACQM4/92ZnBnbQAAAlgAAAT8AAAJljD3npVnYXNwAAAHVAAAAAgAAAAIAAAAEGdseWYAAAdcAAACjQAAA7ilJjFeaGVhZAAACewAAAAwAAAANgnEv3doaGVhAAAKHAAAAB0AAAAkB1wDx2htdHgAAAo8AAAAFAAAABQKtACPbG9jYQAAClAAAAAMAAAADAGMAixtYXhwAAAKXAAAACAAAAAgAScCDG5hbWUAAAp8AAABVAAAAu7jdVIEcG9zdAAAC9AAAAAlAAAANEyRn89wcmVwAAAL+AAAAJUAAACVpbm+ZnicY2BgYGQAgjO2i86D6MsRtntgNABKAwbEAAB4nGNgZGBg4ANiCQYQYGJgBEIWMAbxGAAEdgA3eJxjYGH+wviFgZWBgWkm0xkGBoZ+CM34msGYkRMoysDGzAADjAIMCBCQ5prCcICh4hkDc8P/BoYYZnsGe5AakByzBFiJAgMjANX5DTUAAAB4nGNgYGBmgGAZBkYGEHAB8hjBfBYGDSDNBqQZGZgYKp4x/P8P5IPp/91SLFD1QMDIxgDnMDIBCSYGVMDIQDPATDujSQIAG5kJMwAAeJxjYEADRgxGzBL/HzLb/z8IowFEYghfeJydVWl300YUlbxkT9qSxFBE2zETpzQambAFAy4EKbIL6eJAaCXoIicxXfgDfOxn/Zqn0J7Tj/y03jteElp6TtscS+++mTtv03sTcYyo7HkgrlFHSl73pLL+VCrxs6Su616eKOn1krpsp56SFlErTZXMxf0juUR1LlaySbBJxuteop6rPO+D0ksyrChLItoi2sq8LE1TTxw/TbU4vWSQpoGUjIKdSqOPEKpRL5GqDmVKh169noqbBVI2GvGoo6J6ECruHM85pY06YKRylcNcsVlt5HtJ1vP6j9JEp9jbfpxgw2P0I1eBVIzMwPY0HodPJNPRXiIzkX/suE6UhVIbXACvarDHoErxobjxQbYTyNR4zfF1Uak0MhXnus+y2Swdj5UQ5cHf2KGUG7q/g7PTpqhWY3H7wDMGOSmUKHpIFoAOU5mn9gjaPLRAZo36o+Ic8HUIL7IQZSrPlCzoUAcyZ3b3k2La3UnXZHGgXwYyb3b3kt3Hw0WvjvVlu75gCmcxepIUi4sR3Icy66dMu9QIRxkXc8DFPF7i1rRCyMgCjEojzFFb+J7ZqGucHWNvdB6P1VNk0kX83Ux+PTipWOE4y3pH3Eicu8eu68JVIIsIpxrvJ44s6lBlsPr70pLrLDhhmGfFQsWXF753EfkvMW4/kHdM4VK+a4oS5XumKFOeMUWFchmFpVwxxRTlqimmKWummKE8a4pZynNGpv1/6ft9+D6HM+fhm9KDb8oL8E35AXxTfgjflB/BN6WCb8o6fFNehG9KbeBtKVMRqpixdPjtJVq1oWo5M7jAPg9kzYj2RW8E0jBKddVJKXW/pVX+JPnrosdj65OSujVpbIi7ummz+Ph0xm9uXTLqhp2rT4wj5aE9dPXYNKFT+83h385d3SouuauIasOoNiKYBIA26LcC8U3zbDsQ85ZdfPxDMALUz6k1VFN17dSVGg/yvKu7GJ7kwOOIY6CN666uwEsTU1ZD8+FnKTIV+4O8qZVq57B1+WRbNYc2pMLbIvaVZJym7b3kVUmVlfeqtF4+n4YhenoW14S2bN3JpBKhUTPO8fCuKkXZkZZy1D9C55eivgeccXZB68Mx7kTdQbU17HT4+WYjawsmhqa0vROgZCxdFWNR5VmcY3QNax1v3BKerqcnFvEpNpmPwkp1fZSPbiPNK3ZZZtGoSnV0l/ZZ7Ks2/TI7aFgdZz9pqjbu6mFbjSpSPVW+BrQHdlbd+FAPKz7qoFFVNdvo2shjNC5rxn8MyGJc+etGqybT7+CWaqfNYs1dQXPfmCz3Ti9vvcl+K+emkab/VqMtI5f9HI75bRHg3zkodlPWQL01aYhxAdkLGC7VROcOzd3GIOI6+x+d0/1vzcIgOattjdk89eHq6SiSO0x5nGWbWdb1KM1RtJPEPkViq8OJwU2N4VhuygYG5O4/rN/DPeCuLIsPvG0kgLjP2sSonurg7h5XIzTsK7kPGJljx7kNsAPgEsTm2LUrHQC70iXnDsBn5BA8IIfgITkEu+TcBPicHIIvyCH4khyCr8i5BdAjh2CPHIJH5BA8JqcNsE8OwRNyCL4mh+AbcloACTkEKTkET8kheGZkc1Lmb6nIdaDvLLoB9L3tGihbUH4wcmXCzqhYdt8isg8sIvXQyNUJ9YiKpQ4sIvW5RaT+aOTahPoTFUv92SJSf7GI1BfGl5mBlNd6L3lHB38CK76sfgABAAH//wAPeJydkk1rE1EUhs+5d+Zm8jE3mclkJh9NMpk0M03ThnbyRRNaR4uWNqkmDdiGSkCQgMuuuumiG8GFC3+AK5EKXXXlqiDu+ydE1/4AwdZpCiIupArnwMvLe57FywECFgC65BQoBKDs2QBACdBdIIikC4TgI8FXuA4QYKLgx6giRis1paA4NaVoYezbxQU5/fHYIhP/VoSFq8/0nCZBhyVoww6M8bB7Fu/veVsEQeYy8AlQjpyOASUJn8QwKIVYcKxghAksMoawEH4eRQlYRGJ7EAqIRAiHhJGKnMsDkOUQv5fpnhk+sfsXohQMTf4RmfSRvdshhcmtmN7DP3A48XkcpWf/BxyNRt7ccNjpuMuGMRwPx/t7nZ3OTne91Vhuu21jyVgaKMtJZS7hxfUKsgpanGSx0KjbjXqVVDBREBOarnFSZHYFnULATzhWlayiYTFNr7nNum2wAKc57DC36VTRsR1s1NdIB109i5jKpIdqaUalrzGUdHIvLrfIW0zki5znubl4ubmQtbRUyoxLhxFVjciq+kpiYlggQpSX1gd9b9bQg2JQFNnlOzGaTpznyySPkZST7pVjM4JsZtSnL+tGu10ygojHxxjPmPz9HSWt+HOU1uOzPCZLybRcVOIaHn4NJ+ORrP0FgMDdq0/0I70DOViFplcLogArLqGiQDwQRBC2Ef33pCCO/AcndBsoJQMglNwvVTIZy2ZaBW2n6VdVtALXyzHANCOHhu621rDVrE8da9pJferUXIMlrltr6Yau0Te5Rrg9X8n1d/eH/SOrWLSO+sMPU7mRP9jsnfQ2D/KmeS2HvQdiu1yaWUybpLqxkkjOt03zt/yN/P4rf3OaianlTtJd6538BKumgvgAAAB4nGNgZGBgAOLZD++2xPPbfGWQZ2EAgcsRtnvhtNL/g8z7me2BXA4GJpAoAFngC9x4nGNgZGBgtv9/kCGGhQEEmPczMDKgAlYAVKIDLAAAAAF2ACIAAAAAAVUAAAPpACwEAABBAAAAKAAoACgBZAHcAAEAAAAFAF8ABQAAAAAAAgAmADQAbAAAAIoBdwAAAAB4nKVQTUvDQBB9SVtB8OChF29DT6mwNQmJ9OPgQWn/gWcLTdqFsoFk0/ZHePaHiT/Il+3eFBSaZWbeTN58ArjBBwJ0X4Ah7j0OcYu1xz3E+PK4j2Hw4PEAy+DT4ysMw2cyg/41I5HL6nAIwZPHPbyh9riPKBh4PMB78OLxFaLwDge0KKCgYVA6rWFdZI+Kc21cbAsc2kJpU2qjbaH21XqjDaN/pv1MWZJgSO5sTUrBuVNMuLlgTvnvRGd2wqeQU1JWSPDIBpWxy6reFpJOYpnLb5MznCQqV2mcMOPCI7ySWqMhqdusm+m8zYJi+UqWaGkr7Fwhy3jEpjF5M2QY0+9aCaYO1dS5q6CwcteJvXdy1TOHj9Qj/h85r3S64TBF3ejKSMLdF2JtuW5ttdPGSnSIJ7NsLGovU1G15LGolaQxzUmSTNRRRquRqFJUc+lNvgGrzoVFeJxjYGIAg//NDEYM2AArEDMyMDFEMzKxl+ZlupoZGAAAWVAESwAAAEu4AMhSWLEBAY5ZuQgACABjILABI0QgsAMjcLAORSAgS7gADlFLsAZTWliwNBuwKFlgZiCKVViwAiVhsAFFYyNisAIjRLMKCQUEK7MKCwUEK7MODwUEK1myBCgJRVJEswoNBgQrsQYBRLEkAYhRWLBAiFixBgNEsSYBiFFYuAQAiFixBgFEWVlZWbgB/4WwBI2xBQBEAAAA"},function(A,s){A.exports="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiID4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8bWV0YWRhdGE+CkNyZWF0ZWQgYnkgRm9udEZvcmdlIDIwMTIwNzMxIGF0IFdlZCBNYXkgMTEgMDk6Mzk6MDkgMjAxNgogQnkgYWRtaW4KPC9tZXRhZGF0YT4KPGRlZnM+Cjxmb250IGlkPSJ2dWUtaW5maW5pdGUtbG9hZGluZyIgaG9yaXotYWR2LXg9IjM3NCIgPgogIDxmb250LWZhY2UgCiAgICBmb250LWZhbWlseT0idnVlLWluZmluaXRlLWxvYWRpbmciCiAgICBmb250LXdlaWdodD0iNTAwIgogICAgZm9udC1zdHJldGNoPSJub3JtYWwiCiAgICB1bml0cy1wZXItZW09IjEwMjQiCiAgICBwYW5vc2UtMT0iMiAwIDYgMyAwIDAgMCAwIDAgMCIKICAgIGFzY2VudD0iODk2IgogICAgZGVzY2VudD0iLTEyOCIKICAgIHgtaGVpZ2h0PSI3OTIiCiAgICBiYm94PSIzNCAtNjMgOTU5IDgzMSIKICAgIHVuZGVybGluZS10aGlja25lc3M9IjUwIgogICAgdW5kZXJsaW5lLXBvc2l0aW9uPSItMTAwIgogICAgdW5pY29kZS1yYW5nZT0iVSswMDc4LUU2MDAiCiAgLz4KPG1pc3NpbmctZ2x5cGggCmQ9Ik0zNCAwdjY4MmgyNzJ2LTY4MmgtMjcyek02OCAzNGgyMDR2NjE0aC0yMDR2LTYxNHoiIC8+CiAgICA8Z2x5cGggZ2x5cGgtbmFtZT0iLm5vdGRlZiIgCmQ9Ik0zNCAwdjY4MmgyNzJ2LTY4MmgtMjcyek02OCAzNGgyMDR2NjE0aC0yMDR2LTYxNHoiIC8+CiAgICA8Z2x5cGggZ2x5cGgtbmFtZT0iLm51bGwiIGhvcml6LWFkdi14PSIwIiAKIC8+CiAgICA8Z2x5cGggZ2x5cGgtbmFtZT0ibm9ubWFya2luZ3JldHVybiIgaG9yaXotYWR2LXg9IjM0MSIgCiAvPgogICAgPGdseXBoIGdseXBoLW5hbWU9IngiIHVuaWNvZGU9IngiIGhvcml6LWFkdi14PSIxMDAxIiAKZD0iTTI4MSA1NDNxLTI3IC0xIC01MyAtMWgtODNxLTE4IDAgLTM2LjUgLTZ0LTMyLjUgLTE4LjV0LTIzIC0zMnQtOSAtNDUuNXYtNzZoOTEydjQxcTAgMTYgLTAuNSAzMHQtMC41IDE4cTAgMTMgLTUgMjl0LTE3IDI5LjV0LTMxLjUgMjIuNXQtNDkuNSA5aC0xMzN2LTk3aC00Mzh2OTd6TTk1NSAzMTB2LTUycTAgLTIzIDAuNSAtNTJ0MC41IC01OHQtMTAuNSAtNDcuNXQtMjYgLTMwdC0zMyAtMTZ0LTMxLjUgLTQuNXEtMTQgLTEgLTI5LjUgLTAuNQp0LTI5LjUgMC41aC0zMmwtNDUgMTI4aC00MzlsLTQ0IC0xMjhoLTI5aC0zNHEtMjAgMCAtNDUgMXEtMjUgMCAtNDEgOS41dC0yNS41IDIzdC0xMy41IDI5LjV0LTQgMzB2MTY3aDkxMXpNMTYzIDI0N3EtMTIgMCAtMjEgLTguNXQtOSAtMjEuNXQ5IC0yMS41dDIxIC04LjVxMTMgMCAyMiA4LjV0OSAyMS41dC05IDIxLjV0LTIyIDguNXpNMzE2IDEyM3EtOCAtMjYgLTE0IC00OHEtNSAtMTkgLTEwLjUgLTM3dC03LjUgLTI1dC0zIC0xNXQxIC0xNC41CnQ5LjUgLTEwLjV0MjEuNSAtNGgzN2g2N2g4MWg4MGg2NGgzNnEyMyAwIDM0IDEydDIgMzhxLTUgMTMgLTkuNSAzMC41dC05LjUgMzQuNXEtNSAxOSAtMTEgMzloLTM2OHpNMzM2IDQ5OHYyMjhxMCAxMSAyLjUgMjN0MTAgMjEuNXQyMC41IDE1LjV0MzQgNmgxODhxMzEgMCA1MS41IC0xNC41dDIwLjUgLTUyLjV2LTIyN2gtMzI3eiIgLz4KICAgIDxnbHlwaCBnbHlwaC1uYW1lPSJ1bmlFNjAwIiB1bmljb2RlPSImI3hlNjAwOyIgaG9yaXotYWR2LXg9IjEwMjQiIApkPSJNOTI0IDU1OHEtMzAgNzEgLTgzIDEyOHExMSAyMSAxMSA0NXEwIDQyIC0yOSA3MXQtNzEgMjlxLTQzIDAgLTczIC0zMnEtODAgMzIgLTE2NyAzMnEtOTEgMCAtMTc0IC0zNXEtODAgLTM0IC0xNDIgLTk2dC05NiAtMTQycS0zNSAtODMgLTM1IC0xNzR0MzUgLTE3NHEzNCAtODAgOTYgLTE0MnQxNDIgLTk2cTgzIC0zNSAxNzQgLTM1dDE3NCAzNXE4MCAzNCAxNDIgOTZ0OTYgMTQycTM1IDgzIDM1IDE3NHQtMzUgMTc0ek04ODggMjI1CnEtMzEgLTczIC04Ny41IC0xMjkuNXQtMTI5LjUgLTg3LjVxLTc2IC0zMiAtMTU5IC0zMnQtMTU5IDMycS03MyAzMSAtMTI5LjUgODcuNXQtODcuNSAxMjkuNXEtMzIgNzYgLTMyIDE1OXQzMiAxNTlxMzEgNzMgODcuNSAxMjkuNXQxMjkuNSA4Ny41cTc2IDMyIDE1OSAzMnE3NiAwIDE0NiAtMjdxLTUgLTE2IC01IC0zNHEwIC00MSAyOSAtNzAuNXQ3MCAtMjkuNXEzNyAwIDY1IDI0cTQ1IC01MCA3MSAtMTEycTMyIC03NiAzMiAtMTU5dC0zMiAtMTU5CnoiIC8+CiAgPC9mb250Pgo8L2RlZnM+PC9zdmc+Cg=="},function(A,s){A.exports='<div class=infinite-loading-container _v-34e13b62=""> <i class=icon-loading v-show=isLoading _v-34e13b62=""></i> <div class=infinite-status-tips v-show="!isLoading &amp;&amp; isNoResults" _v-34e13b62=""> <slot name=no-results _v-34e13b62="">No results :(</slot> </div> <div class=infinite-status-tips v-show="!isLoading &amp;&amp; isNoMore" _v-34e13b62=""> <slot name=no-more _v-34e13b62="">No more data :)</slot> </div> </div>'},function(A,s,g){var B,C;g(11),B=g(1),C=g(8),A.exports=B||{},A.exports.__esModule&&(A.exports=A.exports["default"]),C&&(("function"==typeof A.exports?A.exports.options||(A.exports.options={}):A.exports).template=C)},function(A,s,g){function B(A,s){for(var g=0;g<A.length;g++){var B=A[g],C=e[B.id];if(C){C.refs++;for(var I=0;I<C.parts.length;I++)C.parts[I](B.parts[I]);for(;I<B.parts.length;I++)C.parts.push(w(B.parts[I],s))}else{for(var t=[],I=0;I<B.parts.length;I++)t.push(w(B.parts[I],s));e[B.id]={id:B.id,refs:1,parts:t}}}}function C(A){for(var s=[],g={},B=0;B<A.length;B++){var C=A[B],I=C[0],t=C[1],i=C[2],w=C[3],Q={css:t,media:i,sourceMap:w};g[I]?g[I].parts.push(Q):s.push(g[I]={id:I,parts:[Q]})}return s}function I(A,s){var g=r(),B=M[M.length-1];if("top"===A.insertAt)B?B.nextSibling?g.insertBefore(s,B.nextSibling):g.appendChild(s):g.insertBefore(s,g.firstChild),M.push(s);else{if("bottom"!==A.insertAt)throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");g.appendChild(s)}}function t(A){A.parentNode.removeChild(A);var s=M.indexOf(A);s>=0&&M.splice(s,1)}function i(A){var s=document.createElement("style");return s.type="text/css",I(A,s),s}function w(A,s){var g,B,C;if(s.singleton){var I=y++;g=n||(n=i(s)),B=Q.bind(null,g,I,!1),C=Q.bind(null,g,I,!0)}else g=i(s),B=L.bind(null,g),C=function(){t(g)};return B(A),function(s){if(s){if(s.css===A.css&&s.media===A.media&&s.sourceMap===A.sourceMap)return;B(A=s)}else C()}}function Q(A,s,g,B){var C=g?"":B.css;if(A.styleSheet)A.styleSheet.cssText=l(s,C);else{var I=document.createTextNode(C),t=A.childNodes;t[s]&&A.removeChild(t[s]),t.length?A.insertBefore(I,t[s]):A.appendChild(I)}}function L(A,s){var g=s.css,B=s.media,C=s.sourceMap;if(B&&A.setAttribute("media",B),C&&(g+="\n/*# sourceURL="+C.sources[0]+" */",g+="\n/*# sourceMappingURL=data:application/json;base64,"+btoa(unescape(encodeURIComponent(JSON.stringify(C))))+" */"),A.styleSheet)A.styleSheet.cssText=g;else{for(;A.firstChild;)A.removeChild(A.firstChild);A.appendChild(document.createTextNode(g))}}var e={},E=function(A){var s;return function(){return"undefined"==typeof s&&(s=A.apply(this,arguments)),s}},o=E(function(){return/msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase())}),r=E(function(){return document.head||document.getElementsByTagName("head")[0]}),n=null,y=0,M=[];A.exports=function(A,s){s=s||{},"undefined"==typeof s.singleton&&(s.singleton=o()),"undefined"==typeof s.insertAt&&(s.insertAt="bottom");var g=C(A);return B(g,s),function(A){for(var I=[],t=0;t<g.length;t++){var i=g[t],w=e[i.id];w.refs--,I.push(w)}if(A){var Q=C(A);B(Q,s)}for(var t=0;t<I.length;t++){var w=I[t];if(0===w.refs){for(var L=0;L<w.parts.length;L++)w.parts[L]();delete e[w.id]}}}};var l=function(){var A=[];return function(s,g){return A[s]=g,A.filter(Boolean).join("\n")}}()},function(A,s,g){var B=g(2);"string"==typeof B&&(B=[[A.id,B,""]]);g(10)(B,{});B.locals&&(A.exports=B.locals)}])});
 
 /***/ },
-/* 125 */
+/* 140 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container article-list sm-no-padding\">\n    <article-item \n        v-for=\"article in articles\" \n        :article=\"article\" \n        track-by=\"$index\">    \n    </article-item>\n</div>\n<infinite-loading :on-infinite=\"load\"></infinite-loading>\n";
+	module.exports = "\n<div class=\"article-list sm-no-padding\">\n    <article-item \n        v-for=\"article in articles\" \n        :article=\"article\" \n        track-by=\"$index\">    \n    </article-item>\n</div>\n<infinite-loading :on-infinite=\"load\"></infinite-loading>\n";
 
 /***/ },
-/* 126 */
+/* 141 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(127)
+	__vue_script__ = __webpack_require__(142)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/articles/ArticleNavBar.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(128)
+	__vue_template__ = __webpack_require__(143)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13873,9 +14024,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-539541ec/ArticleNavBar.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleNavBar.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13884,7 +14035,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 127 */
+/* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -13893,7 +14044,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _consts = __webpack_require__(75);
+	var _consts = __webpack_require__(79);
 	
 	var CATEGORIES_NAME = ['政府', '公司', '媒体', '交易', '能源及原材料'];
 	
@@ -13933,29 +14084,29 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 128 */
+/* 143 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div :class=\"class\">\n    <vs-nav \n        type=\"pills\" :vertical=\"vertical\">\n        <vs-nav-item\n            v-for=\"category in categories\"\n            :link=\"`/articles/${$key}/`\"\n            :active='$key === currentCategory'>\n            {{ category }}\n        </vs-nav-item>\n    </vs-nav>\n</div>\n";
 
 /***/ },
-/* 129 */
+/* 144 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div class=\"rows\">\n    <div class=\"col-md-3 hidden-sm-down\">\n        <article-nav-bar \n            :vertical=\"true\" \n            class=\"hidden-sm-down\"\n            :current-category=\"currentCategory\">    \n        </article-nav-bar>\n    </div>\n    <div class=\"col-md-9 col-sm-12\">\n        <article-list\n            :category=\"currentCategory\">    \n        </article-list>         \n    </div> \n</div>\n";
 
 /***/ },
-/* 130 */
+/* 145 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(131)
-	__vue_script__ = __webpack_require__(133)
+	__webpack_require__(146)
+	__vue_script__ = __webpack_require__(148)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/articles/Tags.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(134)
+	__vue_template__ = __webpack_require__(149)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -13963,9 +14114,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-921246ba/Tags.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/Tags.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13974,23 +14125,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 131 */
+/* 146 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(132);
+	var content = __webpack_require__(147);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-921246ba&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-921246ba&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d64fcf3e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d64fcf3e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -14000,21 +14151,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 132 */
+/* 147 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.label[_v-921246ba] {\n    margin: 0.2rem 0.4rem;\n}\n.label a[_v-921246ba] {\n    color: #fff;\n}\n", "", {"version":3,"sources":["/./js/components/articles/Tags.vue?b7ab4152"],"names":[],"mappings":";;;;;;;;;;;;;;;;;AAiBA;IACA,sBAAA;CACA;AACA;IACA,YAAA;CACA","file":"Tags.vue","sourcesContent":["<template>\n    <div class=\"container\">\n        <div>\n            <vs-badge\n                v-for=\"tag in tags\"\n                :variant=\"tag.id == currentTagId ? 'danger' : 'info' \"\n                >\n                <a v-link=\"`/tags/${tag.id}/`\">{{tag.name}}</a>\n            </vs-badge>\n        </div>\n        <article-list\n            :other-params=\"{ tags__id: currentTagId }\">\n        </article-list>\n    </div>\n</template>\n\n<style scoped>\n    .label {\n        margin: 0.2rem 0.4rem;\n    }\n    .label a {\n        color: #fff;\n    }\n</style>\n\n<script>\n    import ArticleList from './ArticleList.vue'\n\n    export default {\n        components: { ArticleList },\n        data: () => ({\n            tags: [],\n            currentTagId: 0\n        }),\n        methods: {\n            loadTags () {\n                return this.$http.get('/api/tags/', { params: { limit: -1}})\n            }\n        },\n        route: {\n            data (transition) {\n                let id = transition.to.params.id || 0\n\n                if (_.startsWith(transition.from.path, '/tags')) \n                    transition.next({ currentTagId: id})\n                else\n                    return this.loadTags()\n                        .then(res => ({\n                            tags: res.data.results,\n                            currentTagId: id\n                        }))\n            }\n        },\n        watch: {\n            currentTagId () {\n                this.$broadcast('ArticleList:reset')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.label[_v-d64fcf3e] {\n    margin: 0.2rem 0.4rem;\n}\n.label a[_v-d64fcf3e] {\n    color: #fff;\n}\n", "", {"version":3,"sources":["/./js/components/articles/Tags.vue?b7ab4152"],"names":[],"mappings":";AAiBA;IACA,sBAAA;CACA;AACA;IACA,YAAA;CACA","file":"Tags.vue","sourcesContent":["<template>\n    <div class=\"container\">\n        <div>\n            <vs-badge\n                v-for=\"tag in tags\"\n                :variant=\"tag.id == currentTagId ? 'danger' : 'info' \"\n                >\n                <a v-link=\"`/tags/${tag.id}/`\">{{tag.name}}</a>\n            </vs-badge>\n        </div>\n        <article-list\n            :other-params=\"{ tags__id: currentTagId }\">\n        </article-list>\n    </div>\n</template>\n\n<style scoped>\n    .label {\n        margin: 0.2rem 0.4rem;\n    }\n    .label a {\n        color: #fff;\n    }\n</style>\n\n<script>\n    import ArticleList from './ArticleList.vue'\n\n    export default {\n        components: { ArticleList },\n        data: () => ({\n            tags: [],\n            currentTagId: 0\n        }),\n        methods: {\n            loadTags () {\n                return this.$http.get('/api/tags/', { params: { limit: -1}})\n            }\n        },\n        route: {\n            data (transition) {\n                let id = transition.to.params.id || 0\n\n                if (_.startsWith(transition.from.path, '/tags')) \n                    transition.next({ currentTagId: id})\n                else\n                    return this.loadTags()\n                        .then(res => ({\n                            tags: res.data.results,\n                            currentTagId: id\n                        }))\n            }\n        },\n        watch: {\n            currentTagId () {\n                this.$broadcast('ArticleList:reset')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 133 */
+/* 148 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -14023,7 +14174,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _ArticleList = __webpack_require__(113);
+	var _ArticleList = __webpack_require__(124);
 	
 	var _ArticleList2 = _interopRequireDefault(_ArticleList);
 	
@@ -14063,22 +14214,22 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 134 */
+/* 149 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container\" _v-921246ba=\"\">\n    <div _v-921246ba=\"\">\n        <vs-badge v-for=\"tag in tags\" :variant=\"tag.id == currentTagId ? 'danger' : 'info' \" _v-921246ba=\"\">\n            <a v-link=\"`/tags/${tag.id}/`\" _v-921246ba=\"\">{{tag.name}}</a>\n        </vs-badge>\n    </div>\n    <article-list :other-params=\"{ tags__id: currentTagId }\" _v-921246ba=\"\">\n    </article-list>\n</div>\n";
+	module.exports = "\n<div class=\"container\" _v-d64fcf3e=\"\">\n    <div _v-d64fcf3e=\"\">\n        <vs-badge v-for=\"tag in tags\" :variant=\"tag.id == currentTagId ? 'danger' : 'info' \" _v-d64fcf3e=\"\">\n            <a v-link=\"`/tags/${tag.id}/`\" _v-d64fcf3e=\"\">{{tag.name}}</a>\n        </vs-badge>\n    </div>\n    <article-list :other-params=\"{ tags__id: currentTagId }\" _v-d64fcf3e=\"\">\n    </article-list>\n</div>\n";
 
 /***/ },
-/* 135 */
+/* 150 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(136)
+	__vue_script__ = __webpack_require__(151)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/articles/ArticleDetail.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(138)
+	__vue_template__ = __webpack_require__(153)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14086,9 +14237,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-818cc466/ArticleDetail.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleDetail.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14097,7 +14248,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 136 */
+/* 151 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14106,11 +14257,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _DetailMixin = __webpack_require__(137);
+	var _DetailMixin = __webpack_require__(152);
 	
 	var _DetailMixin2 = _interopRequireDefault(_DetailMixin);
 	
-	var _ArticleNavBar = __webpack_require__(126);
+	var _ArticleNavBar = __webpack_require__(141);
 	
 	var _ArticleNavBar2 = _interopRequireDefault(_ArticleNavBar);
 	
@@ -14133,7 +14284,7 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 137 */
+/* 152 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14142,7 +14293,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _index = __webpack_require__(111);
+	var _index = __webpack_require__(122);
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
@@ -14166,22 +14317,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 138 */
+/* 153 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container article-main\">\n    <article class=\"article col-md-8\">\n        <h1 class=\"article-title\">\n            {{ article.title }}\n        </h1>\n        <div class=\"article-content\">\n            {{{ article.content }}}\n        </div>\n    </article>       \n    <article-nav-bar class=\"col-md-4\" vertical :current-category=\"article.article_type\"></article-nav-bar>\n</div>\n";
+	module.exports = "\n<div class=\"container article-main\">\n    <article class=\"article col-md-8\">\n        <h1 class=\"article-title\">\n            {{ article.title }}\n        </h1>\n        <div class=\"article-content\">\n            {{{ article.content }}}\n        </div>\n    </article>       \n    <article-nav-bar class=\"col-md-4 hidden-sm-down\" vertical :current-category=\"article.article_type\"></article-nav-bar>\n</div>\n";
 
 /***/ },
-/* 139 */
+/* 154 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(140)
+	__webpack_require__(155)
+	__vue_script__ = __webpack_require__(157)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/articles/ArticleEdit.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(154)
+	__vue_template__ = __webpack_require__(171)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14189,9 +14341,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-41f60ff4/ArticleEdit.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleEdit.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14200,7 +14352,47 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 140 */
+/* 155 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(156);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(74)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5f0aaaf0&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleEdit.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5f0aaaf0&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleEdit.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 156 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(73)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\ndiv.checkbox label[_v-5f0aaaf0] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleEdit.vue?5ec9123a"],"names":[],"mappings":";AAsCA;IACA,eAAA;CACA","file":"ArticleEdit.vue","sourcesContent":["<template>\n    <div class=\"container\">\n        <editor\n            v-if=\"!$loadingRouteData\"\n            name=\"article-edit\"\n            base-url=\"/api/articles/\"\n            :model.sync=\"article\"\n            @submitted=\"submitted\">\n            <vs-form-input\n                :model.sync=\"article.title\"\n                type=\"text\"\n                name='title'\n                label=\"标题\"\n                placeholder=\"标题\"\n                slot=\"fields-before\">\n            </vs-form-input>\n            <vs-form-input\n                :model.sync=\"tagsDisplay\"\n                type=\"text\"\n                name='tags'\n                label='标签'\n                help-text=\"以空格分隔\"\n                placeholder=\"标签\"\n                slot=\"fields-before\">\n            </vs-form-input>\n            <fieldset class=\"form-group\" slot=\"fields-after\">\n                <div class=\"checkbox\">\n                    <label>\n                        <input type=\"checkbox\" v-model=\"article.is_top\">\n                        置顶\n                    </label>\n                </div>\n            </fieldset>\n        </editor>\n    </div>\n</template>\n\n<style scoped>\n    div.checkbox label {\n        display: block;\n    }\n</style>\n\n<script>\n    import Editor from 'misc/edit/Editor.vue'\n    import EditPageMixin from 'mixins/EditPageMixin.es'\n\n    export default {\n        mixins: [EditPageMixin],\n        components: { Editor },\n        data: () => ({\n            article: {\n                id: '',\n                title: '',\n                content: '', \n                tags: [],\n                attachments: [],\n                is_top: false\n            }\n        }),\n        editConfig: {\n            getInitURL (id) {\n                return `/api/articles/${id}/?fields=title,content,attachments,tags,is_top,id`\n            },\n            objectFieldName: 'article'\n        },\n        computed: {\n            tagsDisplay: {\n                get () {\n                    return this.article.tags.join(' ')\n                },\n                set (value) {\n                    this.article.tags = _.trim(value).split(/\\ +/)\n                }\n            }\n        },\n        methods: {\n            submitted (editor, article) {\n                this.$router.go(article.url)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
+/* 157 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -14209,11 +14401,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Editor = __webpack_require__(141);
+	var _Editor = __webpack_require__(158);
 	
 	var _Editor2 = _interopRequireDefault(_Editor);
 	
-	var _EditPageMixin = __webpack_require__(153);
+	var _EditPageMixin = __webpack_require__(170);
 	
 	var _EditPageMixin2 = _interopRequireDefault(_EditPageMixin);
 	
@@ -14260,16 +14452,16 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 141 */
+/* 158 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(142)
+	__vue_script__ = __webpack_require__(159)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/misc/edit/Editor.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(152)
+	__vue_template__ = __webpack_require__(169)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14277,9 +14469,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-96114e32/Editor.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/edit/Editor.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14288,7 +14480,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 142 */
+/* 159 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -14297,15 +14489,15 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _consts = __webpack_require__(75);
+	var _consts = __webpack_require__(79);
 	
-	var _index = __webpack_require__(111);
+	var _index = __webpack_require__(122);
 	
-	var _CKEditor = __webpack_require__(143);
+	var _CKEditor = __webpack_require__(160);
 	
 	var _CKEditor2 = _interopRequireDefault(_CKEditor);
 	
-	var _Uploader = __webpack_require__(149);
+	var _Uploader = __webpack_require__(166);
 	
 	var _Uploader2 = _interopRequireDefault(_Uploader);
 	
@@ -14384,17 +14576,17 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 143 */
+/* 160 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(144)
-	__vue_script__ = __webpack_require__(146)
+	__webpack_require__(161)
+	__vue_script__ = __webpack_require__(163)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/misc/edit/CKEditor.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(148)
+	__vue_template__ = __webpack_require__(165)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14402,9 +14594,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-f56d9262/CKEditor.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/edit/CKEditor.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14413,16 +14605,16 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 144 */
+/* 161 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(145);
+	var content = __webpack_require__(162);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -14439,21 +14631,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 145 */
+/* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n.cke_top.cke_reset_all {\n    height: 31px!important;\n    overflow: auto;\n}\n", "", {"version":3,"sources":["/./js/components/misc/edit/CKEditor.vue?78800648"],"names":[],"mappings":";;;;;;;AAOA;IACA,uBAAA;IACA,eAAA;CACA","file":"CKEditor.vue","sourcesContent":["<template>\n    <div>\n        <textarea :id=\"editorId\" cols=\"30\" rows=\"10\" v-model=\"model\"></textarea>\n    </div>\n</template>\n\n<style>\n    .cke_top.cke_reset_all {\n        height: 31px!important;\n        overflow: auto;\n    }\n</style>\n\n<script>\n    import $script from 'scriptjs'\n\n    export default {\n        events: {\n            ['CKEditor:insert-data']: function (data) {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.insertHtml(data)\n            },\n            ['CKEditor:reset']: function () {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.setData('')\n            }\n        },\n        props: {\n            editorId: {\n                type: String,\n                required: true\n            },\n            model: {\n                type: String,\n                required: true\n            }\n        },\n        ready () {\n            if (window.CKEDITOR)\n                this.initEditor()\n            else\n                $script('//cdn.ckeditor.com/4.5.9/standard/ckeditor.js', this.initEditor.bind(this))\n        },\n        methods: {\n            initEditor () {\n                let ckeditor = CKEDITOR.replace(this.editorId, {\n                    language: 'zh-CN',\n                    removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Image,Superscript,Subscript,About,Anchor',\n                    toolbarGroups: [\n                        { name: 'styles', groups: [ 'styles' ] },\n                        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },\n                        { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },\n                        { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },\n                        { name: 'links', groups: [ 'links' ] },\n                        { name: 'insert', groups: [ 'insert' ] },\n                        { name: 'forms', groups: [ 'forms' ] },\n                        { name: 'tools', groups: [ 'tools' ] },\n                        { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },\n                        { name: 'others', groups: [ 'others' ] },\n                        { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },\n                        { name: 'colors', groups: [ 'colors' ] },\n                        { name: 'about', groups: [ 'about' ] }\n                    ]\n                })\n                ckeditor.on('change', () => {\n                    this.model = ckeditor.getData()\n                })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.cke_top.cke_reset_all {\n    height: 31px!important;\n    overflow: auto;\n}\n", "", {"version":3,"sources":["/./js/components/misc/edit/CKEditor.vue?78800648"],"names":[],"mappings":";AAOA;IACA,uBAAA;IACA,eAAA;CACA","file":"CKEditor.vue","sourcesContent":["<template>\n    <div>\n        <textarea :id=\"editorId\" cols=\"30\" rows=\"10\" v-model=\"model\"></textarea>\n    </div>\n</template>\n\n<style>\n    .cke_top.cke_reset_all {\n        height: 31px!important;\n        overflow: auto;\n    }\n</style>\n\n<script>\n    import $script from 'scriptjs'\n\n    export default {\n        events: {\n            ['CKEditor:insert-data']: function (data) {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.insertHtml(data)\n            },\n            ['CKEditor:reset']: function () {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.setData('')\n            }\n        },\n        props: {\n            editorId: {\n                type: String,\n                required: true\n            },\n            model: {\n                type: String,\n                required: true\n            }\n        },\n        ready () {\n            if (window.CKEDITOR)\n                this.initEditor()\n            else\n                $script('//cdn.ckeditor.com/4.5.9/standard/ckeditor.js', this.initEditor.bind(this))\n        },\n        methods: {\n            initEditor () {\n                let ckeditor = CKEDITOR.replace(this.editorId, {\n                    language: 'zh-CN',\n                    removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Image,Superscript,Subscript,About,Anchor',\n                    toolbarGroups: [\n                        { name: 'styles', groups: [ 'styles' ] },\n                        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },\n                        { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },\n                        { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },\n                        { name: 'links', groups: [ 'links' ] },\n                        { name: 'insert', groups: [ 'insert' ] },\n                        { name: 'forms', groups: [ 'forms' ] },\n                        { name: 'tools', groups: [ 'tools' ] },\n                        { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },\n                        { name: 'others', groups: [ 'others' ] },\n                        { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },\n                        { name: 'colors', groups: [ 'colors' ] },\n                        { name: 'about', groups: [ 'about' ] }\n                    ]\n                })\n                ckeditor.on('change', () => {\n                    this.model = ckeditor.getData()\n                })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 146 */
+/* 163 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14462,13 +14654,13 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _defineProperty2 = __webpack_require__(72);
+	var _defineProperty2 = __webpack_require__(76);
 	
 	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 	
 	var _events;
 	
-	var _scriptjs = __webpack_require__(147);
+	var _scriptjs = __webpack_require__(164);
 	
 	var _scriptjs2 = _interopRequireDefault(_scriptjs);
 	
@@ -14515,7 +14707,7 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 147 */
+/* 164 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -14644,22 +14836,22 @@ webpackJsonp([1],Array(92).concat([
 
 
 /***/ },
-/* 148 */
+/* 165 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div>\n    <textarea :id=\"editorId\" cols=\"30\" rows=\"10\" v-model=\"model\"></textarea>\n</div>\n";
 
 /***/ },
-/* 149 */
+/* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(150)
+	__vue_script__ = __webpack_require__(167)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/misc/Uploader.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(151)
+	__vue_template__ = __webpack_require__(168)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14667,9 +14859,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-72c2ad29/Uploader.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/Uploader.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14678,7 +14870,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 150 */
+/* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -14779,19 +14971,19 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 151 */
+/* 168 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<slot></slot>\n";
 
 /***/ },
-/* 152 */
+/* 169 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<vs-form @submit.prevent=\"submit\" class=\"col-md-8 sm-no-padding\" :errors=\"errors\">\n    <slot name=\"fields-before\"></slot>\n    <ck-editor :editor-id=\"`${name}-editor`\" :model.sync=\"model.content\"></ck-editor>\n    <slot name=\"fields-after\"></slot>\n</vs-form>\n<div class=\"col-md-4 sm-no-padding\">\n    <div class=\"col-xs-12 col-sm-6 col-md-12 sm-no-padding\">\n        <uploader\n            @file-uploaded=\"insertFileToEditor\"\n            :upload-status.sync=\"uploadStatus\"\n            :browse-button-id=\"`${name}-editor-upload`\"\n            :files=\"model.attachments\">\n            <vs-buttons \n                block\n                id=\"{{name}}-editor-upload\" \n                variant=\"primary\"\n                :disabled=\"uploadStatus.uploading || loading\">\n                添加文件\n            </vs-buttons>\n        </uploader>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-12 sm-no-padding\">\n        <vs-buttons :disabled=\"loading\" @click=\"submit\" block>\n            <slot name=\"submit-name\">发布</slot>\n        </vs-buttons>\n    </div>\n    <div class=\"col-xs-12 sm-no-padding\">\n        <vs-progress \n            v-show=\"uploadStatus.uploading\"\n            variant=\"success\"\n            :value=\"uploadStatus.percent\" \n            striped>\n        </vs-progress>\n        <vs-list-group>\n            <vs-list-group-item\n                v-for=\"file in model.attachments\">\n                <a\n                    href=\"javascript: void 0\"\n                    @click.stop=\"insertFileToEditor(model.attachments[$index])\">\n                    {{ file.file_name }}\n                </a>\n                <a \n                    href=\"javascript:void 0\" \n                    class=\"pull-xs-right\" \n                    @click.stop=\"removeFile($index)\">\n                    删除\n                </a>\n            </vs-list-group-item>\n        </vs-list-group>\n    </div>\n</div>\n";
+	module.exports = "\n<vs-form @submit.prevent=\"submit\" class=\"col-md-8 sm-no-padding\" :errors=\"errors\">\n    <slot name=\"fields-before\"></slot>\n    <fieldset class=\"form-group\">\n        <ck-editor :editor-id=\"`${name}-editor`\" :model.sync=\"model.content\"></ck-editor>\n    </fieldset>\n    <slot name=\"fields-after\"></slot>\n</vs-form>\n<div class=\"col-md-4 sm-no-padding\">\n    <div class=\"col-xs-6 col-md-12 sm-no-padding\">\n        <uploader\n            @file-uploaded=\"insertFileToEditor\"\n            :upload-status.sync=\"uploadStatus\"\n            :browse-button-id=\"`${name}-editor-upload`\"\n            :files=\"model.attachments\">\n            <vs-buttons \n                block\n                id=\"{{name}}-editor-upload\" \n                variant=\"primary\"\n                :disabled=\"uploadStatus.uploading || loading\">\n                添加文件\n            </vs-buttons>\n        </uploader>\n    </div>\n    <div class=\"col-xs-6 col-md-12 sm-no-padding\">\n        <vs-buttons :disabled=\"loading\" @click=\"submit\" block>\n            <slot name=\"submit-name\">发布</slot>\n        </vs-buttons>\n    </div>\n    <div class=\"col-xs-12 sm-no-padding\">\n        <vs-progress \n            v-show=\"uploadStatus.uploading\"\n            variant=\"success\"\n            :value=\"uploadStatus.percent\" \n            striped>\n        </vs-progress>\n        <vs-list-group>\n            <vs-list-group-item\n                v-for=\"file in model.attachments\">\n                <a\n                    href=\"javascript: void 0\"\n                    @click.stop=\"insertFileToEditor(model.attachments[$index])\">\n                    {{ file.file_name }}\n                </a>\n                <a \n                    href=\"javascript:void 0\" \n                    class=\"pull-xs-right\" \n                    @click.stop=\"removeFile($index)\">\n                    删除\n                </a>\n            </vs-list-group-item>\n        </vs-list-group>\n    </div>\n</div>\n";
 
 /***/ },
-/* 153 */
+/* 170 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -14818,22 +15010,22 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 154 */
+/* 171 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container\">\n    <editor\n        v-if=\"!$loadingRouteData\"\n        name=\"article-edit\"\n        base-url=\"/api/articles/\"\n        :model.sync=\"article\"\n        @submitted=\"submitted\">\n        <vs-form-input\n            :model.sync=\"article.title\"\n            type=\"text\"\n            name='title'\n            placeholder=\"标题\"\n            slot=\"fields-before\">\n        </vs-form-input>\n        <vs-form-input\n            :model.sync=\"tagsDisplay\"\n            type=\"text\"\n            name='tags'\n            placeholder=\"标签\"\n            slot=\"fields-before\">\n        </vs-form-input>\n        <fieldset class=\"form-group\" slot=\"fields-after\">\n            <div class=\"checkbox\">\n                <label>\n                    <input type=\"checkbox\" v-model=\"article.is_top\">\n                    置顶\n                </label>\n            </div>\n        </fieldset>\n    </editor>\n</div>\n";
+	module.exports = "\n<div class=\"container\" _v-5f0aaaf0=\"\">\n    <editor v-if=\"!$loadingRouteData\" name=\"article-edit\" base-url=\"/api/articles/\" :model.sync=\"article\" @submitted=\"submitted\" _v-5f0aaaf0=\"\">\n        <vs-form-input :model.sync=\"article.title\" type=\"text\" name=\"title\" label=\"标题\" placeholder=\"标题\" slot=\"fields-before\" _v-5f0aaaf0=\"\">\n        </vs-form-input>\n        <vs-form-input :model.sync=\"tagsDisplay\" type=\"text\" name=\"tags\" label=\"标签\" help-text=\"以空格分隔\" placeholder=\"标签\" slot=\"fields-before\" _v-5f0aaaf0=\"\">\n        </vs-form-input>\n        <fieldset class=\"form-group\" slot=\"fields-after\" _v-5f0aaaf0=\"\">\n            <div class=\"checkbox\" _v-5f0aaaf0=\"\">\n                <label _v-5f0aaaf0=\"\">\n                    <input type=\"checkbox\" v-model=\"article.is_top\" _v-5f0aaaf0=\"\">\n                    置顶\n                </label>\n            </div>\n        </fieldset>\n    </editor>\n</div>\n";
 
 /***/ },
-/* 155 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(156)
+	__vue_script__ = __webpack_require__(173)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/users/Profile.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(160)
+	__vue_template__ = __webpack_require__(179)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14841,9 +15033,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-ef16ee4c/Profile.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/users/Profile.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14852,7 +15044,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 156 */
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14861,21 +15053,21 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Uploader = __webpack_require__(149);
+	var _Uploader = __webpack_require__(166);
 	
 	var _Uploader2 = _interopRequireDefault(_Uploader);
 	
-	var _ReportList = __webpack_require__(157);
+	var _ReportList = __webpack_require__(174);
 	
 	var _ReportList2 = _interopRequireDefault(_ReportList);
 	
-	var _ArticleList = __webpack_require__(113);
+	var _ArticleList = __webpack_require__(124);
 	
 	var _ArticleList2 = _interopRequireDefault(_ArticleList);
 	
-	var _index = __webpack_require__(111);
+	var _index = __webpack_require__(122);
 	
-	var _consts = __webpack_require__(75);
+	var _consts = __webpack_require__(79);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -14938,17 +15130,17 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 157 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(285)
-	__vue_script__ = __webpack_require__(158)
+	__webpack_require__(175)
+	__vue_script__ = __webpack_require__(177)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/users/ReportList.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(287)
+	__vue_template__ = __webpack_require__(178)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14956,9 +15148,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-c8cec45e/ReportList.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/users/ReportList.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14967,7 +15159,47 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 158 */
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(176);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(74)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-013fe153&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-013fe153&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 176 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(73)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\nli a[_v-013fe153] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/users/ReportList.vue?35eb1de2"],"names":[],"mappings":";AAOA;IACA,gBAAA;CACA","file":"ReportList.vue","sourcesContent":["<template>\n    <file-list :model.sync=\"reports\" :base-url='baseURL' :delete-link=\"true\">\n        <infinite-loading :on-infinite=\"load\"></infinite-loading>\n    </file-list>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        mixins: [InfiniteLoadingMixin],\n        components: { FileList },\n        listConfig: {\n            listFieldName: 'reports'\n        },\n        data: () => ({\n            nextURL: ''\n        }),\n        props: {\n            reports: {\n                type: Array,\n                twoWay: true,\n                required: true\n            },\n            userId: {\n                required: true,\n                type: Number\n            }\n        },\n        computed: {\n            baseURL () {\n                return `/api/users/${this.userId}/reports/`\n            }\n        },\n        ready () {\n            this.$watch('userId', () => {\n                this.reset()\n            })\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -14976,11 +15208,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _InfiniteLoadingMixin = __webpack_require__(123);
+	var _InfiniteLoadingMixin = __webpack_require__(138);
 	
 	var _InfiniteLoadingMixin2 = _interopRequireDefault(_InfiniteLoadingMixin);
 	
-	var _FileList = __webpack_require__(280);
+	var _FileList = __webpack_require__(132);
 	
 	var _FileList2 = _interopRequireDefault(_FileList);
 	
@@ -15023,23 +15255,28 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 159 */,
-/* 160 */
+/* 178 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div>\n    <vs-jumbotron class=\"rows\" v-if=\"!$loadingRouteData\">\n        <div \n            :class=\"['col-md-' + (hasUserData ? 4 : 12),'col-sm-12', 'text-xs-center']\">\n            <h1 class=\"jumbotron-heading\">{{ user.nickname }}</h1>\n            <p class=\"lead text-muted\">@{{ user.username }}</p>\n            <p class=\"lead text-muted\">{{ userTypeName }}</p>\n        </div>\n        <hr class=\"m-y-2 hidden-md-up\">\n        <div \n            :class=\"['col-md-8','col-sm-12', 'text-center']\"\n            v-if=\"hasUserData\">\n            <editable \n                :editable=\"user.user_data.perms.change\"\n                :model.sync=\"user.user_data\" \n                :options=\"editableOptions\"\n                :save-action=\"saveAction\">\n                <dl class=\"dl-horizontal\">\n                    <dt class=\"col-sm-3\">名称</dt>\n                    <dd class=\"col-sm-9\" edit=\"name\">{{ user.user_data.name }}</dd>\n                    <dt class=\"col-sm-3\">板块</dt>\n                    <dd class=\"col-sm-9\" edit=\"sector\">{{ user.user_data.sector }}</dd>\n                    <dt class=\"col-sm-3\">行业</dt>\n                    <dd class=\"col-sm-9\" edit=\"industry\">{{ user.user_data.industry }}</dd>\n                    <dt class=\"col-sm-3\">介绍</dt>\n                    <dd class=\"col-sm-9\" edit=\"description\">{{ user.user_data.description }}</dd>\n                </dl>\n            </editable>\n        </div>\n    </vs-jumbotron>\n    <div class=\"rows\" v-if=\"!$loadingRouteData\">\n        <div class=\"col-sm-12 col-md-3\" v-if=\"hasUserData\">\n            <vs-card>\n                <div class=\"card-block\">\n                    <h4>\n                        报告\n                        <vs-buttons \n                            id=\"reports-uploader\"\n                            variant=\"primary\"\n                            size=\"sm\"\n                            class=\"pull-xs-right clearfix\"\n                            :disabled=\"uploadStatus.uploading\">\n                            添加\n                        </vs-buttons>\n                    </h4>\n                    <uploader\n                        :files=\"reports\"\n                        :file-add-url=\"`/api/users/${id}/reports/`\"\n                        :upload-status.sync=\"uploadStatus\"\n                        browse-button-id=\"reports-uploader\">\n                    </uploader>\n                    <vs-progress \n                        v-show=\"uploadStatus.uploading\"\n                        variant=\"success\"\n                        :value=\"uploadStatus.percent\" \n                        style=\"margin-bottom: 0;\"\n                        striped>\n                    </vs-progress>\n                </div>\n                <report-list :user-id=\"id\" :reports.sync=\"reports\"></report-list>\n            </vs-card>\n        </div>\n        <div class=\"col-sm-12 col-md-{{ hasUserData ? 9 : 12}} sm-no-padding\">\n            <article-list\n                :other-params=\"{ author__id: id }\">\n            </article-list>\n        </div>\n    </div>\n</div>\n";
+	module.exports = "\n<file-list :model.sync=\"reports\" :base-url=\"baseURL\" :delete-link=\"true\" _v-013fe153=\"\">\n    <infinite-loading :on-infinite=\"load\" _v-013fe153=\"\"></infinite-loading>\n</file-list>\n";
 
 /***/ },
-/* 161 */
+/* 179 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<div>\n    <vs-jumbotron class=\"rows\" v-if=\"!$loadingRouteData\">\n        <div \n            :class=\"['col-md-' + (hasUserData ? 4 : 12),'col-sm-12', 'text-xs-center']\">\n            <h1 class=\"jumbotron-heading\">{{ user.nickname }}</h1>\n            <p class=\"lead text-muted\">@{{ user.username }}</p>\n            <p class=\"lead text-muted\">{{ userTypeName }}</p>\n        </div>\n        <hr class=\"m-y-2 hidden-md-up\">\n        <div \n            :class=\"['col-md-8','col-sm-12', 'text-center']\"\n            v-if=\"hasUserData\">\n            <editable \n                :editable=\"user.user_data.perms.change\"\n                :model.sync=\"user.user_data\" \n                :options=\"editableOptions\"\n                :save-action=\"saveAction\">\n                <dl class=\"dl-horizontal\">\n                    <dt class=\"col-sm-3\">名称</dt>\n                    <dd class=\"col-sm-9\" edit=\"name\">{{ user.user_data.name }}</dd>\n                    <dt class=\"col-sm-3\">板块</dt>\n                    <dd class=\"col-sm-9\" edit=\"sector\">{{ user.user_data.sector }}</dd>\n                    <dt class=\"col-sm-3\">行业</dt>\n                    <dd class=\"col-sm-9\" edit=\"industry\">{{ user.user_data.industry }}</dd>\n                    <dt class=\"col-sm-3\">介绍</dt>\n                    <dd class=\"col-sm-9\" edit=\"description\">{{ user.user_data.description }}</dd>\n                </dl>\n            </editable>\n        </div>\n    </vs-jumbotron>\n    <div class=\"rows\" v-if=\"!$loadingRouteData\">\n        <div class=\"col-sm-12 col-md-3 xs-no-padding\" v-if=\"hasUserData\">\n            <vs-card>\n                <div class=\"card-block\">\n                    <h4>\n                        报告\n                        <vs-buttons \n                            id=\"reports-uploader\"\n                            variant=\"primary\"\n                            size=\"sm\"\n                            class=\"pull-xs-right clearfix\"\n                            :disabled=\"uploadStatus.uploading\">\n                            添加\n                        </vs-buttons>\n                    </h4>\n                    <uploader\n                        :files=\"reports\"\n                        :file-add-url=\"`/api/users/${id}/reports/`\"\n                        :upload-status.sync=\"uploadStatus\"\n                        browse-button-id=\"reports-uploader\">\n                    </uploader>\n                    <vs-progress \n                        v-show=\"uploadStatus.uploading\"\n                        variant=\"success\"\n                        :value=\"uploadStatus.percent\" \n                        style=\"margin-bottom: 0;\"\n                        striped>\n                    </vs-progress>\n                </div>\n                <report-list :user-id=\"id\" :reports.sync=\"reports\"></report-list>\n            </vs-card>\n        </div>\n        <div class=\"col-sm-12 col-md-{{ hasUserData ? 9 : 12}} xs-no-padding\">\n            <article-list\n                :other-params=\"{ author__id: id }\">\n            </article-list>\n        </div>\n    </div>\n</div>\n";
+
+/***/ },
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(162)
+	__vue_script__ = __webpack_require__(181)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/users/Companies.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(163)
+	__vue_template__ = __webpack_require__(182)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15047,9 +15284,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-6cd2d468/Companies.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/users/Companies.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15058,7 +15295,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 162 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15067,15 +15304,15 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _InfiniteLoadingMixin = __webpack_require__(123);
+	var _InfiniteLoadingMixin = __webpack_require__(138);
 	
 	var _InfiniteLoadingMixin2 = _interopRequireDefault(_InfiniteLoadingMixin);
 	
-	var _vueInfiniteLoading = __webpack_require__(124);
+	var _vueInfiniteLoading = __webpack_require__(139);
 	
 	var _vueInfiniteLoading2 = _interopRequireDefault(_vueInfiniteLoading);
 	
-	var _consts = __webpack_require__(75);
+	var _consts = __webpack_require__(79);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -15107,22 +15344,22 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 163 */
+/* 182 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container-fluid\">\n    <vs-card\n        v-for=\"company in companies\"\n        class=\"col-xs-12 col-sm-6 col-md-4\"\n        >\n        <div class=\"card-block\">\n            <h4 class=\"card-title text-center\">\n                <a v-link=\"`/users/${company.id}/`\">\n                    {{ company.user_data.name || '(空)' }}\n                </a>\n            </h4>\n            <dl class=\"dl-horizontal\">\n                <dt class=\"col-sm-3\">板块</dt>\n                <dd class=\"col-sm-9\">{{ company.user_data.sector || '(空)' }} </dd>\n                <dt class=\"col-sm-3\">行业</dt>\n                <dd class=\"col-sm-9\">{{ company.user_data.industry || '(空)' }} </dd>\n                <dt class=\"col-sm-3\">介绍</dt>\n                <dd class=\"col-sm-9\">{{ company.user_data.description || '(空)' }} </dd>\n            </dl>\n        </div>\n    </vs-card>\n    <infinite-loading \n        :on-infinite=\"load\"\n        class=\"col-xs-12\">\n    </infinite-loading>\n</div>\n";
+	module.exports = "\n<div class=\"container-fluid card-columns\">\n        <vs-card v-for=\"company in companies\">\n            <div class=\"card-block\">\n                <h4 class=\"card-title text-center\">\n                    <a v-link=\"`/users/${company.id}/`\">\n                        {{ company.user_data.name || '(空)' }}\n                    </a>\n                </h4>\n                <dl class=\"dl-horizontal\">\n                    <dt class=\"col-sm-3\">板块</dt>\n                    <dd class=\"col-sm-9\">{{ company.user_data.sector || '(空)' }} </dd>\n                    <dt class=\"col-sm-3\">行业</dt>\n                    <dd class=\"col-sm-9\">{{ company.user_data.industry || '(空)' }} </dd>\n                    <dt class=\"col-sm-3\">介绍</dt>\n                    <dd class=\"col-sm-9\">{{ company.user_data.description || '(空)' }} </dd>\n                </dl>\n            </div>\n        </vs-card>\n    <infinite-loading \n        :on-infinite=\"load\"\n        class=\"col-xs-12\">\n    </infinite-loading>\n</div>\n";
 
 /***/ },
-/* 164 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(165)
+	__vue_script__ = __webpack_require__(184)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/notifications/Notifications.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(169)
+	__vue_template__ = __webpack_require__(188)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15130,9 +15367,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-9d2d968e/Notifications.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/notifications/Notifications.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15141,7 +15378,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 165 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -15150,7 +15387,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Pager = __webpack_require__(166);
+	var _Pager = __webpack_require__(185);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
@@ -15187,16 +15424,16 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 166 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(167)
+	__vue_script__ = __webpack_require__(186)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/misc/Pager.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(168)
+	__vue_template__ = __webpack_require__(187)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15204,9 +15441,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-7b595ed0/Pager.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/Pager.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15215,7 +15452,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 167 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15224,7 +15461,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _defineProperty2 = __webpack_require__(72);
+	var _defineProperty2 = __webpack_require__(76);
 	
 	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 	
@@ -15269,28 +15506,28 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 168 */
+/* 187 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div>\n    <vs-pager v-if=\"model\">\n        <li v-show=\"model.previous\" :class=\"!loading || 'disabled'\">\n            <a @click.stop=\"load(model.previous)\" href=\"javascript:void(0);\">Previous</a>\n        </li>\n        <li v-show=\"model.next\" :class=\"!loading || 'disabled'\">\n            <a @click.stop=\"load(model.next)\" href=\"javascript:void(0);\">Next</a>\n        </li>\n    </vs-pager>        \n</div>\n";
+	module.exports = "\n<div>\n    <slot name=\"no-results\" v-if=\"!model.results || !model.results.length\">\n        <p class=\"text-xs-center\">空空如也～～</p>\n    </slot>\n    <vs-pager v-if=\"model\">\n        <li v-show=\"model.previous\" :class=\"!loading || 'disabled'\">\n            <a @click.stop=\"load(model.previous)\" href=\"javascript:void(0);\">Previous</a>\n        </li>\n        <li v-show=\"model.next\" :class=\"!loading || 'disabled'\">\n            <a @click.stop=\"load(model.next)\" href=\"javascript:void(0);\">Next</a>\n        </li>\n    </vs-pager>        \n</div>\n";
 
 /***/ },
-/* 169 */
+/* 188 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div class=\"container\">\n    <vs-list-group flush class=\"col-md-8 col-sm-12\">\n        <vs-list-group-item\n            v-for=\"item in page.results\"\n            :state=\"!item.has_read ? 'warning' : ''\"\n            @click=\"mark([item])\">\n            {{{ item.message | render }}}\n        </vs-list-group-item>\n    </vs-list-group>\n    <pager\n        :model.sync=\"page\"\n        url=\"/api/n/\">\n    </pager>\n</div>\n";
 
 /***/ },
-/* 170 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(171)
+	__vue_script__ = __webpack_require__(190)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/questions/Topics.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(175)
+	__vue_template__ = __webpack_require__(194)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15298,9 +15535,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-114f2dc4/Topics.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/Topics.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15309,7 +15546,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 171 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15318,11 +15555,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Pager = __webpack_require__(166);
+	var _Pager = __webpack_require__(185);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
-	var _TopicItem = __webpack_require__(172);
+	var _TopicItem = __webpack_require__(191);
 	
 	var _TopicItem2 = _interopRequireDefault(_TopicItem);
 	
@@ -15341,16 +15578,16 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 172 */
+/* 191 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(173)
+	__vue_script__ = __webpack_require__(192)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/questions/TopicItem.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(174)
+	__vue_template__ = __webpack_require__(193)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15358,9 +15595,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-27e91bd8/TopicItem.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/TopicItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15369,7 +15606,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 173 */
+/* 192 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -15388,28 +15625,28 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 174 */
+/* 193 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<vs-card>\n    <div class=\"card-block\">\n        <a v-link=\"model.url\">\n            <h1 class=\"card-title text-xs-center\">\n                {{ model.title }}\n            </h1>\n        </a>\n    </div>\n    <div class=\"card-block\">\n        {{{ model.content }}}\n    </div>\n    <div class=\"card-block text-muted\">\n        <p class=\"card-text\">\n            更新于 {{ model.updated_time | timesince }}\n        </p>\n        <p class=\"card-text\">\n            {{ model.author.nickname }} 发布于 {{ model.created_time | timesince }}\n        </p>\n    </div>\n</vs-card>\n";
 
 /***/ },
-/* 175 */
+/* 194 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div class=\"container-fluid\">\n    <div class=\"col-md-3 col-sm-12\">\n        <a \n            class=\"btn btn-success btn-block\"\n            v-link=\"`/edit/topics/`\">\n            发帖\n        </a>\n        <vs-buttons\n            block\n            variant=\"info\"\n            class=\"pull-xs-rigsht\"\n            @click=\"$broadcast('Pager:refresh')\">\n            刷新\n        </vs-buttons>\n    </div>\n    <div class=\"col-md-9 col-sm-12\">\n        <topic-item\n            v-for=\"topic in page.results\"\n            :model.sync=\"topic\">\n        </topic-item>\n        <pager\n            url=\"/api/topics/\"\n            :model.sync=\"page\">\n        </pager>\n    </div>\n</div>\n";
 
 /***/ },
-/* 176 */
+/* 195 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(177)
+	__vue_script__ = __webpack_require__(196)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/questions/TopicEdit.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(178)
+	__vue_template__ = __webpack_require__(197)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15417,9 +15654,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-4136bb4f/TopicEdit.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/TopicEdit.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15428,7 +15665,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 177 */
+/* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15437,11 +15674,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Editor = __webpack_require__(141);
+	var _Editor = __webpack_require__(158);
 	
 	var _Editor2 = _interopRequireDefault(_Editor);
 	
-	var _EditPageMixin = __webpack_require__(153);
+	var _EditPageMixin = __webpack_require__(170);
 	
 	var _EditPageMixin2 = _interopRequireDefault(_EditPageMixin);
 	
@@ -15470,23 +15707,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 178 */
+/* 197 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div class=\"container\">\n    <editor\n        v-if=\"!$loadingRouteData\"\n        :model.sync=\"topic\"\n        name=\"topic-edit\"\n        base-url=\"/api/topics/\">\n        <vs-form-input\n            :model.sync=\"topic.title\"\n            type=\"text\"\n            name='title'\n            placeholder=\"标题\"\n            slot=\"fields-before\">\n        </vs-form-input>\n    </editor>\n</div>\n";
 
 /***/ },
-/* 179 */
+/* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(180)
-	__vue_script__ = __webpack_require__(182)
+	__webpack_require__(199)
+	__vue_script__ = __webpack_require__(201)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/questions/TopicDetail.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(183)
+	__vue_template__ = __webpack_require__(202)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15494,9 +15731,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-5c07b2d6/TopicDetail.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/TopicDetail.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15505,23 +15742,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 180 */
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(181);
+	var content = __webpack_require__(200);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5c07b2d6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5c07b2d6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-cd6f5ed8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-cd6f5ed8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15531,21 +15768,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 181 */
+/* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.main[_v-5c07b2d6] {\n    word-wrap: break-word;\n}\n", "", {"version":3,"sources":["/./js/components/questions/TopicDetail.vue?b9bc3374"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAmEA;IACA,sBAAA;CACA","file":"TopicDetail.vue","sourcesContent":["<template>\n    <div class=\"container-fluid main\">\n        <div class=\"col-xs-12 col-md-8\">\n            <section>\n                <vs-card>\n                    <div class=\"card-block article-main\">\n                        <h1 class=\"card-title\">{{ topic.title }}</h1>\n                        {{{ topic.content }}}\n\n                        <p class=\"card-text text-muted hidden-sm-down\">\n                            <small>\n                                {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                            </small>\n                        </p>\n                    </div>\n                    <vs-list-group flush class=\"hidden-md-up\">\n                        <vs-list-group-item>\n                            发布于 {{ topic.created_time | timesince }}\n                        </vs-list-group-item>\n                        <vs-list-group-item>\n                            更新于 {{ topic.updated_time | timesince }}\n                        </vs-list-group-item>\n                    </vs-list-group>\n                </vs-card>\n            </section>\n            <hr>\n            <vs-card v-for=\"reply in page.results\">\n                <div class=\"card-block article-main\">\n                    {{{ reply.content }}}\n\n                    <p class=\"card-text text-muted\">\n                        <small>\n                            {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n            </vs-card>\n            <pager\n                v-if=\"topicId\"\n                :url=\"`/api/topics/${topicId}/replies/`\"\n                :model.sync=\"page\">\n            </pager>\n        </div>\n        <div class=\"col-md-4 hidden-sm-down\">\n            <vs-card>\n                <vs-list-group flush>\n                    <vs-list-group-item>\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item>\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </div>\n        <div class=\"col-xs-12 lg-no-padding\">\n            <editor\n                :model.sync=\"reply\"\n                name=\"topic-reply-edit\"\n                :base-url=\"`/api/topics/${topicId}/replies/`\"\n                @submitted=\"editorSubmitted\">\n            </editor>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    .main {\n        word-wrap: break-word;\n    }\n</style>\n\n<script>\n    import Editor from 'misc/edit/Editor.vue'\n    import DetailMixin from 'mixins/DetailMixin.es'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        mixins: [DetailMixin],\n        components: {Editor, Pager},\n        detailConfig: {\n            baseURL: '/api/topics/',\n            objectFieldName: 'topic',\n            idFieldName: 'topicId'\n        },\n        data: () => ({\n            topic: {},\n            topicId: '',\n            page: {},\n            reply: {\n                content: '',\n                attachments: []\n            }\n        }),\n        methods: {\n            editorSubmitted (editor, reply) {\n                this.page.results.push(reply)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.main[_v-cd6f5ed8] {\n    word-wrap: break-word;\n}\n", "", {"version":3,"sources":["/./js/components/questions/TopicDetail.vue?b9bc3374"],"names":[],"mappings":";AAmEA;IACA,sBAAA;CACA","file":"TopicDetail.vue","sourcesContent":["<template>\n    <div class=\"container-fluid main\">\n        <div class=\"col-xs-12 col-md-8\">\n            <section>\n                <vs-card>\n                    <div class=\"card-block article-main\">\n                        <h1 class=\"card-title\">{{ topic.title }}</h1>\n                        {{{ topic.content }}}\n\n                        <p class=\"card-text text-muted hidden-sm-down\">\n                            <small>\n                                {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                            </small>\n                        </p>\n                    </div>\n                    <vs-list-group flush class=\"hidden-md-up\">\n                        <vs-list-group-item>\n                            发布于 {{ topic.created_time | timesince }}\n                        </vs-list-group-item>\n                        <vs-list-group-item>\n                            更新于 {{ topic.updated_time | timesince }}\n                        </vs-list-group-item>\n                    </vs-list-group>\n                </vs-card>\n            </section>\n            <hr>\n            <vs-card v-for=\"reply in page.results\">\n                <div class=\"card-block article-main\">\n                    {{{ reply.content }}}\n\n                    <p class=\"card-text text-muted\">\n                        <small>\n                            {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n            </vs-card>\n            <pager\n                v-if=\"topicId\"\n                :url=\"`/api/topics/${topicId}/replies/`\"\n                :model.sync=\"page\">\n            </pager>\n        </div>\n        <div class=\"col-md-4 hidden-sm-down\">\n            <vs-card>\n                <vs-list-group flush>\n                    <vs-list-group-item>\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item>\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </div>\n        <div class=\"col-xs-12 lg-no-padding\">\n            <editor\n                :model.sync=\"reply\"\n                name=\"topic-reply-edit\"\n                :base-url=\"`/api/topics/${topicId}/replies/`\"\n                @submitted=\"editorSubmitted\">\n            </editor>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    .main {\n        word-wrap: break-word;\n    }\n</style>\n\n<script>\n    import Editor from 'misc/edit/Editor.vue'\n    import DetailMixin from 'mixins/DetailMixin.es'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        mixins: [DetailMixin],\n        components: {Editor, Pager},\n        detailConfig: {\n            baseURL: '/api/topics/',\n            objectFieldName: 'topic',\n            idFieldName: 'topicId'\n        },\n        data: () => ({\n            topic: {},\n            topicId: '',\n            page: {},\n            reply: {\n                content: '',\n                attachments: []\n            }\n        }),\n        methods: {\n            editorSubmitted (editor, reply) {\n                this.page.results.push(reply)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 182 */
+/* 201 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15554,15 +15791,15 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Editor = __webpack_require__(141);
+	var _Editor = __webpack_require__(158);
 	
 	var _Editor2 = _interopRequireDefault(_Editor);
 	
-	var _DetailMixin = __webpack_require__(137);
+	var _DetailMixin = __webpack_require__(152);
 	
 	var _DetailMixin2 = _interopRequireDefault(_DetailMixin);
 	
-	var _Pager = __webpack_require__(166);
+	var _Pager = __webpack_require__(185);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
@@ -15595,23 +15832,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 183 */
+/* 202 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container-fluid main\" _v-5c07b2d6=\"\">\n    <div class=\"col-xs-12 col-md-8\" _v-5c07b2d6=\"\">\n        <section _v-5c07b2d6=\"\">\n            <vs-card _v-5c07b2d6=\"\">\n                <div class=\"card-block article-main\" _v-5c07b2d6=\"\">\n                    <h1 class=\"card-title\" _v-5c07b2d6=\"\">{{ topic.title }}</h1>\n                    {{{ topic.content }}}\n\n                    <p class=\"card-text text-muted hidden-sm-down\" _v-5c07b2d6=\"\">\n                        <small _v-5c07b2d6=\"\">\n                            {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n                <vs-list-group flush=\"\" class=\"hidden-md-up\" _v-5c07b2d6=\"\">\n                    <vs-list-group-item _v-5c07b2d6=\"\">\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item _v-5c07b2d6=\"\">\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </section>\n        <hr _v-5c07b2d6=\"\">\n        <vs-card v-for=\"reply in page.results\" _v-5c07b2d6=\"\">\n            <div class=\"card-block article-main\" _v-5c07b2d6=\"\">\n                {{{ reply.content }}}\n\n                <p class=\"card-text text-muted\" _v-5c07b2d6=\"\">\n                    <small _v-5c07b2d6=\"\">\n                        {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                    </small>\n                </p>\n            </div>\n        </vs-card>\n        <pager v-if=\"topicId\" :url=\"`/api/topics/${topicId}/replies/`\" :model.sync=\"page\" _v-5c07b2d6=\"\">\n        </pager>\n    </div>\n    <div class=\"col-md-4 hidden-sm-down\" _v-5c07b2d6=\"\">\n        <vs-card _v-5c07b2d6=\"\">\n            <vs-list-group flush=\"\" _v-5c07b2d6=\"\">\n                <vs-list-group-item _v-5c07b2d6=\"\">\n                    发布于 {{ topic.created_time | timesince }}\n                </vs-list-group-item>\n                <vs-list-group-item _v-5c07b2d6=\"\">\n                    更新于 {{ topic.updated_time | timesince }}\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n    <div class=\"col-xs-12 lg-no-padding\" _v-5c07b2d6=\"\">\n        <editor :model.sync=\"reply\" name=\"topic-reply-edit\" :base-url=\"`/api/topics/${topicId}/replies/`\" @submitted=\"editorSubmitted\" _v-5c07b2d6=\"\">\n        </editor>\n    </div>\n</div>\n";
+	module.exports = "\n<div class=\"container-fluid main\" _v-cd6f5ed8=\"\">\n    <div class=\"col-xs-12 col-md-8\" _v-cd6f5ed8=\"\">\n        <section _v-cd6f5ed8=\"\">\n            <vs-card _v-cd6f5ed8=\"\">\n                <div class=\"card-block article-main\" _v-cd6f5ed8=\"\">\n                    <h1 class=\"card-title\" _v-cd6f5ed8=\"\">{{ topic.title }}</h1>\n                    {{{ topic.content }}}\n\n                    <p class=\"card-text text-muted hidden-sm-down\" _v-cd6f5ed8=\"\">\n                        <small _v-cd6f5ed8=\"\">\n                            {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n                <vs-list-group flush=\"\" class=\"hidden-md-up\" _v-cd6f5ed8=\"\">\n                    <vs-list-group-item _v-cd6f5ed8=\"\">\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item _v-cd6f5ed8=\"\">\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </section>\n        <hr _v-cd6f5ed8=\"\">\n        <vs-card v-for=\"reply in page.results\" _v-cd6f5ed8=\"\">\n            <div class=\"card-block article-main\" _v-cd6f5ed8=\"\">\n                {{{ reply.content }}}\n\n                <p class=\"card-text text-muted\" _v-cd6f5ed8=\"\">\n                    <small _v-cd6f5ed8=\"\">\n                        {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                    </small>\n                </p>\n            </div>\n        </vs-card>\n        <pager v-if=\"topicId\" :url=\"`/api/topics/${topicId}/replies/`\" :model.sync=\"page\" _v-cd6f5ed8=\"\">\n        </pager>\n    </div>\n    <div class=\"col-md-4 hidden-sm-down\" _v-cd6f5ed8=\"\">\n        <vs-card _v-cd6f5ed8=\"\">\n            <vs-list-group flush=\"\" _v-cd6f5ed8=\"\">\n                <vs-list-group-item _v-cd6f5ed8=\"\">\n                    发布于 {{ topic.created_time | timesince }}\n                </vs-list-group-item>\n                <vs-list-group-item _v-cd6f5ed8=\"\">\n                    更新于 {{ topic.updated_time | timesince }}\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n    <div class=\"col-xs-12 lg-no-padding\" _v-cd6f5ed8=\"\">\n        <editor :model.sync=\"reply\" name=\"topic-reply-edit\" :base-url=\"`/api/topics/${topicId}/replies/`\" @submitted=\"editorSubmitted\" _v-cd6f5ed8=\"\">\n        </editor>\n    </div>\n</div>\n";
 
 /***/ },
-/* 184 */
+/* 203 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(185)
-	__vue_script__ = __webpack_require__(187)
+	__webpack_require__(204)
+	__vue_script__ = __webpack_require__(206)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/Finance.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(196)
+	__vue_template__ = __webpack_require__(207)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15619,9 +15856,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-99189546/Finance.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Finance.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15630,23 +15867,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 185 */
+/* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(186);
+	var content = __webpack_require__(205);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-99189546&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-99189546&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c4160cca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c4160cca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15656,21 +15893,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 186 */
+/* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nh3[_v-99189546] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/Finance.vue?4ac7b008"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;AAoBA;IACA,sBAAA;CACA","file":"Finance.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <router-view></router-view>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"company\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\"\n            >\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n\n    export default {\n        components: { ArticleListGroup },\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\nh3[_v-c4160cca] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/Finance.vue?4ac7b008"],"names":[],"mappings":";AAoBA;IACA,sBAAA;CACA","file":"Finance.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <router-view></router-view>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"company\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\"\n            >\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n\n    export default {\n        components: { ArticleListGroup },\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 187 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15679,7 +15916,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _ArticleListGroup = __webpack_require__(188);
+	var _ArticleListGroup = __webpack_require__(105);
 	
 	var _ArticleListGroup2 = _interopRequireDefault(_ArticleListGroup);
 	
@@ -15695,229 +15932,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 188 */
+/* 207 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<div class=\"clearfix\" _v-c4160cca=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-c4160cca=\"\">\n        <router-view _v-c4160cca=\"\"></router-view>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-c4160cca=\"\">\n        <h3 style=\"color:#ccc\" _v-c4160cca=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"company\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-c4160cca=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
+
+/***/ },
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(189)
-	__vue_script__ = __webpack_require__(191)
-	if (__vue_script__ &&
-	    __vue_script__.__esModule &&
-	    Object.keys(__vue_script__).length > 1) {
-	  console.warn("[vue-loader] js/components/articles/ArticleListGroup.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(195)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) {
-	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
-	}
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
-	  if (!hotAPI.compatible) return
-	  var id = "_v-5be2c4b5/ArticleListGroup.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 189 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(190);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5be2c4b5&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5be2c4b5&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 190 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(81)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nli.list-group-item .wrapper[_v-5be2c4b5] {\n    padding: .25em;\n}\n\nli.list-group-item .label[_v-5be2c4b5] {\n    margin-left: .2em;\n}\n\nli.list-group-item .label.pointer[_v-5be2c4b5] {\n    cursor: pointer;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleListGroup.vue?3ed0165e"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AA6CA;IACA,eAAA;CACA;;AAEA;IACA,kBAAA;CACA;;AAEA;IACA,gBAAA;CACA","file":"ArticleListGroup.vue","sourcesContent":["<template>\n    <div>\n        <vs-list-group :flush=\"flush\">\n            <vs-list-group-item\n                v-for=\"article in articles\" class='ALGI'>\n                <div class=\"wrapper\">\n                    <a\n                        v-link=\"article.url\">\n                        {{ article.title }}\n                    </a>\n                    <vs-collapse-toggle \n                        :target=\"`collapse-article-${article.id}`\"\n                        :target-group=\"`article-group-${category}`\"\n                        class=\"pull-xs-right\">\n                        <vs-badge\n                            variant=\"success\"\n                            class=\"pull-xs-right pointer ALGB\">\n                            摘要\n                        </vs-badge>\n                    </vs-collapse-toggle>\n                    <vs-badge\n                        variant=\"danger\"\n                        class=\"pull-xs-right\"\n                        v-if=\"article.is_top\">\n                        置顶\n                    </vs-badge>\n                </div>\n                <vs-collapse \n                    :id=\"`collapse-article-${article.id}`\"\n                    :group=\"`article-group-${category}`\">\n                     <div class=\"card card-block\">\n                         {{ article.summary }}\n                     </div>\n                </vs-collapse>\n            </vs-list-group-item>\n        </vs-list-group>   \n        <list-loader\n            url=\"/api/articles/\"\n            :params=\"params\"\n            :model.sync=\"articles\">\n        </list-loader>\n    </div>   \n</template>\n\n<style scoped>\n    li.list-group-item .wrapper {\n        padding: .25em;\n    }\n\n    li.list-group-item .label {\n        margin-left: .2em;\n    }\n\n    li.list-group-item .label.pointer {\n        cursor: pointer;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ListLoader from 'misc/ListLoader.vue'\n\n    export default {\n        components: { ListLoader },\n        data: () => ({\n            articles: []\n        }),\n        props: {\n            category: {\n                type: String,\n                required: true\n            },\n            flush: {\n                type: Boolean,\n                default: false\n            },\n            otherParams: {\n                type: Object,\n                default: {}\n            }\n        },\n        computed: {\n            params () {\n                let params = _.cloneDeep(this.otherParams)\n\n                params.article_type = articles.ArticleType[this.category]\n\n                return params\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 191 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _consts = __webpack_require__(75);
-	
-	var _ListLoader = __webpack_require__(192);
-	
-	var _ListLoader2 = _interopRequireDefault(_ListLoader);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	exports.default = {
-	    components: { ListLoader: _ListLoader2.default },
-	    data: function data() {
-	        return {
-	            articles: []
-	        };
-	    },
-	    props: {
-	        category: {
-	            type: String,
-	            required: true
-	        },
-	        flush: {
-	            type: Boolean,
-	            default: false
-	        },
-	        otherParams: {
-	            type: Object,
-	            default: {}
-	        }
-	    },
-	    computed: {
-	        params: function params() {
-	            var params = _.cloneDeep(this.otherParams);
-	
-	            params.article_type = _consts.articles.ArticleType[this.category];
-	
-	            return params;
-	        }
-	    }
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
-
-/***/ },
-/* 192 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(193)
-	if (__vue_script__ &&
-	    __vue_script__.__esModule &&
-	    Object.keys(__vue_script__).length > 1) {
-	  console.warn("[vue-loader] js/components/misc/ListLoader.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(194)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) {
-	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
-	}
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
-	  if (!hotAPI.compatible) return
-	  var id = "_v-b9e2f268/ListLoader.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 193 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _defineProperty2 = __webpack_require__(72);
-	
-	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	exports.default = {
-	    props: {
-	        params: {
-	            type: Object,
-	            default: {}
-	        },
-	        model: {
-	            type: Array,
-	            required: true,
-	            twoWay: true
-	        },
-	        url: {
-	            type: String,
-	            required: true
-	        }
-	    },
-	    methods: {
-	        load: function load() {
-	            var _this = this;
-	
-	            this.$http.get(this.url, { params: this.params }).then(function (res) {
-	                return _this.model = res.data.results;
-	            });
-	        }
-	    },
-	    events: (0, _defineProperty3.default)({}, 'ListLoader:reload', function ListLoaderReload() {
-	        this.load();
-	    })
-	};
-
-/***/ },
-/* 194 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<template></template>\n";
-
-/***/ },
-/* 195 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div _v-5be2c4b5=\"\">\n    <vs-list-group :flush=\"flush\" _v-5be2c4b5=\"\">\n        <vs-list-group-item v-for=\"article in articles\" class=\"ALGI\" _v-5be2c4b5=\"\">\n            <div class=\"wrapper\" _v-5be2c4b5=\"\">\n                <a v-link=\"article.url\" _v-5be2c4b5=\"\">\n                    {{ article.title }}\n                </a>\n                <vs-collapse-toggle :target=\"`collapse-article-${article.id}`\" :target-group=\"`article-group-${category}`\" class=\"pull-xs-right\" _v-5be2c4b5=\"\">\n                    <vs-badge variant=\"success\" class=\"pull-xs-right pointer ALGB\" _v-5be2c4b5=\"\">\n                        摘要\n                    </vs-badge>\n                </vs-collapse-toggle>\n                <vs-badge variant=\"danger\" class=\"pull-xs-right\" v-if=\"article.is_top\" _v-5be2c4b5=\"\">\n                    置顶\n                </vs-badge>\n            </div>\n            <vs-collapse :id=\"`collapse-article-${article.id}`\" :group=\"`article-group-${category}`\" _v-5be2c4b5=\"\">\n                 <div class=\"card card-block\" _v-5be2c4b5=\"\">\n                     {{ article.summary }}\n                 </div>\n            </vs-collapse>\n        </vs-list-group-item>\n    </vs-list-group>   \n    <list-loader url=\"/api/articles/\" :params=\"params\" :model.sync=\"articles\" _v-5be2c4b5=\"\">\n    </list-loader>\n</div>   \n";
-
-/***/ },
-/* 196 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<div class=\"clearfix\" _v-99189546=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-99189546=\"\">\n        <router-view _v-99189546=\"\"></router-view>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-99189546=\"\">\n        <h3 style=\"color:#ccc\" _v-99189546=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"company\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-99189546=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
-
-/***/ },
-/* 197 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(198)
-	__vue_script__ = __webpack_require__(200)
+	__webpack_require__(209)
+	__vue_script__ = __webpack_require__(211)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/FinanceIndex.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(220)
+	__vue_template__ = __webpack_require__(231)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -15925,9 +15956,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-40439ab6/FinanceIndex.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/FinanceIndex.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15936,23 +15967,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 198 */
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(199);
+	var content = __webpack_require__(210);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-40439ab6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-40439ab6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5d5835b2&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5d5835b2&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15962,21 +15993,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 199 */
+/* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nh3 a[_v-40439ab6] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FinanceIndex.vue?e15fedf2"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAmDA;IACA,eAAA;CACA","file":"FinanceIndex.vue","sourcesContent":["<template>\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/stocks/'\">股票</a>\n        </h3>\n        <stock-item\n            v-for=\"stock in stocks\"\n            :stock=\"stock\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </stock-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"stocks\"\n            url=\"/api/stocks/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/bonds/'\">债券</a>\n        </h3>\n        <bond-item\n            v-for=\"bond in bonds\"\n            :bond=\"bond\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </bond-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"bonds\"\n            url=\"/api/bonds/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/futures/'\">期货</a>\n        </h3>\n        <future-item\n            v-for=\"future in futures\"\n            :future=\"future\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </future-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"futures\"\n            url=\"/api/futures/\">\n        </list-loader>\n    </div>\n</template>\n\n<style scoped>\n    h3 a {\n        display: block;\n    }\n</style>\n\n<script>\n    import ListLoader from 'misc/ListLoader.vue'\n    import StockItem from './StockItem.vue'\n    import BondItem from './BondItem.vue'\n    import FutureItem from './FutureItem.vue'\n\n    export default {\n        components: { ListLoader, StockItem, BondItem, FutureItem },\n        data: () => ({\n            stocks: [],\n            bonds: [],\n            futures: []\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\nh3 a[_v-5d5835b2] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FinanceIndex.vue?e15fedf2"],"names":[],"mappings":";AAmDA;IACA,eAAA;CACA","file":"FinanceIndex.vue","sourcesContent":["<template>\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/stocks/'\">股票</a>\n        </h3>\n        <stock-item\n            v-for=\"stock in stocks\"\n            :stock=\"stock\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </stock-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"stocks\"\n            url=\"/api/stocks/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/bonds/'\">债券</a>\n        </h3>\n        <bond-item\n            v-for=\"bond in bonds\"\n            :bond=\"bond\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </bond-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"bonds\"\n            url=\"/api/bonds/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/futures/'\">期货</a>\n        </h3>\n        <future-item\n            v-for=\"future in futures\"\n            :future=\"future\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </future-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"futures\"\n            url=\"/api/futures/\">\n        </list-loader>\n    </div>\n</template>\n\n<style scoped>\n    h3 a {\n        display: block;\n    }\n</style>\n\n<script>\n    import ListLoader from 'misc/ListLoader.vue'\n    import StockItem from './StockItem.vue'\n    import BondItem from './BondItem.vue'\n    import FutureItem from './FutureItem.vue'\n\n    export default {\n        components: { ListLoader, StockItem, BondItem, FutureItem },\n        data: () => ({\n            stocks: [],\n            bonds: [],\n            futures: []\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 200 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15985,19 +16016,19 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _ListLoader = __webpack_require__(192);
+	var _ListLoader = __webpack_require__(109);
 	
 	var _ListLoader2 = _interopRequireDefault(_ListLoader);
 	
-	var _StockItem = __webpack_require__(201);
+	var _StockItem = __webpack_require__(212);
 	
 	var _StockItem2 = _interopRequireDefault(_StockItem);
 	
-	var _BondItem = __webpack_require__(210);
+	var _BondItem = __webpack_require__(221);
 	
 	var _BondItem2 = _interopRequireDefault(_BondItem);
 	
-	var _FutureItem = __webpack_require__(215);
+	var _FutureItem = __webpack_require__(226);
 	
 	var _FutureItem2 = _interopRequireDefault(_FutureItem);
 	
@@ -16020,17 +16051,17 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 201 */
+/* 212 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(202)
-	__vue_script__ = __webpack_require__(204)
+	__webpack_require__(213)
+	__vue_script__ = __webpack_require__(215)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/StockItem.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(209)
+	__vue_template__ = __webpack_require__(220)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -16038,9 +16069,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-7dab9ae8/StockItem.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/StockItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16049,23 +16080,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 202 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(203);
+	var content = __webpack_require__(214);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-7dab9ae8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-7dab9ae8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-106b5f4a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-106b5f4a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -16075,21 +16106,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 203 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-7dab9ae8] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/StockItem.vue?5f91ef77"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAkDA;IACA,UAAA;CACA","file":"StockItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ stock.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ stock.price }}</dd>\n                    <dt class=\"col-md-6\">成交量</dt>\n                    <dd class=\"col-md-6\">{{ stock.volume }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"公司简介\">\n                        <div slot=\"content\">\n                            {{{ stock.company_info | br }}}\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"券商评价\">\n                        <div slot=\"content\">\n                            <vs-list-group flush>\n                                <vs-list-group-item\n                                    v-for=\"comment in stock.comments\">\n                                    {{{ comment.content | br }}}\n                                </vs-list-group-item>\n                            </vs-list-group>\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                volume: {\n                    name: '成交量'\n                }\n            }\n        }),\n        props: {\n            stock: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.card hr[_v-106b5f4a] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/StockItem.vue?5f91ef77"],"names":[],"mappings":";AAkDA;IACA,UAAA;CACA","file":"StockItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ stock.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ stock.price }}</dd>\n                    <dt class=\"col-md-6\">成交量</dt>\n                    <dd class=\"col-md-6\">{{ stock.volume }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"公司简介\">\n                        <div slot=\"content\">\n                            {{{ stock.company_info | br }}}\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"券商评价\">\n                        <div slot=\"content\">\n                            <vs-list-group flush>\n                                <vs-list-group-item\n                                    v-for=\"comment in stock.comments\">\n                                    {{{ comment.content | br }}}\n                                </vs-list-group-item>\n                            </vs-list-group>\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                volume: {\n                    name: '成交量'\n                }\n            }\n        }),\n        props: {\n            stock: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 204 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16098,7 +16129,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Chart = __webpack_require__(205);
+	var _Chart = __webpack_require__(216);
 	
 	var _Chart2 = _interopRequireDefault(_Chart);
 	
@@ -16127,16 +16158,16 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 205 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(206)
+	__vue_script__ = __webpack_require__(217)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/misc/Chart.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(208)
+	__vue_template__ = __webpack_require__(219)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -16144,9 +16175,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-2a30999a/Chart.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/Chart.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16155,7 +16186,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 206 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
@@ -16164,11 +16195,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _defineProperty2 = __webpack_require__(72);
+	var _defineProperty2 = __webpack_require__(76);
 	
 	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 	
-	var _highstock = __webpack_require__(207);
+	var _highstock = __webpack_require__(218);
 	
 	var _highstock2 = _interopRequireDefault(_highstock);
 	
@@ -16222,6 +16253,9 @@ webpackJsonp([1],Array(92).concat([
 	            });
 	
 	            this.chart = _highstock2.default.StockChart(this.containerId, {
+	                chart: {
+	                    backgroundColor: null
+	                },
 	                rangeSelector: {
 	                    enabled: false
 	                },
@@ -16233,10 +16267,20 @@ webpackJsonp([1],Array(92).concat([
 	                tooltip: {
 	                    valueDecimals: 2
 	                },
+	                xAxis: {
+	                    labels: {
+	                        style: {
+	                            color: '#eee'
+	                        }
+	                    }
+	                },
 	                yAxis: {
 	                    labels: {
 	                        formatter: function formatter() {
 	                            return (this.value > 0 ? '+' : '') + this.value + '%';
+	                        },
+	                        style: {
+	                            color: '#eee'
 	                        }
 	                    },
 	                    plotLines: [{
@@ -16286,7 +16330,7 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 207 */
+/* 218 */
 /***/ function(module, exports) {
 
 	/*
@@ -16726,29 +16770,29 @@ webpackJsonp([1],Array(92).concat([
 
 
 /***/ },
-/* 208 */
+/* 219 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div>\n    <div :id=\"containerId\"></div>\n    <vs-buttons \n        block \n        size=\"sm\" \n        variant=\"info\"\n        @click=\"loadData\"\n        :disabled=\"(loading || !initiated)\"\n        v-show=\"url\">\n        加载更多\n    </vs-buttons>\n</div>\n";
+	module.exports = "\n<div>\n    <div :id=\"containerId\"></div>\n    <vs-buttons \n        block \n        size=\"sm\" \n        variant=\"info-outline\"\n        @click=\"loadData\"\n        :disabled=\"!url || (loading || !initiated)\">\n        加载更多\n    </vs-buttons>\n</div>\n";
 
 /***/ },
-/* 209 */
+/* 220 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-7dab9ae8=\"\">\n    <vs-card _v-7dab9ae8=\"\">\n        <div class=\"card-block text-xs-center\" _v-7dab9ae8=\"\">\n            <h3 _v-7dab9ae8=\"\">\n                {{ stock.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-7dab9ae8=\"\">\n                <dt class=\"col-md-6\" _v-7dab9ae8=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-7dab9ae8=\"\">{{ stock.price }}</dd>\n                <dt class=\"col-md-6\" _v-7dab9ae8=\"\">成交量</dt>\n                <dd class=\"col-md-6\" _v-7dab9ae8=\"\">{{ stock.volume }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-7dab9ae8=\"\">\n            <vs-list-group-item _v-7dab9ae8=\"\">\n                <vs-expansion title=\"公司简介\" _v-7dab9ae8=\"\">\n                    <div slot=\"content\" _v-7dab9ae8=\"\">\n                        {{{ stock.company_info | br }}}\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item _v-7dab9ae8=\"\">\n                <vs-expansion title=\"券商评价\" _v-7dab9ae8=\"\">\n                    <div slot=\"content\" _v-7dab9ae8=\"\">\n                        <vs-list-group flush=\"\" _v-7dab9ae8=\"\">\n                            <vs-list-group-item v-for=\"comment in stock.comments\" _v-7dab9ae8=\"\">\n                                {{{ comment.content | br }}}\n                            </vs-list-group-item>\n                        </vs-list-group>\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-7dab9ae8=\"\">\n                <chart :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-7dab9ae8=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-106b5f4a=\"\">\n    <vs-card _v-106b5f4a=\"\">\n        <div class=\"card-block text-xs-center\" _v-106b5f4a=\"\">\n            <h3 _v-106b5f4a=\"\">\n                {{ stock.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-106b5f4a=\"\">\n                <dt class=\"col-md-6\" _v-106b5f4a=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-106b5f4a=\"\">{{ stock.price }}</dd>\n                <dt class=\"col-md-6\" _v-106b5f4a=\"\">成交量</dt>\n                <dd class=\"col-md-6\" _v-106b5f4a=\"\">{{ stock.volume }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-106b5f4a=\"\">\n            <vs-list-group-item _v-106b5f4a=\"\">\n                <vs-expansion title=\"公司简介\" _v-106b5f4a=\"\">\n                    <div slot=\"content\" _v-106b5f4a=\"\">\n                        {{{ stock.company_info | br }}}\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item _v-106b5f4a=\"\">\n                <vs-expansion title=\"券商评价\" _v-106b5f4a=\"\">\n                    <div slot=\"content\" _v-106b5f4a=\"\">\n                        <vs-list-group flush=\"\" _v-106b5f4a=\"\">\n                            <vs-list-group-item v-for=\"comment in stock.comments\" _v-106b5f4a=\"\">\n                                {{{ comment.content | br }}}\n                            </vs-list-group-item>\n                        </vs-list-group>\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-106b5f4a=\"\">\n                <chart :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-106b5f4a=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
-/* 210 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(211)
-	__vue_script__ = __webpack_require__(213)
+	__webpack_require__(222)
+	__vue_script__ = __webpack_require__(224)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/BondItem.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(214)
+	__vue_template__ = __webpack_require__(225)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -16756,9 +16800,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-597b6583/BondItem.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/BondItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16767,23 +16811,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 211 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(212);
+	var content = __webpack_require__(223);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-597b6583&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-597b6583&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-81baadf6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-81baadf6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -16793,21 +16837,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 212 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-597b6583] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/BondItem.vue?6a9f8498"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAgCA;IACA,UAAA;CACA","file":"BondItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ bond.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ bond.price }}</dd>\n                    <dt class=\"col-md-6\">发行量</dt>\n                    <dd class=\"col-md-6\">{{ bond.quantity }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    发行方： {{ bond.issuer }}\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                quantity: {\n                    name: '发行量'\n                }\n            }\n        }),\n        props: {\n            bond: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.card hr[_v-81baadf6] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/BondItem.vue?6a9f8498"],"names":[],"mappings":";AAgCA;IACA,UAAA;CACA","file":"BondItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ bond.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ bond.price }}</dd>\n                    <dt class=\"col-md-6\">发行量</dt>\n                    <dd class=\"col-md-6\">{{ bond.quantity }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    发行方： {{ bond.issuer }}\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                quantity: {\n                    name: '发行量'\n                }\n            }\n        }),\n        props: {\n            bond: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 213 */
+/* 224 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16816,7 +16860,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Chart = __webpack_require__(205);
+	var _Chart = __webpack_require__(216);
 	
 	var _Chart2 = _interopRequireDefault(_Chart);
 	
@@ -16845,23 +16889,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 214 */
+/* 225 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-597b6583=\"\">\n    <vs-card _v-597b6583=\"\">\n        <div class=\"card-block text-xs-center\" _v-597b6583=\"\">\n            <h3 _v-597b6583=\"\">\n                {{ bond.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-597b6583=\"\">\n                <dt class=\"col-md-6\" _v-597b6583=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-597b6583=\"\">{{ bond.price }}</dd>\n                <dt class=\"col-md-6\" _v-597b6583=\"\">发行量</dt>\n                <dd class=\"col-md-6\" _v-597b6583=\"\">{{ bond.quantity }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-597b6583=\"\">\n            <vs-list-group-item _v-597b6583=\"\">\n                发行方： {{ bond.issuer }}\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-597b6583=\"\">\n                <chart :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-597b6583=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-81baadf6=\"\">\n    <vs-card _v-81baadf6=\"\">\n        <div class=\"card-block text-xs-center\" _v-81baadf6=\"\">\n            <h3 _v-81baadf6=\"\">\n                {{ bond.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-81baadf6=\"\">\n                <dt class=\"col-md-6\" _v-81baadf6=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-81baadf6=\"\">{{ bond.price }}</dd>\n                <dt class=\"col-md-6\" _v-81baadf6=\"\">发行量</dt>\n                <dd class=\"col-md-6\" _v-81baadf6=\"\">{{ bond.quantity }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-81baadf6=\"\">\n            <vs-list-group-item _v-81baadf6=\"\">\n                发行方： {{ bond.issuer }}\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-81baadf6=\"\">\n                <chart :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-81baadf6=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
-/* 215 */
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(216)
-	__vue_script__ = __webpack_require__(218)
+	__webpack_require__(227)
+	__vue_script__ = __webpack_require__(229)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/FutureItem.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(219)
+	__vue_template__ = __webpack_require__(230)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -16869,9 +16913,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-0a7ba17a/FutureItem.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/FutureItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16880,23 +16924,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 216 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(217);
+	var content = __webpack_require__(228);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-0a7ba17a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-0a7ba17a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d8b2cb76&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d8b2cb76&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -16906,21 +16950,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 217 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-0a7ba17a] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FutureItem.vue?94eaf11e"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;AA2BA;IACA,UAAA;CACA","file":"FutureItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ future.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ future.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/futures/${future.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            future: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.card hr[_v-d8b2cb76] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FutureItem.vue?94eaf11e"],"names":[],"mappings":";AA2BA;IACA,UAAA;CACA","file":"FutureItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ future.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ future.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/futures/${future.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            future: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 218 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16929,7 +16973,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Chart = __webpack_require__(205);
+	var _Chart = __webpack_require__(216);
 	
 	var _Chart2 = _interopRequireDefault(_Chart);
 	
@@ -16955,28 +16999,28 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 219 */
+/* 230 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-0a7ba17a=\"\">\n    <vs-card _v-0a7ba17a=\"\">\n        <div class=\"card-block text-xs-center\" _v-0a7ba17a=\"\">\n            <h3 _v-0a7ba17a=\"\">\n                {{ future.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-0a7ba17a=\"\">\n                <dt class=\"col-md-6\" _v-0a7ba17a=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-0a7ba17a=\"\">{{ future.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-0a7ba17a=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-0a7ba17a=\"\">\n                <chart :url=\"`/api/futures/${future.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-0a7ba17a=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-d8b2cb76=\"\">\n    <vs-card _v-d8b2cb76=\"\">\n        <div class=\"card-block text-xs-center\" _v-d8b2cb76=\"\">\n            <h3 _v-d8b2cb76=\"\">\n                {{ future.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-d8b2cb76=\"\">\n                <dt class=\"col-md-6\" _v-d8b2cb76=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-d8b2cb76=\"\">{{ future.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-d8b2cb76=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-d8b2cb76=\"\">\n                <chart :url=\"`/api/futures/${future.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-d8b2cb76=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
-/* 220 */
+/* 231 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"col-xs-12 no-padding\" _v-40439ab6=\"\">\n    <h3 _v-40439ab6=\"\">\n        <a v-link=\"'/finance/stocks/'\" _v-40439ab6=\"\">股票</a>\n    </h3>\n    <stock-item v-for=\"stock in stocks\" :stock=\"stock\" class=\"col-xs-12 col-md-6 small-padding\" _v-40439ab6=\"\">\n    </stock-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"stocks\" url=\"/api/stocks/\" _v-40439ab6=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-40439ab6=\"\">\n    <h3 _v-40439ab6=\"\">\n        <a v-link=\"'/finance/bonds/'\" _v-40439ab6=\"\">债券</a>\n    </h3>\n    <bond-item v-for=\"bond in bonds\" :bond=\"bond\" class=\"col-xs-12 col-md-6 small-padding\" _v-40439ab6=\"\">\n    </bond-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"bonds\" url=\"/api/bonds/\" _v-40439ab6=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-40439ab6=\"\">\n    <h3 _v-40439ab6=\"\">\n        <a v-link=\"'/finance/futures/'\" _v-40439ab6=\"\">期货</a>\n    </h3>\n    <future-item v-for=\"future in futures\" :future=\"future\" class=\"col-xs-12 col-md-6 small-padding\" _v-40439ab6=\"\">\n    </future-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"futures\" url=\"/api/futures/\" _v-40439ab6=\"\">\n    </list-loader>\n</div>\n";
+	module.exports = "\n<div class=\"col-xs-12 no-padding\" _v-5d5835b2=\"\">\n    <h3 _v-5d5835b2=\"\">\n        <a v-link=\"'/finance/stocks/'\" _v-5d5835b2=\"\">股票</a>\n    </h3>\n    <stock-item v-for=\"stock in stocks\" :stock=\"stock\" class=\"col-xs-12 col-md-6 small-padding\" _v-5d5835b2=\"\">\n    </stock-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"stocks\" url=\"/api/stocks/\" _v-5d5835b2=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-5d5835b2=\"\">\n    <h3 _v-5d5835b2=\"\">\n        <a v-link=\"'/finance/bonds/'\" _v-5d5835b2=\"\">债券</a>\n    </h3>\n    <bond-item v-for=\"bond in bonds\" :bond=\"bond\" class=\"col-xs-12 col-md-6 small-padding\" _v-5d5835b2=\"\">\n    </bond-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"bonds\" url=\"/api/bonds/\" _v-5d5835b2=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-5d5835b2=\"\">\n    <h3 _v-5d5835b2=\"\">\n        <a v-link=\"'/finance/futures/'\" _v-5d5835b2=\"\">期货</a>\n    </h3>\n    <future-item v-for=\"future in futures\" :future=\"future\" class=\"col-xs-12 col-md-6 small-padding\" _v-5d5835b2=\"\">\n    </future-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"futures\" url=\"/api/futures/\" _v-5d5835b2=\"\">\n    </list-loader>\n</div>\n";
 
 /***/ },
-/* 221 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(222)
+	__vue_script__ = __webpack_require__(233)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/Stocks.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(223)
+	__vue_template__ = __webpack_require__(234)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -16984,9 +17028,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-ed6c222c/Stocks.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Stocks.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16995,7 +17039,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 222 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17004,11 +17048,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Pager = __webpack_require__(166);
+	var _Pager = __webpack_require__(185);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
-	var _StockItem = __webpack_require__(201);
+	var _StockItem = __webpack_require__(212);
 	
 	var _StockItem2 = _interopRequireDefault(_StockItem);
 	
@@ -17024,22 +17068,22 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 223 */
+/* 234 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<stock-item\n    v-if=\"page.results\"\n    v-for=\"item in page.results\"\n    :stock=\"item\">\n</stock-item>\n<pager\n    :model.sync=\"page\"\n    url=\"/api/stocks/\">\n</pager>\n";
 
 /***/ },
-/* 224 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(225)
+	__vue_script__ = __webpack_require__(236)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/Bonds.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(226)
+	__vue_template__ = __webpack_require__(237)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -17047,9 +17091,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-2d49115a/Bonds.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Bonds.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17058,7 +17102,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 225 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17067,11 +17111,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Pager = __webpack_require__(166);
+	var _Pager = __webpack_require__(185);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
-	var _BondItem = __webpack_require__(210);
+	var _BondItem = __webpack_require__(221);
 	
 	var _BondItem2 = _interopRequireDefault(_BondItem);
 	
@@ -17087,22 +17131,22 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 226 */
+/* 237 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<bond-item\n    v-if=\"page.results\"\n    v-for=\"item in page.results\"\n    :bond=\"item\">\n</bond-item>\n<pager\n    :model.sync=\"page\"\n    url=\"/api/bonds/\">\n</pager>\n";
 
 /***/ },
-/* 227 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_script__ = __webpack_require__(228)
+	__vue_script__ = __webpack_require__(239)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/Futures.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(229)
+	__vue_template__ = __webpack_require__(240)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -17110,9 +17154,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-d441f4da/Futures.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Futures.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17121,7 +17165,7 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 228 */
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17130,11 +17174,11 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Pager = __webpack_require__(166);
+	var _Pager = __webpack_require__(185);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
-	var _FutureItem = __webpack_require__(215);
+	var _FutureItem = __webpack_require__(226);
 	
 	var _FutureItem2 = _interopRequireDefault(_FutureItem);
 	
@@ -17150,23 +17194,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 229 */
+/* 240 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<future-item\n    v-if=\"page.results\"\n    v-for=\"item in page.results\"\n    :future=\"item\">\n</future-item>\n<pager\n    :model.sync=\"page\"\n    url=\"/api/futures/\">\n</pager>\n";
 
 /***/ },
-/* 230 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(231)
-	__vue_script__ = __webpack_require__(233)
+	__webpack_require__(242)
+	__vue_script__ = __webpack_require__(244)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/RAM.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(239)
+	__vue_template__ = __webpack_require__(250)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -17174,9 +17218,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-79900521/RAM.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/RAM.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17185,23 +17229,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 231 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(232);
+	var content = __webpack_require__(243);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-79900521&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-79900521&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2d2dcf42&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2d2dcf42&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -17211,21 +17255,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 232 */
+/* 243 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nh3[_v-79900521] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAM.vue?035b96d1"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;AA2BA;IACA,sBAAA;CACA","file":"RAM.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <ram-item\n                v-if=\"page.results\"\n                v-for=\"item in page.results\"\n                :model=\"item\">\n            </ram-item>\n            <pager\n                :model.sync=\"page\"\n                url=\"/api/raw_materials/\">\n            </pager>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"energy_and_raw_materials\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\">\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n    import RAMItem from './RAMItem.vue'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        components: { ArticleListGroup, RAMItem, Pager },\n        data: () => ({\n            page: {}\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\nh3[_v-2d2dcf42] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAM.vue?27c23f5a"],"names":[],"mappings":";AA4BA;IACA,sBAAA;CACA","file":"RAM.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <h3 style=\"color:#ccc\">原材料</h3>\n            <ram-item\n                v-if=\"page.results\"\n                v-for=\"item in page.results\"\n                :model=\"item\">\n            </ram-item>\n            <pager\n                :model.sync=\"page\"\n                url=\"/api/raw_materials/\">\n            </pager>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"energy_and_raw_materials\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\">\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n    import RAMItem from './RAMItem.vue'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        components: { ArticleListGroup, RAMItem, Pager },\n        data: () => ({\n            page: {}\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 233 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17234,15 +17278,15 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _ArticleListGroup = __webpack_require__(188);
+	var _ArticleListGroup = __webpack_require__(105);
 	
 	var _ArticleListGroup2 = _interopRequireDefault(_ArticleListGroup);
 	
-	var _RAMItem = __webpack_require__(234);
+	var _RAMItem = __webpack_require__(245);
 	
 	var _RAMItem2 = _interopRequireDefault(_RAMItem);
 	
-	var _Pager = __webpack_require__(166);
+	var _Pager = __webpack_require__(185);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
@@ -17263,17 +17307,17 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 234 */
+/* 245 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(235)
-	__vue_script__ = __webpack_require__(237)
+	__webpack_require__(246)
+	__vue_script__ = __webpack_require__(248)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/finance/RAMItem.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(238)
+	__vue_template__ = __webpack_require__(249)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -17281,9 +17325,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-2bf89358/RAMItem.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/RAMItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17292,23 +17336,23 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 235 */
+/* 246 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(236);
+	var content = __webpack_require__(247);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
+	var update = __webpack_require__(74)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2bf89358&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2bf89358&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-56f60adc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-56f60adc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -17318,21 +17362,21 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 236 */
+/* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(81)();
+	exports = module.exports = __webpack_require__(73)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-2bf89358] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAMItem.vue?6748e5f5"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;AA2BA;IACA,UAAA;CACA","file":"RAMItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ model.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ model.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            model: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n.card hr[_v-56f60adc] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAMItem.vue?6748e5f5"],"names":[],"mappings":";AA2BA;IACA,UAAA;CACA","file":"RAMItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ model.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ model.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            model: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 237 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17341,7 +17385,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _Chart = __webpack_require__(205);
+	var _Chart = __webpack_require__(216);
 	
 	var _Chart2 = _interopRequireDefault(_Chart);
 	
@@ -17367,23 +17411,23 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
-/* 238 */
+/* 249 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-2bf89358=\"\">\n    <vs-card _v-2bf89358=\"\">\n        <div class=\"card-block text-xs-center\" _v-2bf89358=\"\">\n            <h3 _v-2bf89358=\"\">\n                {{ model.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-2bf89358=\"\">\n                <dt class=\"col-md-6\" _v-2bf89358=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-2bf89358=\"\">{{ model.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-2bf89358=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-2bf89358=\"\">\n                <chart :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-2bf89358=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-56f60adc=\"\">\n    <vs-card _v-56f60adc=\"\">\n        <div class=\"card-block text-xs-center\" _v-56f60adc=\"\">\n            <h3 _v-56f60adc=\"\">\n                {{ model.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-56f60adc=\"\">\n                <dt class=\"col-md-6\" _v-56f60adc=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-56f60adc=\"\">{{ model.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-56f60adc=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-56f60adc=\"\">\n                <chart :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-56f60adc=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
-/* 239 */
+/* 250 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"clearfix\" _v-79900521=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-79900521=\"\">\n        <ram-item v-if=\"page.results\" v-for=\"item in page.results\" :model=\"item\" _v-79900521=\"\">\n        </ram-item>\n        <pager :model.sync=\"page\" url=\"/api/raw_materials/\" _v-79900521=\"\">\n        </pager>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-79900521=\"\">\n        <h3 style=\"color:#ccc\" _v-79900521=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"energy_and_raw_materials\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-79900521=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
+	module.exports = "\n<div class=\"clearfix\" _v-2d2dcf42=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-2d2dcf42=\"\">\n        <h3 style=\"color:#ccc\" _v-2d2dcf42=\"\">原材料</h3>\n        <ram-item v-if=\"page.results\" v-for=\"item in page.results\" :model=\"item\" _v-2d2dcf42=\"\">\n        </ram-item>\n        <pager :model.sync=\"page\" url=\"/api/raw_materials/\" _v-2d2dcf42=\"\">\n        </pager>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-2d2dcf42=\"\">\n        <h3 style=\"color:#ccc\" _v-2d2dcf42=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"energy_and_raw_materials\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-2d2dcf42=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
 
 /***/ },
-/* 240 */
+/* 251 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__vue_template__ = __webpack_require__(241)
+	__vue_template__ = __webpack_require__(252)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -17391,9 +17435,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
+	  hotAPI.install(require("vue"), true)
 	  if (!hotAPI.compatible) return
-	  var id = "_v-bcdba976/404.vue"
+	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/pages/404.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17402,13 +17446,13 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 241 */
+/* 252 */
 /***/ function(module, exports) {
 
 	module.exports = "\n<div class=\"container\">\n    <h1>OOPS...</h1>\n</div>\n";
 
 /***/ },
-/* 242 */
+/* 253 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, _) {'use strict';
@@ -17443,7 +17487,7 @@ webpackJsonp([1],Array(92).concat([
 	    });
 	};
 	
-	var _vueResource = __webpack_require__(243);
+	var _vueResource = __webpack_require__(254);
 	
 	var _vueResource2 = _interopRequireDefault(_vueResource);
 
@@ -17451,11 +17495,11 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(3)))
 
 /***/ },
-/* 243 */
+/* 254 */
 /***/ function(module, exports) {
 
 	/*!
-	 * vue-resource v0.9.3
+	 * vue-resource v0.9.1
 	 * https://github.com/vuejs/vue-resource
 	 * Released under the MIT License.
 	 */
@@ -18369,7 +18413,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	    if (request.timeout) {
 	        timeout = setTimeout(function () {
-	            request.abort();
+	            request.cancel();
 	        }, request.timeout);
 	    }
 	
@@ -18478,24 +18522,24 @@ webpackJsonp([1],Array(92).concat([
 	            }
 	
 	            function next(response) {
+	                when(response, function (response) {
 	
-	                if (isFunction(response)) {
+	                    if (isFunction(response)) {
 	
-	                    resHandlers.unshift(response);
-	                } else if (isObject(response)) {
+	                        resHandlers.unshift(response);
+	                    } else if (isObject(response)) {
 	
-	                    resHandlers.forEach(function (handler) {
-	                        response = when(response, function (response) {
-	                            return handler.call(context, response) || response;
+	                        resHandlers.forEach(function (handler) {
+	                            handler.call(context, response);
 	                        });
-	                    });
 	
-	                    when(response, resolve);
+	                        resolve(response);
 	
-	                    return;
-	                }
+	                        return;
+	                    }
 	
-	                exec();
+	                    exec();
+	                });
 	            }
 	
 	            exec();
@@ -18768,7 +18812,7 @@ webpackJsonp([1],Array(92).concat([
 	module.exports = plugin;
 
 /***/ },
-/* 244 */
+/* 255 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {"use strict";
@@ -18819,7 +18863,7 @@ webpackJsonp([1],Array(92).concat([
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 245 */
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -18830,19 +18874,19 @@ webpackJsonp([1],Array(92).concat([
 	
 	exports.default = function (Vue, callback) {
 	    __webpack_require__.e/* nsure */(2, function (require) {
-	        var vsBase = __webpack_require__(246);
+	        var vsBase = __webpack_require__(257);
 	
 	        _lodash2.default.forEach(vsBase, function (component, name) {
 	            Vue.component('vs-' + _lodash2.default.kebabCase(name), component);
 	        });
 	
-	        var vsFormButton = __webpack_require__(247);
-	        var vsExpansion = __webpack_require__(250);
-	        var Editable = __webpack_require__(253);
-	        var BlockA = __webpack_require__(258);
-	        var vsForm = __webpack_require__(263);
+	        var vsFormButton = __webpack_require__(258);
+	        var vsExpansion = __webpack_require__(261);
+	        var Editable = __webpack_require__(264);
+	        var BlockA = __webpack_require__(269);
+	        var vsForm = __webpack_require__(274);
 	
-	        var SideBar = __webpack_require__(266);
+	        var SideBar = __webpack_require__(277);
 	
 	        Vue.component('vs-form-button', vsFormButton);
 	        Vue.component('vs-expansion', vsExpansion);
@@ -18860,200 +18904,6 @@ webpackJsonp([1],Array(92).concat([
 	var _lodash2 = _interopRequireDefault(_lodash);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/***/ },
-/* 246 */,
-/* 247 */,
-/* 248 */,
-/* 249 */,
-/* 250 */,
-/* 251 */,
-/* 252 */,
-/* 253 */,
-/* 254 */,
-/* 255 */,
-/* 256 */,
-/* 257 */,
-/* 258 */,
-/* 259 */,
-/* 260 */,
-/* 261 */,
-/* 262 */,
-/* 263 */,
-/* 264 */,
-/* 265 */,
-/* 266 */,
-/* 267 */,
-/* 268 */,
-/* 269 */,
-/* 270 */,
-/* 271 */,
-/* 272 */,
-/* 273 */,
-/* 274 */,
-/* 275 */,
-/* 276 */,
-/* 277 */,
-/* 278 */,
-/* 279 */,
-/* 280 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __vue_script__, __vue_template__
-	__webpack_require__(281)
-	__vue_script__ = __webpack_require__(283)
-	if (__vue_script__ &&
-	    __vue_script__.__esModule &&
-	    Object.keys(__vue_script__).length > 1) {
-	  console.warn("[vue-loader] js/components/files/FileList.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(284)
-	module.exports = __vue_script__ || {}
-	if (module.exports.__esModule) module.exports = module.exports.default
-	if (__vue_template__) {
-	(typeof module.exports === "function" ? (module.exports.options || (module.exports.options = {})) : module.exports).template = __vue_template__
-	}
-	if (false) {(function () {  module.hot.accept()
-	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), false)
-	  if (!hotAPI.compatible) return
-	  var id = "_v-34139bca/FileList.vue"
-	  if (!module.hot.data) {
-	    hotAPI.createRecord(id, module.exports)
-	  } else {
-	    hotAPI.update(id, module.exports, __vue_template__)
-	  }
-	})()}
-
-/***/ },
-/* 281 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(282);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-34139bca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-34139bca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 282 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(81)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nli a[_v-34139bca] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/files/FileList.vue?071a750e"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;AAuBA;IACA,gBAAA;CACA","file":"FileList.vue","sourcesContent":["<template>\n    <vs-list-group flush>\n        <vs-list-group-item v-for=\"file in model\">\n            {{ file.file_name }}\n            <a\n                href=\"#\"\n                v-if=\"deleteLink\"\n                class=\"pull-xs-right\"\n                @click.stop.prevent=\"removeFile($index)\">\n                删除\n            </a>\n            <a\n                href=\"{{file.storage_url}}\"\n                class=\"pull-xs-right\"\n                target=\"_blank\">\n                下载\n            </a>\n        </vs-list-group-item>\n        <slot></slot>\n    </vs-list-group>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    export default {\n        props: {\n            model: {\n                type: Array,\n                required: true,\n                twoWay: true\n            },\n            baseURL: {\n                type: String,\n                required: false\n            },\n            deleteLink: {\n                type: Boolean,\n                default: false\n            }\n        },\n        methods: {\n            removeFile (index) {\n                console.log(this.model[index].id)\n                let id = this.model[index].id\n\n                this.$http.delete(`${this.baseURL}${id}/`)\n                    .then(() => {\n                        this.model.splice(index, 1)\n                    })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 283 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.default = {
-	    props: {
-	        model: {
-	            type: Array,
-	            required: true,
-	            twoWay: true
-	        },
-	        baseURL: {
-	            type: String,
-	            required: false
-	        },
-	        deleteLink: {
-	            type: Boolean,
-	            default: false
-	        }
-	    },
-	    methods: {
-	        removeFile: function removeFile(index) {
-	            var _this = this;
-	
-	            console.log(this.model[index].id);
-	            var id = this.model[index].id;
-	
-	            this.$http.delete("" + this.baseURL + id + "/").then(function () {
-	                _this.model.splice(index, 1);
-	            });
-	        }
-	    }
-	};
-
-/***/ },
-/* 284 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<vs-list-group flush=\"\" _v-34139bca=\"\">\n    <vs-list-group-item v-for=\"file in model\" _v-34139bca=\"\">\n        {{ file.file_name }}\n        <a href=\"#\" v-if=\"deleteLink\" class=\"pull-xs-right\" @click.stop.prevent=\"removeFile($index)\" _v-34139bca=\"\">\n            删除\n        </a>\n        <a href=\"{{file.storage_url}}\" class=\"pull-xs-right\" target=\"_blank\" _v-34139bca=\"\">\n            下载\n        </a>\n    </vs-list-group-item>\n    <slot _v-34139bca=\"\"></slot>\n</vs-list-group>\n";
-
-/***/ },
-/* 285 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(286);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c8cec45e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c8cec45e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 286 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(81)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\n\n\n\n\n\n\nli a[_v-c8cec45e] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/users/ReportList.vue?35eb1de2"],"names":[],"mappings":";;;;;;;AAOA;IACA,gBAAA;CACA","file":"ReportList.vue","sourcesContent":["<template>\n    <file-list :model.sync=\"reports\" :base-url='baseURL' :delete-link=\"true\">\n        <infinite-loading :on-infinite=\"load\"></infinite-loading>\n    </file-list>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        mixins: [InfiniteLoadingMixin],\n        components: { FileList },\n        listConfig: {\n            listFieldName: 'reports'\n        },\n        data: () => ({\n            nextURL: ''\n        }),\n        props: {\n            reports: {\n                type: Array,\n                twoWay: true,\n                required: true\n            },\n            userId: {\n                required: true,\n                type: Number\n            }\n        },\n        computed: {\n            baseURL () {\n                return `/api/users/${this.userId}/reports/`\n            }\n        },\n        ready () {\n            this.$watch('userId', () => {\n                this.reset()\n            })\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 287 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<file-list :model.sync=\"reports\" :base-url=\"baseURL\" :delete-link=\"true\" _v-c8cec45e=\"\">\n    <infinite-loading :on-infinite=\"load\" _v-c8cec45e=\"\"></infinite-loading>\n</file-list>\n";
 
 /***/ }
 ]));

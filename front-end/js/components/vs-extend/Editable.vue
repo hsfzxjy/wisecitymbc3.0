@@ -5,6 +5,7 @@
             @click="action"
             v-if="editable"
             size="sm"
+            variant="default-outline"
             :disabled="loading"
             class="btn-action">
             {{ buttonText }}

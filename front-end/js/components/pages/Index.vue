@@ -6,19 +6,79 @@
                     WiseCity
                 </h1>
             </div>
-            <div class="col-md-4 col-sm-12" v-show="!$root.hasLogined">
-                <login-form></login-form>
+            <div class="col-md-4 col-sm-12">
+                <div v-show="!$root.hasLogined">
+                    <login-form></login-form>    
+                </div>
+                <div v-else>
+                    <h1 class="display-5">欢迎您，{{ $root.user.nickname }}</h1>
+                </div>
             </div>
         </vs-jumbotron>
+        <div class="container">
+            <div class="col-sm-6 col-xs-12">
+                <vs-card>
+                    <h4 class="card-block card-title text-xs-center">资讯·政府</h4>
+                    <article-list-group
+                        category="government"
+                        :other-params="{limit:3}"
+                        flush>
+                        <div slot="no-results" class="card-block card-text">
+                            空空如也～～
+                        </div>
+                    </article-list-group>
+                </vs-card>
+                <vs-card>
+                    <h4 class="card-block card-title text-xs-center">资讯·媒体</h4>
+                    <article-list-group
+                        category="media"
+                        :other-params="{limit:5}"
+                        flush>
+                        <div slot="no-results" class="card-block card-text">
+                            空空如也～～
+                        </div>
+                    </article-list-group>
+                </vs-card>
+            </div>
+            <div class="col-sm-6 col-xs-12">
+                <vs-card>
+                    <h4 class="card-block card-title text-xs-center">金融</h4>
+                    <article-list-group
+                        category="finance"
+                        :other-params="{limit:2}"
+                        flush>
+                        <div slot="no-results" class="card-block card-text">
+                            空空如也～～
+                        </div>
+                    </article-list-group>
+                </vs-card>
+                <vs-card>
+                    <h4 class="card-block card-title text-xs-center">能源及原材料</h4>
+                    <article-list-group
+                        category="energy_and_raw_materials"
+                        :other-params="{limit:2}"
+                        flush>
+                        <div slot="no-results" class="card-block card-text">
+                            空空如也～～
+                        </div>
+                    </article-list-group>
+                </vs-card>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
     import LoginForm from 'auth/LoginForm.vue'
+    import ArticleListGroup from 'articles/ArticleListGroup.vue'
 
     export default {
         components: {
-            LoginForm
+            LoginForm,
+            ArticleListGroup
+        },
+        ready () {
+            this.$broadcast('ListLoader:reload')
         }
     }
 </script>

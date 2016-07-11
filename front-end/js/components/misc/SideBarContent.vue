@@ -8,7 +8,7 @@
                 <vs-link link="/logout/" title="退出" icon="sign-out"></vs-link>
             </div>
         </div>
-        <div v-else class="clearfix">
+        <div v-else class="clearfix top-btn-group">
             <vs-link link="/login/" title="登录" icon="sign-in"></vs-link>
         </div>
         <vs-list-group flush>
@@ -18,7 +18,7 @@
         </vs-list-group>
         <vs-list-group flush>
             <vs-list-group-item>
-                <vs-expansion title="文章">
+                <vs-expansion title="资讯">
                     <vs-list-group flush slot="content">
                         <vs-list-group-item
                             v-for="category in categories">
@@ -53,7 +53,7 @@
             <vs-list-group-item>
                 <vs-link link="/ram/" title="能源及原材料"></vs-link>
             </vs-list-group-item>
-            <vs-list-group-item>
+            <vs-list-group-item v-if="$root.questions_topic_view_">
                 <vs-link link="/topics/" title="Q&amp;A"></vs-link>
             </vs-list-group-item>
         </vs-list-group>

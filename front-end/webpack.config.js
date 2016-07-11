@@ -1,5 +1,7 @@
 var path = require('path'),
     BundleTracker = require('webpack-bundle-tracker'),
+    precss = require('precss'),
+    autoprefixer = require('autoprefixer'),
     webpack = require('webpack');
 
 module.exports = {
@@ -20,6 +22,9 @@ module.exports = {
         path: path.join(__dirname, "dest/"), 
         filename: "[name].js", 
     },
+    postcss: function () {
+        return [precss, autoprefixer]
+    },
     module: {
         loaders: [{
             test: /\.vue$/,
@@ -38,7 +43,7 @@ module.exports = {
             loader: 'json'
         }, {
             test: /\.scss$/,
-            loader: 'style!css!sass'
+            loader: 'style!css!postcss!sass'
         }, { 
             test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
             loader: "url-loader?limit=10000&mimetype=application/font-woff" 

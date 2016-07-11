@@ -1,5 +1,4 @@
 <template>
-    <div>
         <vs-list-group :flush="flush">
             <vs-list-group-item
                 v-for="article in articles" class='ALGI'>
@@ -39,7 +38,9 @@
             :params="params"
             :model.sync="articles">
         </list-loader>
-    </div>   
+        <slot name="no-results" v-if="!articles.length">
+            <div class="text-xs-center" style="color: #eee;">空空如也～～</div>
+        </slot>
 </template>
 
 <style scoped>
@@ -63,7 +64,7 @@
     export default {
         components: { ListLoader },
         data: () => ({
-            articles: []
+            articles: [],
         }),
         props: {
             category: {
