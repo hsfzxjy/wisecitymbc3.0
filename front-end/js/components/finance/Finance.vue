@@ -4,7 +4,7 @@
             <router-view></router-view>
         </div>
         <div class="col-xs-12 col-sm-6 col-md-4">
-            <h3>
+            <h3 style='color:#ccc'>
                 资讯
             </h3>
             <article-list-group
