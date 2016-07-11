@@ -2,7 +2,7 @@
     <div>
         <vs-list-group :flush="flush">
             <vs-list-group-item
-                v-for="article in articles">
+                v-for="article in articles" class='ALGI'>
                 <div class="wrapper">
                     <a
                         v-link="article.url">
@@ -13,8 +13,8 @@
                         :target-group="`article-group-${category}`"
                         class="pull-xs-right">
                         <vs-badge
-                            variant="info"
-                            class="pull-xs-right pointer">
+                            variant="success"
+                            class="pull-xs-right pointer ALGB">
                             摘要
                         </vs-badge>
                     </vs-collapse-toggle>

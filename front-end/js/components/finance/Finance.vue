@@ -10,7 +10,8 @@
             <article-list-group
                 category="company"
                 :other-params="{ limit: 10, fields: 'id,url,title,is_top,summary' }"
-                :flush="true">
+                :flush="true"
+            >
             </article-list-group>
         </div>
     </div>

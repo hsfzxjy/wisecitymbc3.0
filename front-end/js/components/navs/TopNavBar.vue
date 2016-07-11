@@ -1,5 +1,5 @@
 <template>
-    <vs-navbar type="light" id="top-nav-bar">
+    <vs-navbar type="dark" id="top-nav-bar" style='background-color:#111;' fixed='top'>
         <button 
             class="pull-xs-right navbar-toggler"
             @click="$root.showSideBar = true">

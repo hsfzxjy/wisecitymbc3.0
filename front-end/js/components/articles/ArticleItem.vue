@@ -2,7 +2,7 @@
     <div>
         <vs-card>
             <div class="card-block">
-                <span class="label label-primary">
+                <span class="label label-1">
                     @{{ article.author.nickname }}
                 </span>
                 <span class="label label-danger" v-if="article.is_top">
@@ -37,7 +37,7 @@
                         </div>
                     </div>
                     <p v-if="!expanded" @click="expanded = true">
-                        {{ article.summary }}（点击展开阅读）
+                        {{ article.summary }}<span style='color:rgba(155, 140, 103, 1)'> |点击展开阅读</span>
                     </p>
                 </div>
                 <p class="card-text">
