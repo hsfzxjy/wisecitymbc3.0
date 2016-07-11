@@ -3,7 +3,7 @@ webpackJsonp([1],Array(92).concat([
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process, jQuery) {/*!
-	 * Vue.js v1.0.21
+	 * Vue.js v1.0.26
 	 * (c) 2016 Evan You
 	 * Released under the MIT License.
 	 */
@@ -50,6 +50,10 @@ webpackJsonp([1],Array(92).concat([
 	  delete obj[key];
 	  var ob = obj.__ob__;
 	  if (!ob) {
+	    if (obj._isVue) {
+	      delete obj._data[key];
+	      obj._digest();
+	    }
 	    return;
 	  }
 	  ob.dep.notify();
@@ -398,8 +402,15 @@ webpackJsonp([1],Array(92).concat([
 	
 	// UA sniffing for working around browser-specific quirks
 	var UA = inBrowser && window.navigator.userAgent.toLowerCase();
+	var isIE = UA && UA.indexOf('trident') > 0;
 	var isIE9 = UA && UA.indexOf('msie 9.0') > 0;
 	var isAndroid = UA && UA.indexOf('android') > 0;
+	var isIos = UA && /(iphone|ipad|ipod|ios)/i.test(UA);
+	var iosVersionMatch = isIos && UA.match(/os ([\d_]+)/);
+	var iosVersion = iosVersionMatch && iosVersionMatch[1].split('_');
+	
+	// detecting iOS UIWebView by indexedDB
+	var hasMutationObserverBug = iosVersion && Number(iosVersion[0]) >= 9 && Number(iosVersion[1]) >= 3 && !window.indexedDB;
 	
 	var transitionProp = undefined;
 	var transitionEndEvent = undefined;
@@ -440,7 +451,7 @@ webpackJsonp([1],Array(92).concat([
 	  }
 	
 	  /* istanbul ignore if */
-	  if (typeof MutationObserver !== 'undefined') {
+	  if (typeof MutationObserver !== 'undefined' && !hasMutationObserverBug) {
 	    var counter = 1;
 	    var observer = new MutationObserver(nextTickHandler);
 	    var textNode = document.createTextNode(counter);
@@ -469,6 +480,27 @@ webpackJsonp([1],Array(92).concat([
 	  };
 	})();
 	
+	var _Set = undefined;
+	/* istanbul ignore if */
+	if (typeof Set !== 'undefined' && Set.toString().match(/native code/)) {
+	  // use native Set when available.
+	  _Set = Set;
+	} else {
+	  // a non-standard Set polyfill that only works with primitive keys.
+	  _Set = function () {
+	    this.set = Object.create(null);
+	  };
+	  _Set.prototype.has = function (key) {
+	    return this.set[key] !== undefined;
+	  };
+	  _Set.prototype.add = function (key) {
+	    this.set[key] = 1;
+	  };
+	  _Set.prototype.clear = function () {
+	    this.set = Object.create(null);
+	  };
+	}
+	
 	function Cache(limit) {
 	  this.size = 0;
 	  this.limit = limit;
@@ -491,12 +523,12 @@ webpackJsonp([1],Array(92).concat([
 	
 	p.put = function (key, value) {
 	  var removed;
-	  if (this.size === this.limit) {
-	    removed = this.shift();
-	  }
 	
 	  var entry = this.get(key, true);
 	  if (!entry) {
+	    if (this.size === this.limit) {
+	      removed = this.shift();
+	    }
 	    entry = {
 	      key: key
 	    };
@@ -741,7 +773,7 @@ webpackJsonp([1],Array(92).concat([
 	  var unsafeOpen = escapeRegex(config.unsafeDelimiters[0]);
 	  var unsafeClose = escapeRegex(config.unsafeDelimiters[1]);
 	  tagRE = new RegExp(unsafeOpen + '((?:.|\\n)+?)' + unsafeClose + '|' + open + '((?:.|\\n)+?)' + close, 'g');
-	  htmlRE = new RegExp('^' + unsafeOpen + '.*' + unsafeClose + '$');
+	  htmlRE = new RegExp('^' + unsafeOpen + '((?:.|\\n)+?)' + unsafeClose + '$');
 	  // reset cache
 	  cache = new Cache(1000);
 	}
@@ -1113,8 +1145,9 @@ webpackJsonp([1],Array(92).concat([
 	 */
 	
 	function inDoc(node) {
-	  var doc = document.documentElement;
-	  var parent = node && node.parentNode;
+	  if (!node) return false;
+	  var doc = node.ownerDocument.documentElement;
+	  var parent = node.parentNode;
 	  return doc === node || doc === parent || !!(parent && parent.nodeType === 1 && doc.contains(parent));
 	}
 	
@@ -1527,7 +1560,8 @@ webpackJsonp([1],Array(92).concat([
 	      return (/HTMLUnknownElement/.test(el.toString()) &&
 	        // Chrome returns unknown for several HTML5 elements.
 	        // https://code.google.com/p/chromium/issues/detail?id=540526
-	        !/^(data|time|rtc|rb)$/.test(tag)
+	        // Firefox returns unknown for some "Interactive elements."
+	        !/^(data|time|rtc|rb|details|dialog|summary)$/.test(tag)
 	      );
 	    }
 	  };
@@ -1549,7 +1583,7 @@ webpackJsonp([1],Array(92).concat([
 	    if (resolveAsset(options, 'components', tag)) {
 	      return { id: tag };
 	    } else {
-	      var is = hasAttrs && getIsBinding(el);
+	      var is = hasAttrs && getIsBinding(el, options);
 	      if (is) {
 	        return is;
 	      } else if (process.env.NODE_ENV !== 'production') {
@@ -1562,7 +1596,7 @@ webpackJsonp([1],Array(92).concat([
 	      }
 	    }
 	  } else if (hasAttrs) {
-	    return getIsBinding(el);
+	    return getIsBinding(el, options);
 	  }
 	}
 	
@@ -1570,14 +1604,18 @@ webpackJsonp([1],Array(92).concat([
 	 * Get "is" binding from an element.
 	 *
 	 * @param {Element} el
+	 * @param {Object} options
 	 * @return {Object|undefined}
 	 */
 	
-	function getIsBinding(el) {
+	function getIsBinding(el, options) {
 	  // dynamic syntax
-	  var exp = getAttr(el, 'is');
+	  var exp = el.getAttribute('is');
 	  if (exp != null) {
-	    return { id: exp };
+	    if (resolveAsset(options, 'components', exp)) {
+	      el.removeAttribute('is');
+	      return { id: exp };
+	    }
 	  } else {
 	    exp = getBindAttr(el, 'is');
 	    if (exp != null) {
@@ -1688,7 +1726,7 @@ webpackJsonp([1],Array(92).concat([
 	 */
 	
 	function mergeAssets(parentVal, childVal) {
-	  var res = Object.create(parentVal);
+	  var res = Object.create(parentVal || null);
 	  return childVal ? extend(res, guardArrayAssets(childVal)) : res;
 	}
 	
@@ -1847,11 +1885,21 @@ webpackJsonp([1],Array(92).concat([
 	function mergeOptions(parent, child, vm) {
 	  guardComponents(child);
 	  guardProps(child);
+	  if (process.env.NODE_ENV !== 'production') {
+	    if (child.propsData && !vm) {
+	      warn('propsData can only be used as an instantiation option.');
+	    }
+	  }
 	  var options = {};
 	  var key;
+	  if (child['extends']) {
+	    parent = typeof child['extends'] === 'function' ? mergeOptions(parent, child['extends'].options, vm) : mergeOptions(parent, child['extends'], vm);
+	  }
 	  if (child.mixins) {
 	    for (var i = 0, l = child.mixins.length; i < l; i++) {
-	      parent = mergeOptions(parent, child.mixins[i], vm);
+	      var mixin = child.mixins[i];
+	      var mixinOptions = mixin.prototype instanceof Vue ? mixin.options : mixin;
+	      parent = mergeOptions(parent, mixinOptions, vm);
 	    }
 	  }
 	  for (key in parent) {
@@ -2279,13 +2327,19 @@ webpackJsonp([1],Array(92).concat([
 		hasProto: hasProto,
 		inBrowser: inBrowser,
 		devtools: devtools,
+		isIE: isIE,
 		isIE9: isIE9,
 		isAndroid: isAndroid,
+		isIos: isIos,
+		iosVersionMatch: iosVersionMatch,
+		iosVersion: iosVersion,
+		hasMutationObserverBug: hasMutationObserverBug,
 		get transitionProp () { return transitionProp; },
 		get transitionEndEvent () { return transitionEndEvent; },
 		get animationProp () { return animationProp; },
 		get animationEndEvent () { return animationEndEvent; },
 		nextTick: nextTick,
+		get _Set () { return _Set; },
 		query: query,
 		inDoc: inDoc,
 		getAttr: getAttr,
@@ -2398,13 +2452,8 @@ webpackJsonp([1],Array(92).concat([
 	    this._updateRef();
 	
 	    // initialize data as empty object.
-	    // it will be filled up in _initScope().
+	    // it will be filled up in _initData().
 	    this._data = {};
-	
-	    // save raw constructor data before merge
-	    // so that we know which properties are provided at
-	    // instantiation.
-	    this._runtimeData = options.data;
 	
 	    // call init hook
 	    this._callHook('init');
@@ -2772,7 +2821,9 @@ webpackJsonp([1],Array(92).concat([
 	var restoreRE = /"(\d+)"/g;
 	var pathTestRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['.*?'\]|\[".*?"\]|\[\d+\]|\[[A-Za-z_$][\w$]*\])*$/;
 	var identRE = /[^\w$\.](?:[A-Za-z_$][\w$]*)/g;
-	var booleanLiteralRE = /^(?:true|false)$/;
+	var literalValueRE$1 = /^(?:true|false|null|undefined|Infinity|NaN)$/;
+	
+	function noop() {}
 	
 	/**
 	 * Save / Rewrite / Restore
@@ -2854,7 +2905,7 @@ webpackJsonp([1],Array(92).concat([
 	  // save strings and object literal keys
 	  var body = exp.replace(saveRE, save).replace(wsRE, '');
 	  // rewrite all paths
-	  // pad 1 space here becaue the regex matches 1 extra char
+	  // pad 1 space here because the regex matches 1 extra char
 	  body = (' ' + body).replace(identRE, rewrite).replace(restoreRE, restore);
 	  return makeGetterFn(body);
 	}
@@ -2875,7 +2926,15 @@ webpackJsonp([1],Array(92).concat([
 	    return new Function('scope', 'return ' + body + ';');
 	    /* eslint-enable no-new-func */
 	  } catch (e) {
-	    process.env.NODE_ENV !== 'production' && warn('Invalid expression. ' + 'Generated function body: ' + body);
+	    if (process.env.NODE_ENV !== 'production') {
+	      /* istanbul ignore if */
+	      if (e.toString().match(/unsafe-eval|CSP/)) {
+	        warn('It seems you are using the default build of Vue.js in an environment ' + 'with Content Security Policy that prohibits unsafe-eval. ' + 'Use the CSP-compliant build instead: ' + 'http://vuejs.org/guide/installation.html#CSP-compliant-build');
+	      } else {
+	        warn('Invalid expression. ' + 'Generated function body: ' + body);
+	      }
+	    }
+	    return noop;
 	  }
 	}
 	
@@ -2937,8 +2996,8 @@ webpackJsonp([1],Array(92).concat([
 	
 	function isSimplePath(exp) {
 	  return pathTestRE.test(exp) &&
-	  // don't treat true/false as paths
-	  !booleanLiteralRE.test(exp) &&
+	  // don't treat literal values as paths
+	  !literalValueRE$1.test(exp) &&
 	  // Math constants e.g. Math.PI, Math.E etc.
 	  exp.slice(0, 5) !== 'Math.';
 	}
@@ -2955,24 +3014,22 @@ webpackJsonp([1],Array(92).concat([
 	// triggered, the DOM would have already been in updated
 	// state.
 	
-	var queueIndex;
 	var queue = [];
 	var userQueue = [];
 	var has = {};
 	var circular = {};
 	var waiting = false;
-	var internalQueueDepleted = false;
 	
 	/**
 	 * Reset the batcher's state.
 	 */
 	
 	function resetBatcherState() {
-	  queue = [];
-	  userQueue = [];
+	  queue.length = 0;
+	  userQueue.length = 0;
 	  has = {};
 	  circular = {};
-	  waiting = internalQueueDepleted = false;
+	  waiting = false;
 	}
 	
 	/**
@@ -2980,15 +3037,26 @@ webpackJsonp([1],Array(92).concat([
 	 */
 	
 	function flushBatcherQueue() {
-	  runBatcherQueue(queue);
-	  internalQueueDepleted = true;
-	  runBatcherQueue(userQueue);
-	  // dev tool hook
-	  /* istanbul ignore if */
-	  if (devtools && config.devtools) {
-	    devtools.emit('flush');
+	  var _again = true;
+	
+	  _function: while (_again) {
+	    _again = false;
+	
+	    runBatcherQueue(queue);
+	    runBatcherQueue(userQueue);
+	    // user watchers triggered more watchers,
+	    // keep flushing until it depletes
+	    if (queue.length) {
+	      _again = true;
+	      continue _function;
+	    }
+	    // dev tool hook
+	    /* istanbul ignore if */
+	    if (devtools && config.devtools) {
+	      devtools.emit('flush');
+	    }
+	    resetBatcherState();
 	  }
-	  resetBatcherState();
 	}
 	
 	/**
@@ -3000,8 +3068,8 @@ webpackJsonp([1],Array(92).concat([
 	function runBatcherQueue(queue) {
 	  // do not cache length because more watchers might be pushed
 	  // as we run existing watchers
-	  for (queueIndex = 0; queueIndex < queue.length; queueIndex++) {
-	    var watcher = queue[queueIndex];
+	  for (var i = 0; i < queue.length; i++) {
+	    var watcher = queue[i];
 	    var id = watcher.id;
 	    has[id] = null;
 	    watcher.run();
@@ -3014,6 +3082,7 @@ webpackJsonp([1],Array(92).concat([
 	      }
 	    }
 	  }
+	  queue.length = 0;
 	}
 	
 	/**
@@ -3030,20 +3099,14 @@ webpackJsonp([1],Array(92).concat([
 	function pushWatcher(watcher) {
 	  var id = watcher.id;
 	  if (has[id] == null) {
-	    if (internalQueueDepleted && !watcher.user) {
-	      // an internal watcher triggered by a user watcher...
-	      // let's run it immediately after current user watcher is done.
-	      userQueue.splice(queueIndex + 1, 0, watcher);
-	    } else {
-	      // push watcher into appropriate queue
-	      var q = watcher.user ? userQueue : queue;
-	      has[id] = q.length;
-	      q.push(watcher);
-	      // queue the flush
-	      if (!waiting) {
-	        waiting = true;
-	        nextTick(flushBatcherQueue);
-	      }
+	    // push watcher into appropriate queue
+	    var q = watcher.user ? userQueue : queue;
+	    has[id] = q.length;
+	    q.push(watcher);
+	    // queue the flush
+	    if (!waiting) {
+	      waiting = true;
+	      nextTick(flushBatcherQueue);
 	    }
 	  }
 	}
@@ -3084,8 +3147,8 @@ webpackJsonp([1],Array(92).concat([
 	  this.dirty = this.lazy; // for lazy watchers
 	  this.deps = [];
 	  this.newDeps = [];
-	  this.depIds = Object.create(null);
-	  this.newDepIds = null;
+	  this.depIds = new _Set();
+	  this.newDepIds = new _Set();
 	  this.prevError = null; // for async error stacks
 	  // parse expression for getter/setter
 	  if (isFn) {
@@ -3177,8 +3240,6 @@ webpackJsonp([1],Array(92).concat([
 	
 	Watcher.prototype.beforeGet = function () {
 	  Dep.target = this;
-	  this.newDepIds = Object.create(null);
-	  this.newDeps.length = 0;
 	};
 	
 	/**
@@ -3189,10 +3250,10 @@ webpackJsonp([1],Array(92).concat([
 	
 	Watcher.prototype.addDep = function (dep) {
 	  var id = dep.id;
-	  if (!this.newDepIds[id]) {
-	    this.newDepIds[id] = true;
+	  if (!this.newDepIds.has(id)) {
+	    this.newDepIds.add(id);
 	    this.newDeps.push(dep);
-	    if (!this.depIds[id]) {
+	    if (!this.depIds.has(id)) {
 	      dep.addSub(this);
 	    }
 	  }
@@ -3207,14 +3268,18 @@ webpackJsonp([1],Array(92).concat([
 	  var i = this.deps.length;
 	  while (i--) {
 	    var dep = this.deps[i];
-	    if (!this.newDepIds[dep.id]) {
+	    if (!this.newDepIds.has(dep.id)) {
 	      dep.removeSub(this);
 	    }
 	  }
+	  var tmp = this.depIds;
 	  this.depIds = this.newDepIds;
-	  var tmp = this.deps;
+	  this.newDepIds = tmp;
+	  this.newDepIds.clear();
+	  tmp = this.deps;
 	  this.deps = this.newDeps;
 	  this.newDeps = tmp;
+	  this.newDeps.length = 0;
 	};
 	
 	/**
@@ -3338,15 +3403,33 @@ webpackJsonp([1],Array(92).concat([
 	 * @param {*} val
 	 */
 	
-	function traverse(val) {
-	  var i, keys;
-	  if (isArray(val)) {
-	    i = val.length;
-	    while (i--) traverse(val[i]);
-	  } else if (isObject(val)) {
-	    keys = Object.keys(val);
-	    i = keys.length;
-	    while (i--) traverse(val[keys[i]]);
+	var seenObjects = new _Set();
+	function traverse(val, seen) {
+	  var i = undefined,
+	      keys = undefined;
+	  if (!seen) {
+	    seen = seenObjects;
+	    seen.clear();
+	  }
+	  var isA = isArray(val);
+	  var isO = isObject(val);
+	  if ((isA || isO) && Object.isExtensible(val)) {
+	    if (val.__ob__) {
+	      var depId = val.__ob__.dep.id;
+	      if (seen.has(depId)) {
+	        return;
+	      } else {
+	        seen.add(depId);
+	      }
+	    }
+	    if (isA) {
+	      i = val.length;
+	      while (i--) traverse(val[i], seen);
+	    } else if (isO) {
+	      keys = Object.keys(val);
+	      i = keys.length;
+	      while (i--) traverse(val[keys[i]], seen);
+	    }
 	  }
 	}
 	
@@ -3393,6 +3476,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	var tagRE$1 = /<([\w:-]+)/;
 	var entityRE = /&#?\w+?;/;
+	var commentRE = /<!--/;
 	
 	/**
 	 * Convert a string template to a DocumentFragment.
@@ -3415,8 +3499,9 @@ webpackJsonp([1],Array(92).concat([
 	  var frag = document.createDocumentFragment();
 	  var tagMatch = templateString.match(tagRE$1);
 	  var entityMatch = entityRE.test(templateString);
+	  var commentMatch = commentRE.test(templateString);
 	
-	  if (!tagMatch && !entityMatch) {
+	  if (!tagMatch && !entityMatch && !commentMatch) {
 	    // text only, return a single text node.
 	    frag.appendChild(document.createTextNode(templateString));
 	  } else {
@@ -3455,10 +3540,13 @@ webpackJsonp([1],Array(92).concat([
 	
 	function nodeToFragment(node) {
 	  // if its a template tag and the browser supports it,
-	  // its content is already a document fragment.
+	  // its content is already a document fragment. However, iOS Safari has
+	  // bug when using directly cloned template content with touch
+	  // events and can cause crashes when the nodes are removed from DOM, so we
+	  // have to treat template elements as string templates. (#2805)
+	  /* istanbul ignore if */
 	  if (isRealTemplate(node)) {
-	    trimNode(node.content);
-	    return node.content;
+	    return stringToFragment(node.innerHTML);
 	  }
 	  // script template
 	  if (node.tagName === 'SCRIPT') {
@@ -3854,7 +3942,7 @@ webpackJsonp([1],Array(92).concat([
 	  this.vm = vm;
 	  var template;
 	  var isString = typeof el === 'string';
-	  if (isString || isTemplate(el)) {
+	  if (isString || isTemplate(el) && !el.hasAttribute('v-if')) {
 	    template = parseTemplate(el, true);
 	  } else {
 	    template = document.createDocumentFragment();
@@ -4196,7 +4284,15 @@ webpackJsonp([1],Array(92).concat([
 	      });
 	      setTimeout(op, staggerAmount);
 	    } else {
-	      frag.before(prevEl.nextSibling);
+	      var target = prevEl.nextSibling;
+	      /* istanbul ignore if */
+	      if (!target) {
+	        // reset end anchor position in case the position was messed up
+	        // by an external drag-n-drop library.
+	        after(this.end, prevEl);
+	        target = this.end;
+	      }
+	      frag.before(target);
 	    }
 	  },
 	
@@ -4267,7 +4363,7 @@ webpackJsonp([1],Array(92).concat([
 	    var primitive = !isObject(value);
 	    var id;
 	    if (key || trackByKey || primitive) {
-	      id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+	      id = getTrackByKey(index, key, value, trackByKey);
 	      if (!cache[id]) {
 	        cache[id] = frag;
 	      } else if (trackByKey !== '$index') {
@@ -4281,8 +4377,10 @@ webpackJsonp([1],Array(92).concat([
 	        } else {
 	          process.env.NODE_ENV !== 'production' && this.warnDuplicate(value);
 	        }
-	      } else {
+	      } else if (Object.isExtensible(value)) {
 	        def(value, id, frag);
+	      } else if (process.env.NODE_ENV !== 'production') {
+	        warn('Frozen v-for objects cannot be automatically tracked, make sure to ' + 'provide a track-by key.');
 	      }
 	    }
 	    frag.raw = value;
@@ -4302,7 +4400,7 @@ webpackJsonp([1],Array(92).concat([
 	    var primitive = !isObject(value);
 	    var frag;
 	    if (key || trackByKey || primitive) {
-	      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+	      var id = getTrackByKey(index, key, value, trackByKey);
 	      frag = this.cache[id];
 	    } else {
 	      frag = value[this.id];
@@ -4329,7 +4427,7 @@ webpackJsonp([1],Array(92).concat([
 	    var key = hasOwn(scope, '$key') && scope.$key;
 	    var primitive = !isObject(value);
 	    if (trackByKey || key || primitive) {
-	      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+	      var id = getTrackByKey(index, key, value, trackByKey);
 	      this.cache[id] = null;
 	    } else {
 	      value[this.id] = null;
@@ -4370,7 +4468,7 @@ webpackJsonp([1],Array(92).concat([
 	   * the filters. This is passed to and called by the watcher.
 	   *
 	   * It is necessary for this to be called during the
-	   * wathcer's dependency collection phase because we want
+	   * watcher's dependency collection phase because we want
 	   * the v-for to update when the source Object is mutated.
 	   */
 	
@@ -4477,6 +4575,19 @@ webpackJsonp([1],Array(92).concat([
 	    ret[i] = i;
 	  }
 	  return ret;
+	}
+	
+	/**
+	 * Get the track by key for an item.
+	 *
+	 * @param {Number} index
+	 * @param {String} key
+	 * @param {*} value
+	 * @param {String} [trackByKey]
+	 */
+	
+	function getTrackByKey(index, key, value, trackByKey) {
+	  return trackByKey ? trackByKey === '$index' ? index : trackByKey.charAt(0).match(/\w/) ? getPath(value, trackByKey) : value[trackByKey] : key || value;
 	}
 	
 	if (process.env.NODE_ENV !== 'production') {
@@ -4700,7 +4811,10 @@ webpackJsonp([1],Array(92).concat([
 	  },
 	
 	  update: function update(value) {
-	    this.el.value = _toString(value);
+	    // #3029 only update when the value changes. This prevent
+	    // browsers from overwriting values like selectionStart
+	    value = _toString(value);
+	    if (value !== this.el.value) this.el.value = value;
 	  },
 	
 	  unbind: function unbind() {
@@ -4749,6 +4863,8 @@ webpackJsonp([1],Array(92).concat([
 	var select = {
 	
 	  bind: function bind() {
+	    var _this = this;
+	
 	    var self = this;
 	    var el = this.el;
 	
@@ -4780,7 +4896,12 @@ webpackJsonp([1],Array(92).concat([
 	    // selectedIndex with value -1 to 0 when the element
 	    // is appended to a new parent, therefore we have to
 	    // force a DOM update whenever that happens...
-	    this.vm.$on('hook:attached', this.forceUpdate);
+	    this.vm.$on('hook:attached', function () {
+	      nextTick(_this.forceUpdate);
+	    });
+	    if (!inDoc(el)) {
+	      nextTick(this.forceUpdate);
+	    }
 	  },
 	
 	  update: function update(value) {
@@ -5080,7 +5201,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    // key filter
 	    var keys = Object.keys(this.modifiers).filter(function (key) {
-	      return key !== 'stop' && key !== 'prevent' && key !== 'self';
+	      return key !== 'stop' && key !== 'prevent' && key !== 'self' && key !== 'capture';
 	    });
 	    if (keys.length) {
 	      handler = keyFilter(handler, keys);
@@ -5209,6 +5330,12 @@ webpackJsonp([1],Array(92).concat([
 	  }
 	  var i = prefixes.length;
 	  var prefixed;
+	  if (camel !== 'filter' && camel in testEl.style) {
+	    return {
+	      kebab: prop,
+	      camel: camel
+	    };
+	  }
 	  while (i--) {
 	    prefixed = camelPrefixes[i] + upper;
 	    if (prefixed in testEl.style) {
@@ -5217,12 +5344,6 @@ webpackJsonp([1],Array(92).concat([
 	        camel: prefixed
 	      };
 	    }
-	  }
-	  if (camel in testEl.style) {
-	    return {
-	      kebab: prop,
-	      camel: camel
-	    };
 	  }
 	}
 	
@@ -5312,8 +5433,12 @@ webpackJsonp([1],Array(92).concat([
 	      attr = camelize(attr);
 	    }
 	    if (!interp && attrWithPropsRE.test(attr) && attr in el) {
-	      el[attr] = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
+	      var attrValue = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
 	      ? '' : value : value;
+	
+	      if (el[attr] !== attrValue) {
+	        el[attr] = attrValue;
+	      }
 	    }
 	    // set model props
 	    var modelProp = modelProps[attr];
@@ -5413,66 +5538,66 @@ webpackJsonp([1],Array(92).concat([
 	  deep: true,
 	
 	  update: function update(value) {
-	    if (value && typeof value === 'string') {
-	      this.handleObject(stringToObject(value));
-	    } else if (isPlainObject(value)) {
-	      this.handleObject(value);
-	    } else if (isArray(value)) {
-	      this.handleArray(value);
-	    } else {
+	    if (!value) {
 	      this.cleanup();
+	    } else if (typeof value === 'string') {
+	      this.setClass(value.trim().split(/\s+/));
+	    } else {
+	      this.setClass(normalize$1(value));
 	    }
 	  },
 	
-	  handleObject: function handleObject(value) {
-	    this.cleanup(value);
-	    this.prevKeys = Object.keys(value);
-	    setObjectClasses(this.el, value);
-	  },
-	
-	  handleArray: function handleArray(value) {
+	  setClass: function setClass(value) {
 	    this.cleanup(value);
 	    for (var i = 0, l = value.length; i < l; i++) {
 	      var val = value[i];
-	      if (val && isPlainObject(val)) {
-	        setObjectClasses(this.el, val);
-	      } else if (val && typeof val === 'string') {
-	        addClass(this.el, val);
+	      if (val) {
+	        apply(this.el, val, addClass);
 	      }
 	    }
-	    this.prevKeys = value.slice();
+	    this.prevKeys = value;
 	  },
 	
 	  cleanup: function cleanup(value) {
-	    if (!this.prevKeys) return;
-	
-	    var i = this.prevKeys.length;
+	    var prevKeys = this.prevKeys;
+	    if (!prevKeys) return;
+	    var i = prevKeys.length;
 	    while (i--) {
-	      var key = this.prevKeys[i];
-	      if (!key) continue;
-	
-	      var keys = isPlainObject(key) ? Object.keys(key) : [key];
-	      for (var j = 0, l = keys.length; j < l; j++) {
-	        toggleClasses(this.el, keys[j], removeClass);
+	      var key = prevKeys[i];
+	      if (!value || value.indexOf(key) < 0) {
+	        apply(this.el, key, removeClass);
 	      }
 	    }
 	  }
 	};
 	
-	function setObjectClasses(el, obj) {
-	  var keys = Object.keys(obj);
-	  for (var i = 0, l = keys.length; i < l; i++) {
-	    var key = keys[i];
-	    if (!obj[key]) continue;
-	    toggleClasses(el, key, addClass);
-	  }
-	}
+	/**
+	 * Normalize objects and arrays (potentially containing objects)
+	 * into array of strings.
+	 *
+	 * @param {Object|Array<String|Object>} value
+	 * @return {Array<String>}
+	 */
 	
-	function stringToObject(value) {
-	  var res = {};
-	  var keys = value.trim().split(/\s+/);
-	  for (var i = 0, l = keys.length; i < l; i++) {
-	    res[keys[i]] = true;
+	function normalize$1(value) {
+	  var res = [];
+	  if (isArray(value)) {
+	    for (var i = 0, l = value.length; i < l; i++) {
+	      var _key = value[i];
+	      if (_key) {
+	        if (typeof _key === 'string') {
+	          res.push(_key);
+	        } else {
+	          for (var k in _key) {
+	            if (_key[k]) res.push(k);
+	          }
+	        }
+	      }
+	    }
+	  } else if (isObject(value)) {
+	    for (var key in value) {
+	      if (value[key]) res.push(key);
+	    }
 	  }
 	  return res;
 	}
@@ -5488,14 +5613,12 @@ webpackJsonp([1],Array(92).concat([
 	 * @param {Function} fn
 	 */
 	
-	function toggleClasses(el, key, fn) {
+	function apply(el, key, fn) {
 	  key = key.trim();
-	
 	  if (key.indexOf(' ') === -1) {
 	    fn(el, key);
 	    return;
 	  }
-	
 	  // The key contains one or more space characters.
 	  // Since a class name doesn't accept such characters, we
 	  // treat it as multiple classes.
@@ -5546,6 +5669,7 @@ webpackJsonp([1],Array(92).concat([
 	      // cached, when the component is used elsewhere this attribute
 	      // will remain at link time.
 	      this.el.removeAttribute('is');
+	      this.el.removeAttribute(':is');
 	      // remove ref, same as above
 	      if (this.descriptor.ref) {
 	        this.el.removeAttribute('v-ref:' + hyphenate(this.descriptor.ref));
@@ -5980,6 +6104,7 @@ webpackJsonp([1],Array(92).concat([
 	  return function propsLinkFn(vm, scope) {
 	    // store resolved props info
 	    vm._props = {};
+	    var inlineProps = vm.$options.propsData;
 	    var i = props.length;
 	    var prop, path, options, value, raw;
 	    while (i--) {
@@ -5988,7 +6113,9 @@ webpackJsonp([1],Array(92).concat([
 	      path = prop.path;
 	      options = prop.options;
 	      vm._props[path] = prop;
-	      if (raw === null) {
+	      if (inlineProps && hasOwn(inlineProps, path)) {
+	        initProp(vm, prop, inlineProps[path]);
+	      }if (raw === null) {
 	        // initialize absent prop
 	        initProp(vm, prop, undefined);
 	      } else if (prop.dynamic) {
@@ -6044,7 +6171,7 @@ webpackJsonp([1],Array(92).concat([
 	  if (value === undefined) {
 	    value = getPropDefaultValue(vm, prop);
 	  }
-	  value = coerceProp(prop, value);
+	  value = coerceProp(prop, value, vm);
 	  var coerced = value !== rawValue;
 	  if (!assertProp(prop, value, vm)) {
 	    value = undefined;
@@ -6163,13 +6290,17 @@ webpackJsonp([1],Array(92).concat([
 	 * @return {*}
 	 */
 	
-	function coerceProp(prop, value) {
+	function coerceProp(prop, value, vm) {
 	  var coerce = prop.options.coerce;
 	  if (!coerce) {
 	    return value;
 	  }
-	  // coerce is a function
-	  return coerce(value);
+	  if (typeof coerce === 'function') {
+	    return coerce(value);
+	  } else {
+	    process.env.NODE_ENV !== 'production' && warn('Invalid coerce for prop "' + prop.name + '": expected function, got ' + typeof coerce + '.', vm);
+	    return value;
+	  }
 	}
 	
 	/**
@@ -6701,10 +6832,9 @@ webpackJsonp([1],Array(92).concat([
 	    // resolve on owner vm
 	    var hooks = resolveAsset(this.vm.$options, 'transitions', id);
 	    id = id || 'v';
+	    oldId = oldId || 'v';
 	    el.__v_trans = new Transition(el, id, hooks, this.vm);
-	    if (oldId) {
-	      removeClass(el, oldId + '-transition');
-	    }
+	    removeClass(el, oldId + '-transition');
 	    addClass(el, id + '-transition');
 	  }
 	};
@@ -6749,7 +6879,7 @@ webpackJsonp([1],Array(92).concat([
 	  // link function for the node itself.
 	  var nodeLinkFn = partial || !options._asComponent ? compileNode(el, options) : null;
 	  // link function for the childNodes
-	  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && el.tagName !== 'SCRIPT' && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
+	  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && !isScript(el) && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
 	
 	  /**
 	   * A composite linker function to be called on a already
@@ -6932,7 +7062,7 @@ webpackJsonp([1],Array(92).concat([
 	    });
 	    if (names.length) {
 	      var plural = names.length > 1;
-	      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment_Instance');
+	      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment-Instance');
 	    }
 	  }
 	
@@ -6969,7 +7099,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	function compileNode(node, options) {
 	  var type = node.nodeType;
-	  if (type === 1 && node.tagName !== 'SCRIPT') {
+	  if (type === 1 && !isScript(node)) {
 	    return compileElement(node, options);
 	  } else if (type === 3 && node.data.trim()) {
 	    return compileTextNode(node, options);
@@ -7129,7 +7259,7 @@ webpackJsonp([1],Array(92).concat([
 	          if (token.html) {
 	            replace(node, parseTemplate(value, true));
 	          } else {
-	            node.data = value;
+	            node.data = _toString(value);
 	          }
 	        } else {
 	          vm._bindDir(token.descriptor, node, host, scope);
@@ -7264,7 +7394,6 @@ webpackJsonp([1],Array(92).concat([
 	  var attr, name, value, modifiers, matched, dirName, rawName, arg, def, termDef;
 	  for (var i = 0, j = attrs.length; i < j; i++) {
 	    attr = attrs[i];
-	    modifiers = parseModifiers(attr.name);
 	    name = attr.name.replace(modifierRE, '');
 	    if (matched = name.match(dirAttrRE)) {
 	      def = resolveAsset(options, 'directives', matched[1]);
@@ -7272,6 +7401,7 @@ webpackJsonp([1],Array(92).concat([
 	        if (!termDef || (def.priority || DEFAULT_TERMINAL_PRIORITY) > termDef.priority) {
 	          termDef = def;
 	          rawName = attr.name;
+	          modifiers = parseModifiers(attr.name);
 	          value = attr.value;
 	          dirName = matched[1];
 	          arg = matched[2];
@@ -7492,6 +7622,10 @@ webpackJsonp([1],Array(92).concat([
 	  }
 	}
 	
+	function isScript(el) {
+	  return el.tagName === 'SCRIPT' && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript');
+	}
+	
 	var specialCharRE = /[^\w\-:\.]/;
 	
 	/**
@@ -7621,8 +7755,8 @@ webpackJsonp([1],Array(92).concat([
 	    value = attrs[i].value;
 	    if (!to.hasAttribute(name) && !specialCharRE.test(name)) {
 	      to.setAttribute(name, value);
-	    } else if (name === 'class' && !parseText(value)) {
-	      value.trim().split(/\s+/).forEach(function (cls) {
+	    } else if (name === 'class' && !parseText(value) && (value = value.trim())) {
+	      value.split(/\s+/).forEach(function (cls) {
 	        addClass(to, cls);
 	      });
 	    }
@@ -7661,6 +7795,10 @@ webpackJsonp([1],Array(92).concat([
 	    contents[name] = extractFragment(contents[name], content);
 	  }
 	  if (content.hasChildNodes()) {
+	    var nodes = content.childNodes;
+	    if (nodes.length === 1 && nodes[0].nodeType === 3 && !nodes[0].data.trim()) {
+	      return;
+	    }
 	    contents['default'] = extractFragment(content.childNodes, content);
 	  }
 	}
@@ -7679,7 +7817,7 @@ webpackJsonp([1],Array(92).concat([
 	    var node = nodes[i];
 	    if (isTemplate(node) && !node.hasAttribute('v-if') && !node.hasAttribute('v-for')) {
 	      parent.removeChild(node);
-	      node = parseTemplate(node);
+	      node = parseTemplate(node, true);
 	    }
 	    frag.appendChild(node);
 	  }
@@ -7760,7 +7898,6 @@ webpackJsonp([1],Array(92).concat([
 	      process.env.NODE_ENV !== 'production' && warn('data functions should return an object.', this);
 	    }
 	    var props = this._props;
-	    var runtimeData = this._runtimeData ? typeof this._runtimeData === 'function' ? this._runtimeData() : this._runtimeData : null;
 	    // proxy data on instance
 	    var keys = Object.keys(data);
 	    var i, key;
@@ -7771,10 +7908,10 @@ webpackJsonp([1],Array(92).concat([
 	      // 1. it's not already defined as a prop
 	      // 2. it's provided via a instantiation option AND there are no
 	      //    template prop present
-	      if (!props || !hasOwn(props, key) || runtimeData && hasOwn(runtimeData, key) && props[key].raw === null) {
+	      if (!props || !hasOwn(props, key)) {
 	        this._proxy(key);
 	      } else if (process.env.NODE_ENV !== 'production') {
-	        warn('Data field "' + key + '" is already defined ' + 'as a prop. Use prop default value instead.', this);
+	        warn('Data field "' + key + '" is already defined ' + 'as a prop. To provide default value for a prop, use the "default" ' + 'prop option; if you want to pass prop values to an instantiation ' + 'call, use the "propsData" option.', this);
 	      }
 	    }
 	    // observe data
@@ -7964,18 +8101,21 @@ webpackJsonp([1],Array(92).concat([
 	
 	  function registerComponentEvents(vm, el) {
 	    var attrs = el.attributes;
-	    var name, handler;
+	    var name, value, handler;
 	    for (var i = 0, l = attrs.length; i < l; i++) {
 	      name = attrs[i].name;
 	      if (eventRE.test(name)) {
 	        name = name.replace(eventRE, '');
-	        handler = (vm._scope || vm._context).$eval(attrs[i].value, true);
-	        if (typeof handler === 'function') {
-	          handler._fromParent = true;
-	          vm.$on(name.replace(eventRE), handler);
-	        } else if (process.env.NODE_ENV !== 'production') {
-	          warn('v-on:' + name + '="' + attrs[i].value + '" ' + 'expects a function value, got ' + handler, vm);
+	        // force the expression into a statement so that
+	        // it always dynamically resolves the method to call (#2670)
+	        // kinda ugly hack, but does the job.
+	        value = attrs[i].value;
+	        if (isSimplePath(value)) {
+	          value += '.apply(this, $arguments)';
 	        }
+	        handler = (vm._scope || vm._context).$eval(value, true);
+	        handler._fromParent = true;
+	        vm.$on(name.replace(eventRE), handler);
 	      }
 	    }
 	  }
@@ -8103,7 +8243,7 @@ webpackJsonp([1],Array(92).concat([
 	  };
 	}
 	
-	function noop() {}
+	function noop$1() {}
 	
 	/**
 	 * A directive links a DOM element with a piece of data,
@@ -8202,7 +8342,7 @@ webpackJsonp([1],Array(92).concat([
 	        }
 	      };
 	    } else {
-	      this._update = noop;
+	      this._update = noop$1;
 	    }
 	    var preProcess = this._preProcess ? bind(this._preProcess, this) : null;
 	    var postProcess = this._postProcess ? bind(this._postProcess, this) : null;
@@ -8626,7 +8766,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    // remove reference from data ob
 	    // frozen object may not have observer.
-	    if (this._data.__ob__) {
+	    if (this._data && this._data.__ob__) {
 	      this._data.__ob__.removeVm(this);
 	    }
 	    // Clean up references to private properties and other
@@ -8699,6 +8839,7 @@ webpackJsonp([1],Array(92).concat([
 	    } else {
 	      factory = resolveAsset(this.$options, 'components', value, true);
 	    }
+	    /* istanbul ignore if */
 	    if (!factory) {
 	      return;
 	    }
@@ -8748,7 +8889,7 @@ webpackJsonp([1],Array(92).concat([
 	  Vue.prototype.$get = function (exp, asStatement) {
 	    var res = parseExpression(exp);
 	    if (res) {
-	      if (asStatement && !isSimplePath(exp)) {
+	      if (asStatement) {
 	        var self = this;
 	        return function statementHandler() {
 	          self.$arguments = toArray(arguments);
@@ -9639,7 +9780,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	  json: {
 	    read: function read(value, indent) {
-	      return typeof value === 'string' ? value : JSON.stringify(value, null, Number(indent) || 2);
+	      return typeof value === 'string' ? value : JSON.stringify(value, null, arguments.length > 1 ? indent : 2);
 	    },
 	    write: function write(value) {
 	      try {
@@ -9680,17 +9821,19 @@ webpackJsonp([1],Array(92).concat([
 	   * 12345 => $12,345.00
 	   *
 	   * @param {String} sign
+	   * @param {Number} decimals Decimal places
 	   */
 	
-	  currency: function currency(value, _currency) {
+	  currency: function currency(value, _currency, decimals) {
 	    value = parseFloat(value);
 	    if (!isFinite(value) || !value && value !== 0) return '';
 	    _currency = _currency != null ? _currency : '$';
-	    var stringified = Math.abs(value).toFixed(2);
-	    var _int = stringified.slice(0, -3);
+	    decimals = decimals != null ? decimals : 2;
+	    var stringified = Math.abs(value).toFixed(decimals);
+	    var _int = decimals ? stringified.slice(0, -1 - decimals) : stringified;
 	    var i = _int.length % 3;
 	    var head = i > 0 ? _int.slice(0, i) + (_int.length > 3 ? ',' : '') : '';
-	    var _float = stringified.slice(-3);
+	    var _float = decimals ? stringified.slice(-1 - decimals) : '';
 	    var sign = value < 0 ? '-' : '';
 	    return sign + _currency + head + _int.slice(i).replace(digitsRE, '$1,') + _float;
 	  },
@@ -9710,7 +9853,13 @@ webpackJsonp([1],Array(92).concat([
 	
 	  pluralize: function pluralize(value) {
 	    var args = toArray(arguments, 1);
-	    return args.length > 1 ? args[value % 10 - 1] || args[args.length - 1] : args[0] + (value === 1 ? '' : 's');
+	    var length = args.length;
+	    if (length > 1) {
+	      var index = value % 10 - 1;
+	      return index in args ? args[index] : args[length - 1];
+	    } else {
+	      return args[0] + (value === 1 ? '' : 's');
+	    }
 	  },
 	
 	  /**
@@ -9895,7 +10044,9 @@ webpackJsonp([1],Array(92).concat([
 	          }
 	        }
 	        if (type === 'component' && isPlainObject(definition)) {
-	          definition.name = id;
+	          if (!definition.name) {
+	            definition.name = id;
+	          }
 	          definition = Vue.extend(definition);
 	        }
 	        this.options[type + 's'][id] = definition;
@@ -9910,7 +10061,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	installGlobalAPI(Vue);
 	
-	Vue.version = '1.0.21';
+	Vue.version = '1.0.26';
 	
 	// devtools global hook
 	/* istanbul ignore next */
@@ -9934,12 +10085,40 @@ webpackJsonp([1],Array(92).concat([
 	// shim for using process in browser
 	
 	var process = module.exports = {};
+	
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+	
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+	
+	(function () {
+	  try {
+	    cachedSetTimeout = setTimeout;
+	  } catch (e) {
+	    cachedSetTimeout = function () {
+	      throw new Error('setTimeout is not defined');
+	    }
+	  }
+	  try {
+	    cachedClearTimeout = clearTimeout;
+	  } catch (e) {
+	    cachedClearTimeout = function () {
+	      throw new Error('clearTimeout is not defined');
+	    }
+	  }
+	} ())
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 	
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -9955,7 +10134,7 @@ webpackJsonp([1],Array(92).concat([
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = setTimeout(cleanUpNextTick);
+	    var timeout = cachedSetTimeout(cleanUpNextTick);
 	    draining = true;
 	
 	    var len = queue.length;
@@ -9972,7 +10151,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    clearTimeout(timeout);
+	    cachedClearTimeout(timeout);
 	}
 	
 	process.nextTick = function (fun) {
@@ -9984,7 +10163,7 @@ webpackJsonp([1],Array(92).concat([
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
+	        cachedSetTimeout(drainQueue, 0);
 	    }
 	};
 	
@@ -13011,9 +13190,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/pages/Index.vue"
+	  var id = "_v-20dc447f/Index.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13061,9 +13240,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/auth/LoginForm.vue"
+	  var id = "_v-7c7c78de/LoginForm.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13138,9 +13317,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/auth/Login.vue"
+	  var id = "_v-a3d5ea0c/Login.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13199,9 +13378,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/auth/Logout.vue"
+	  var id = "_v-619d5cc9/Logout.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13256,9 +13435,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/Articles.vue"
+	  var id = "_v-95418072/Articles.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13376,9 +13555,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleList.vue"
+	  var id = "_v-60865ecc/ArticleList.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13421,7 +13600,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.article-list {\n    padding: 0.9375rem;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleList.vue?40b065bd"],"names":[],"mappings":";AAYA;IACA,mBAAA;CACA","file":"ArticleList.vue","sourcesContent":["<template>\n    <div class=\"container article-list sm-no-padding\">\n        <article-item \n            v-for=\"article in articles\" \n            :article=\"article\" \n            track-by=\"$index\">    \n        </article-item>\n    </div>\n    <infinite-loading :on-infinite=\"load\"></infinite-loading>\n</template>\n\n<style>\n    .article-list {\n        padding: 0.9375rem;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ArticleItem from './ArticleItem.vue'\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n\n    export default {\n        listConfig: {\n            listFieldName: 'articles'\n        },\n        components: {ArticleItem},\n        mixins: [InfiniteLoadingMixin],\n        data: () => ({\n            articles: [],\n            nextURL: ''\n        }),\n        computed: {\n            baseURL () {\n                return `/api/articles/`\n            },\n            params () {\n                let params = {}\n\n                if (this.category) \n                    params.article_type = articles.ArticleType[this.category]\n\n                return _.assign(params, this.otherParams)\n            }\n        },\n        props: {\n            category: {\n                type: String\n            },\n            otherParams: {\n                type: Object\n            },\n            once: {\n                type: Boolean,\n                default: false\n            }\n        },\n        watch: {\n            category () {\n                this.reset()\n            }\n        },\n        events: {\n            ['ArticleList:reset'] () {\n                this.reset()\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n.article-list {\n    padding: 0.9375rem;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleList.vue?40b065bd"],"names":[],"mappings":";;;;;;;;;;;;AAYA;IACA,mBAAA;CACA","file":"ArticleList.vue","sourcesContent":["<template>\n    <div class=\"container article-list sm-no-padding\">\n        <article-item \n            v-for=\"article in articles\" \n            :article=\"article\" \n            track-by=\"$index\">    \n        </article-item>\n    </div>\n    <infinite-loading :on-infinite=\"load\"></infinite-loading>\n</template>\n\n<style>\n    .article-list {\n        padding: 0.9375rem;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ArticleItem from './ArticleItem.vue'\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n\n    export default {\n        listConfig: {\n            listFieldName: 'articles'\n        },\n        components: {ArticleItem},\n        mixins: [InfiniteLoadingMixin],\n        data: () => ({\n            articles: [],\n            nextURL: ''\n        }),\n        computed: {\n            baseURL () {\n                return `/api/articles/`\n            },\n            params () {\n                let params = {}\n\n                if (this.category) \n                    params.article_type = articles.ArticleType[this.category]\n\n                return _.assign(params, this.otherParams)\n            }\n        },\n        props: {\n            category: {\n                type: String\n            },\n            otherParams: {\n                type: Object\n            },\n            once: {\n                type: Boolean,\n                default: false\n            }\n        },\n        watch: {\n            category () {\n                this.reset()\n            }\n        },\n        events: {\n            ['ArticleList:reset'] () {\n                this.reset()\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -13519,9 +13698,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleItem.vue"
+	  var id = "_v-74914ee2/ArticleItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13564,7 +13743,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.operation button {\n    line-height: 1;\n    background: transparent;\n}    \n", "", {"version":3,"sources":["/./js/components/articles/ArticleItem.vue?5fa6bc09"],"names":[],"mappings":";AAiEA;IACA,eAAA;IACA,wBAAA;CACA","file":"ArticleItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block\">\n                <span class=\"label label-1\">\n                    @{{ article.author.nickname }}\n                </span>\n                <span class=\"label label-danger\" v-if=\"article.is_top\">\n                    置顶\n                </span>\n                <div class=\"btn-group operation pull-xs-right\">\n                    <button class=\"btn btn-default dropdown-toggle btn-sm\" data-toggle=\"dropdown\">\n                        <span class=\"caret\"></span>\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-right\">\n                        <li v-if=\"article.perms.change\">\n                            <a \n                                class=\"dropdown-item\" \n                                v-link=\"`/edit/articles/${article.id}/`\">\n                                编辑\n                            </a>\n                        </li>\n                        <li v-if=\"article.perms.delete\">\n                            <a class=\"dropdown-item\" href=\"#\">删除</a>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n            <div class=\"card-block article-main\">\n                <h1 class=\"card-title\" style=\"text-align:center\">\n                    <a v-link=\"article.url\">{{ article.title }}</a>\n                </h1>\n                <div class=\"card-text\">\n                    <div v-if=\"expanded\">\n                        <div class=\"article-content\">\n                            {{{ article.content }}}\n                        </div>\n                    </div>\n                    <p v-if=\"!expanded\" @click=\"expanded = true\">\n                        {{ article.summary }}\n                        <span style='color:rgba(155, 140, 103, 1);cursor:pointer'> |点击展开阅读</span>\n                    </p>\n                </div>\n                <file-list\n                    :model.sync=\"article.attachments\">\n                </file-list>\n                <p class=\"card-text\">\n                    <small class=\"text-muted\">\n                        {{ article.created_time | timesince }}\n                    </small>\n                </p>\n                <div class=\"card-text\" v-if=\"article.tags.length\">\n                    <i class=\"fa fa-tags\"></i>\n                    <vs-badge\n                        v-for=\"tag in article.tags\"\n                        variant=\"info\">\n                        {{tag}}\n                    </vs-badge>\n                </div>\n            </div>\n        </vs-card>        \n    </div>\n</template>\n\n<style>\n    .operation button {\n        line-height: 1;\n        background: transparent;\n    }    \n</style>\n\n<script>\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        components: { FileList },\n        props: {\n            article: {\n                type: Object,\n                required: true\n            },\n            expanded: false\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.operation button {\n    line-height: 1;\n    background: transparent;\n}    \n", "", {"version":3,"sources":["/./js/components/articles/ArticleItem.vue?5fa6bc09"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAiEA;IACA,eAAA;IACA,wBAAA;CACA","file":"ArticleItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block\">\n                <span class=\"label label-1\">\n                    @{{ article.author.nickname }}\n                </span>\n                <span class=\"label label-danger\" v-if=\"article.is_top\">\n                    置顶\n                </span>\n                <div class=\"btn-group operation pull-xs-right\">\n                    <button class=\"btn btn-default dropdown-toggle btn-sm\" data-toggle=\"dropdown\">\n                        <span class=\"caret\"></span>\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-right\">\n                        <li v-if=\"article.perms.change\">\n                            <a \n                                class=\"dropdown-item\" \n                                v-link=\"`/edit/articles/${article.id}/`\">\n                                编辑\n                            </a>\n                        </li>\n                        <li v-if=\"article.perms.delete\">\n                            <a class=\"dropdown-item\" href=\"#\">删除</a>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n            <div class=\"card-block article-main\">\n                <h1 class=\"card-title\" style=\"text-align:center\">\n                    <a v-link=\"article.url\">{{ article.title }}</a>\n                </h1>\n                <div class=\"card-text\">\n                    <div v-if=\"expanded\">\n                        <div class=\"article-content\">\n                            {{{ article.content }}}\n                        </div>\n                    </div>\n                    <p v-if=\"!expanded\" @click=\"expanded = true\">\n                        {{ article.summary }}\n                        <span style='color:rgba(155, 140, 103, 1);cursor:pointer'> |点击展开阅读</span>\n                    </p>\n                </div>\n                <file-list\n                    :model.sync=\"article.attachments\">\n                </file-list>\n                <p class=\"card-text\">\n                    <small class=\"text-muted\">\n                        {{ article.created_time | timesince }}\n                    </small>\n                </p>\n                <div class=\"card-text\" v-if=\"article.tags.length\">\n                    <i class=\"fa fa-tags\"></i>\n                    <vs-badge\n                        v-for=\"tag in article.tags\"\n                        variant=\"info\">\n                        {{tag}}\n                    </vs-badge>\n                </div>\n            </div>\n        </vs-card>        \n    </div>\n</template>\n\n<style>\n    .operation button {\n        line-height: 1;\n        background: transparent;\n    }    \n</style>\n\n<script>\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        components: { FileList },\n        props: {\n            article: {\n                type: Object,\n                required: true\n            },\n            expanded: false\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -13579,7 +13758,7 @@ webpackJsonp([1],Array(92).concat([
 	    value: true
 	});
 	
-	var _FileList = __webpack_require__(283);
+	var _FileList = __webpack_require__(280);
 	
 	var _FileList2 = _interopRequireDefault(_FileList);
 	
@@ -13694,9 +13873,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleNavBar.vue"
+	  var id = "_v-539541ec/ArticleNavBar.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13784,9 +13963,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/Tags.vue"
+	  var id = "_v-921246ba/Tags.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -13810,8 +13989,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d64fcf3e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d64fcf3e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-921246ba&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-921246ba&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Tags.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -13829,7 +14008,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.label[_v-d64fcf3e] {\n    margin: 0.2rem 0.4rem;\n}\n.label a[_v-d64fcf3e] {\n    color: #fff;\n}\n", "", {"version":3,"sources":["/./js/components/articles/Tags.vue?b7ab4152"],"names":[],"mappings":";AAiBA;IACA,sBAAA;CACA;AACA;IACA,YAAA;CACA","file":"Tags.vue","sourcesContent":["<template>\n    <div class=\"container\">\n        <div>\n            <vs-badge\n                v-for=\"tag in tags\"\n                :variant=\"tag.id == currentTagId ? 'danger' : 'info' \"\n                >\n                <a v-link=\"`/tags/${tag.id}/`\">{{tag.name}}</a>\n            </vs-badge>\n        </div>\n        <article-list\n            :other-params=\"{ tags__id: currentTagId }\">\n        </article-list>\n    </div>\n</template>\n\n<style scoped>\n    .label {\n        margin: 0.2rem 0.4rem;\n    }\n    .label a {\n        color: #fff;\n    }\n</style>\n\n<script>\n    import ArticleList from './ArticleList.vue'\n\n    export default {\n        components: { ArticleList },\n        data: () => ({\n            tags: [],\n            currentTagId: 0\n        }),\n        methods: {\n            loadTags () {\n                return this.$http.get('/api/tags/', { params: { limit: -1}})\n            }\n        },\n        route: {\n            data (transition) {\n                let id = transition.to.params.id || 0\n\n                if (_.startsWith(transition.from.path, '/tags')) \n                    transition.next({ currentTagId: id})\n                else\n                    return this.loadTags()\n                        .then(res => ({\n                            tags: res.data.results,\n                            currentTagId: id\n                        }))\n            }\n        },\n        watch: {\n            currentTagId () {\n                this.$broadcast('ArticleList:reset')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.label[_v-921246ba] {\n    margin: 0.2rem 0.4rem;\n}\n.label a[_v-921246ba] {\n    color: #fff;\n}\n", "", {"version":3,"sources":["/./js/components/articles/Tags.vue?b7ab4152"],"names":[],"mappings":";;;;;;;;;;;;;;;;;AAiBA;IACA,sBAAA;CACA;AACA;IACA,YAAA;CACA","file":"Tags.vue","sourcesContent":["<template>\n    <div class=\"container\">\n        <div>\n            <vs-badge\n                v-for=\"tag in tags\"\n                :variant=\"tag.id == currentTagId ? 'danger' : 'info' \"\n                >\n                <a v-link=\"`/tags/${tag.id}/`\">{{tag.name}}</a>\n            </vs-badge>\n        </div>\n        <article-list\n            :other-params=\"{ tags__id: currentTagId }\">\n        </article-list>\n    </div>\n</template>\n\n<style scoped>\n    .label {\n        margin: 0.2rem 0.4rem;\n    }\n    .label a {\n        color: #fff;\n    }\n</style>\n\n<script>\n    import ArticleList from './ArticleList.vue'\n\n    export default {\n        components: { ArticleList },\n        data: () => ({\n            tags: [],\n            currentTagId: 0\n        }),\n        methods: {\n            loadTags () {\n                return this.$http.get('/api/tags/', { params: { limit: -1}})\n            }\n        },\n        route: {\n            data (transition) {\n                let id = transition.to.params.id || 0\n\n                if (_.startsWith(transition.from.path, '/tags')) \n                    transition.next({ currentTagId: id})\n                else\n                    return this.loadTags()\n                        .then(res => ({\n                            tags: res.data.results,\n                            currentTagId: id\n                        }))\n            }\n        },\n        watch: {\n            currentTagId () {\n                this.$broadcast('ArticleList:reset')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -13887,7 +14066,7 @@ webpackJsonp([1],Array(92).concat([
 /* 134 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container\" _v-d64fcf3e=\"\">\n    <div _v-d64fcf3e=\"\">\n        <vs-badge v-for=\"tag in tags\" :variant=\"tag.id == currentTagId ? 'danger' : 'info' \" _v-d64fcf3e=\"\">\n            <a v-link=\"`/tags/${tag.id}/`\" _v-d64fcf3e=\"\">{{tag.name}}</a>\n        </vs-badge>\n    </div>\n    <article-list :other-params=\"{ tags__id: currentTagId }\" _v-d64fcf3e=\"\">\n    </article-list>\n</div>\n";
+	module.exports = "\n<div class=\"container\" _v-921246ba=\"\">\n    <div _v-921246ba=\"\">\n        <vs-badge v-for=\"tag in tags\" :variant=\"tag.id == currentTagId ? 'danger' : 'info' \" _v-921246ba=\"\">\n            <a v-link=\"`/tags/${tag.id}/`\" _v-921246ba=\"\">{{tag.name}}</a>\n        </vs-badge>\n    </div>\n    <article-list :other-params=\"{ tags__id: currentTagId }\" _v-921246ba=\"\">\n    </article-list>\n</div>\n";
 
 /***/ },
 /* 135 */
@@ -13907,9 +14086,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleDetail.vue"
+	  var id = "_v-818cc466/ArticleDetail.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14010,9 +14189,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleEdit.vue"
+	  var id = "_v-41f60ff4/ArticleEdit.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14098,9 +14277,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/edit/Editor.vue"
+	  var id = "_v-96114e32/Editor.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14223,9 +14402,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/edit/CKEditor.vue"
+	  var id = "_v-f56d9262/CKEditor.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14268,7 +14447,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.cke_top.cke_reset_all {\n    height: 31px!important;\n    overflow: auto;\n}\n", "", {"version":3,"sources":["/./js/components/misc/edit/CKEditor.vue?78800648"],"names":[],"mappings":";AAOA;IACA,uBAAA;IACA,eAAA;CACA","file":"CKEditor.vue","sourcesContent":["<template>\n    <div>\n        <textarea :id=\"editorId\" cols=\"30\" rows=\"10\" v-model=\"model\"></textarea>\n    </div>\n</template>\n\n<style>\n    .cke_top.cke_reset_all {\n        height: 31px!important;\n        overflow: auto;\n    }\n</style>\n\n<script>\n    import $script from 'scriptjs'\n\n    export default {\n        events: {\n            ['CKEditor:insert-data']: function (data) {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.insertHtml(data)\n            },\n            ['CKEditor:reset']: function () {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.setData('')\n            }\n        },\n        props: {\n            editorId: {\n                type: String,\n                required: true\n            },\n            model: {\n                type: String,\n                required: true\n            }\n        },\n        ready () {\n            if (window.CKEDITOR)\n                this.initEditor()\n            else\n                $script('//cdn.ckeditor.com/4.5.9/standard/ckeditor.js', this.initEditor.bind(this))\n        },\n        methods: {\n            initEditor () {\n                let ckeditor = CKEDITOR.replace(this.editorId, {\n                    language: 'zh-CN',\n                    removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Image,Superscript,Subscript,About,Anchor',\n                    toolbarGroups: [\n                        { name: 'styles', groups: [ 'styles' ] },\n                        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },\n                        { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },\n                        { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },\n                        { name: 'links', groups: [ 'links' ] },\n                        { name: 'insert', groups: [ 'insert' ] },\n                        { name: 'forms', groups: [ 'forms' ] },\n                        { name: 'tools', groups: [ 'tools' ] },\n                        { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },\n                        { name: 'others', groups: [ 'others' ] },\n                        { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },\n                        { name: 'colors', groups: [ 'colors' ] },\n                        { name: 'about', groups: [ 'about' ] }\n                    ]\n                })\n                ckeditor.on('change', () => {\n                    this.model = ckeditor.getData()\n                })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n.cke_top.cke_reset_all {\n    height: 31px!important;\n    overflow: auto;\n}\n", "", {"version":3,"sources":["/./js/components/misc/edit/CKEditor.vue?78800648"],"names":[],"mappings":";;;;;;;AAOA;IACA,uBAAA;IACA,eAAA;CACA","file":"CKEditor.vue","sourcesContent":["<template>\n    <div>\n        <textarea :id=\"editorId\" cols=\"30\" rows=\"10\" v-model=\"model\"></textarea>\n    </div>\n</template>\n\n<style>\n    .cke_top.cke_reset_all {\n        height: 31px!important;\n        overflow: auto;\n    }\n</style>\n\n<script>\n    import $script from 'scriptjs'\n\n    export default {\n        events: {\n            ['CKEditor:insert-data']: function (data) {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.insertHtml(data)\n            },\n            ['CKEditor:reset']: function () {\n                let ckeditor = CKEDITOR.instances[this.editorId]\n\n                ckeditor.setData('')\n            }\n        },\n        props: {\n            editorId: {\n                type: String,\n                required: true\n            },\n            model: {\n                type: String,\n                required: true\n            }\n        },\n        ready () {\n            if (window.CKEDITOR)\n                this.initEditor()\n            else\n                $script('//cdn.ckeditor.com/4.5.9/standard/ckeditor.js', this.initEditor.bind(this))\n        },\n        methods: {\n            initEditor () {\n                let ckeditor = CKEDITOR.replace(this.editorId, {\n                    language: 'zh-CN',\n                    removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Image,Superscript,Subscript,About,Anchor',\n                    toolbarGroups: [\n                        { name: 'styles', groups: [ 'styles' ] },\n                        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },\n                        { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },\n                        { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },\n                        { name: 'links', groups: [ 'links' ] },\n                        { name: 'insert', groups: [ 'insert' ] },\n                        { name: 'forms', groups: [ 'forms' ] },\n                        { name: 'tools', groups: [ 'tools' ] },\n                        { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },\n                        { name: 'others', groups: [ 'others' ] },\n                        { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },\n                        { name: 'colors', groups: [ 'colors' ] },\n                        { name: 'about', groups: [ 'about' ] }\n                    ]\n                })\n                ckeditor.on('change', () => {\n                    this.model = ckeditor.getData()\n                })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -14488,9 +14667,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/Uploader.vue"
+	  var id = "_v-72c2ad29/Uploader.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14662,9 +14841,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/users/Profile.vue"
+	  var id = "_v-ef16ee4c/Profile.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14763,13 +14942,13 @@ webpackJsonp([1],Array(92).concat([
 /***/ function(module, exports, __webpack_require__) {
 
 	var __vue_script__, __vue_template__
-	__webpack_require__(280)
+	__webpack_require__(285)
 	__vue_script__ = __webpack_require__(158)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/users/ReportList.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(282)
+	__vue_template__ = __webpack_require__(287)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -14777,9 +14956,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/users/ReportList.vue"
+	  var id = "_v-c8cec45e/ReportList.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14801,7 +14980,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	var _InfiniteLoadingMixin2 = _interopRequireDefault(_InfiniteLoadingMixin);
 	
-	var _FileList = __webpack_require__(283);
+	var _FileList = __webpack_require__(280);
 	
 	var _FileList2 = _interopRequireDefault(_FileList);
 	
@@ -14868,9 +15047,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/users/Companies.vue"
+	  var id = "_v-6cd2d468/Companies.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -14951,9 +15130,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/notifications/Notifications.vue"
+	  var id = "_v-9d2d968e/Notifications.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15025,9 +15204,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/Pager.vue"
+	  var id = "_v-7b595ed0/Pager.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15119,9 +15298,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/Topics.vue"
+	  var id = "_v-114f2dc4/Topics.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15179,9 +15358,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/TopicItem.vue"
+	  var id = "_v-27e91bd8/TopicItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15238,9 +15417,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/TopicEdit.vue"
+	  var id = "_v-4136bb4f/TopicEdit.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15315,9 +15494,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/questions/TopicDetail.vue"
+	  var id = "_v-5c07b2d6/TopicDetail.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15341,8 +15520,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-cd6f5ed8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-cd6f5ed8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5c07b2d6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5c07b2d6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./TopicDetail.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15360,7 +15539,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.main[_v-cd6f5ed8] {\n    word-wrap: break-word;\n}\n", "", {"version":3,"sources":["/./js/components/questions/TopicDetail.vue?b9bc3374"],"names":[],"mappings":";AAmEA;IACA,sBAAA;CACA","file":"TopicDetail.vue","sourcesContent":["<template>\n    <div class=\"container-fluid main\">\n        <div class=\"col-xs-12 col-md-8\">\n            <section>\n                <vs-card>\n                    <div class=\"card-block article-main\">\n                        <h1 class=\"card-title\">{{ topic.title }}</h1>\n                        {{{ topic.content }}}\n\n                        <p class=\"card-text text-muted hidden-sm-down\">\n                            <small>\n                                {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                            </small>\n                        </p>\n                    </div>\n                    <vs-list-group flush class=\"hidden-md-up\">\n                        <vs-list-group-item>\n                            发布于 {{ topic.created_time | timesince }}\n                        </vs-list-group-item>\n                        <vs-list-group-item>\n                            更新于 {{ topic.updated_time | timesince }}\n                        </vs-list-group-item>\n                    </vs-list-group>\n                </vs-card>\n            </section>\n            <hr>\n            <vs-card v-for=\"reply in page.results\">\n                <div class=\"card-block article-main\">\n                    {{{ reply.content }}}\n\n                    <p class=\"card-text text-muted\">\n                        <small>\n                            {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n            </vs-card>\n            <pager\n                v-if=\"topicId\"\n                :url=\"`/api/topics/${topicId}/replies/`\"\n                :model.sync=\"page\">\n            </pager>\n        </div>\n        <div class=\"col-md-4 hidden-sm-down\">\n            <vs-card>\n                <vs-list-group flush>\n                    <vs-list-group-item>\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item>\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </div>\n        <div class=\"col-xs-12 lg-no-padding\">\n            <editor\n                :model.sync=\"reply\"\n                name=\"topic-reply-edit\"\n                :base-url=\"`/api/topics/${topicId}/replies/`\"\n                @submitted=\"editorSubmitted\">\n            </editor>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    .main {\n        word-wrap: break-word;\n    }\n</style>\n\n<script>\n    import Editor from 'misc/edit/Editor.vue'\n    import DetailMixin from 'mixins/DetailMixin.es'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        mixins: [DetailMixin],\n        components: {Editor, Pager},\n        detailConfig: {\n            baseURL: '/api/topics/',\n            objectFieldName: 'topic',\n            idFieldName: 'topicId'\n        },\n        data: () => ({\n            topic: {},\n            topicId: '',\n            page: {},\n            reply: {\n                content: '',\n                attachments: []\n            }\n        }),\n        methods: {\n            editorSubmitted (editor, reply) {\n                this.page.results.push(reply)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.main[_v-5c07b2d6] {\n    word-wrap: break-word;\n}\n", "", {"version":3,"sources":["/./js/components/questions/TopicDetail.vue?b9bc3374"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAmEA;IACA,sBAAA;CACA","file":"TopicDetail.vue","sourcesContent":["<template>\n    <div class=\"container-fluid main\">\n        <div class=\"col-xs-12 col-md-8\">\n            <section>\n                <vs-card>\n                    <div class=\"card-block article-main\">\n                        <h1 class=\"card-title\">{{ topic.title }}</h1>\n                        {{{ topic.content }}}\n\n                        <p class=\"card-text text-muted hidden-sm-down\">\n                            <small>\n                                {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                            </small>\n                        </p>\n                    </div>\n                    <vs-list-group flush class=\"hidden-md-up\">\n                        <vs-list-group-item>\n                            发布于 {{ topic.created_time | timesince }}\n                        </vs-list-group-item>\n                        <vs-list-group-item>\n                            更新于 {{ topic.updated_time | timesince }}\n                        </vs-list-group-item>\n                    </vs-list-group>\n                </vs-card>\n            </section>\n            <hr>\n            <vs-card v-for=\"reply in page.results\">\n                <div class=\"card-block article-main\">\n                    {{{ reply.content }}}\n\n                    <p class=\"card-text text-muted\">\n                        <small>\n                            {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n            </vs-card>\n            <pager\n                v-if=\"topicId\"\n                :url=\"`/api/topics/${topicId}/replies/`\"\n                :model.sync=\"page\">\n            </pager>\n        </div>\n        <div class=\"col-md-4 hidden-sm-down\">\n            <vs-card>\n                <vs-list-group flush>\n                    <vs-list-group-item>\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item>\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </div>\n        <div class=\"col-xs-12 lg-no-padding\">\n            <editor\n                :model.sync=\"reply\"\n                name=\"topic-reply-edit\"\n                :base-url=\"`/api/topics/${topicId}/replies/`\"\n                @submitted=\"editorSubmitted\">\n            </editor>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    .main {\n        word-wrap: break-word;\n    }\n</style>\n\n<script>\n    import Editor from 'misc/edit/Editor.vue'\n    import DetailMixin from 'mixins/DetailMixin.es'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        mixins: [DetailMixin],\n        components: {Editor, Pager},\n        detailConfig: {\n            baseURL: '/api/topics/',\n            objectFieldName: 'topic',\n            idFieldName: 'topicId'\n        },\n        data: () => ({\n            topic: {},\n            topicId: '',\n            page: {},\n            reply: {\n                content: '',\n                attachments: []\n            }\n        }),\n        methods: {\n            editorSubmitted (editor, reply) {\n                this.page.results.push(reply)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -15419,7 +15598,7 @@ webpackJsonp([1],Array(92).concat([
 /* 183 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"container-fluid main\" _v-cd6f5ed8=\"\">\n    <div class=\"col-xs-12 col-md-8\" _v-cd6f5ed8=\"\">\n        <section _v-cd6f5ed8=\"\">\n            <vs-card _v-cd6f5ed8=\"\">\n                <div class=\"card-block article-main\" _v-cd6f5ed8=\"\">\n                    <h1 class=\"card-title\" _v-cd6f5ed8=\"\">{{ topic.title }}</h1>\n                    {{{ topic.content }}}\n\n                    <p class=\"card-text text-muted hidden-sm-down\" _v-cd6f5ed8=\"\">\n                        <small _v-cd6f5ed8=\"\">\n                            {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n                <vs-list-group flush=\"\" class=\"hidden-md-up\" _v-cd6f5ed8=\"\">\n                    <vs-list-group-item _v-cd6f5ed8=\"\">\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item _v-cd6f5ed8=\"\">\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </section>\n        <hr _v-cd6f5ed8=\"\">\n        <vs-card v-for=\"reply in page.results\" _v-cd6f5ed8=\"\">\n            <div class=\"card-block article-main\" _v-cd6f5ed8=\"\">\n                {{{ reply.content }}}\n\n                <p class=\"card-text text-muted\" _v-cd6f5ed8=\"\">\n                    <small _v-cd6f5ed8=\"\">\n                        {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                    </small>\n                </p>\n            </div>\n        </vs-card>\n        <pager v-if=\"topicId\" :url=\"`/api/topics/${topicId}/replies/`\" :model.sync=\"page\" _v-cd6f5ed8=\"\">\n        </pager>\n    </div>\n    <div class=\"col-md-4 hidden-sm-down\" _v-cd6f5ed8=\"\">\n        <vs-card _v-cd6f5ed8=\"\">\n            <vs-list-group flush=\"\" _v-cd6f5ed8=\"\">\n                <vs-list-group-item _v-cd6f5ed8=\"\">\n                    发布于 {{ topic.created_time | timesince }}\n                </vs-list-group-item>\n                <vs-list-group-item _v-cd6f5ed8=\"\">\n                    更新于 {{ topic.updated_time | timesince }}\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n    <div class=\"col-xs-12 lg-no-padding\" _v-cd6f5ed8=\"\">\n        <editor :model.sync=\"reply\" name=\"topic-reply-edit\" :base-url=\"`/api/topics/${topicId}/replies/`\" @submitted=\"editorSubmitted\" _v-cd6f5ed8=\"\">\n        </editor>\n    </div>\n</div>\n";
+	module.exports = "\n<div class=\"container-fluid main\" _v-5c07b2d6=\"\">\n    <div class=\"col-xs-12 col-md-8\" _v-5c07b2d6=\"\">\n        <section _v-5c07b2d6=\"\">\n            <vs-card _v-5c07b2d6=\"\">\n                <div class=\"card-block article-main\" _v-5c07b2d6=\"\">\n                    <h1 class=\"card-title\" _v-5c07b2d6=\"\">{{ topic.title }}</h1>\n                    {{{ topic.content }}}\n\n                    <p class=\"card-text text-muted hidden-sm-down\" _v-5c07b2d6=\"\">\n                        <small _v-5c07b2d6=\"\">\n                            {{ topic.asker.nickname }} 发表于 {{ topic.created_time | timesince }}\n                        </small>\n                    </p>\n                </div>\n                <vs-list-group flush=\"\" class=\"hidden-md-up\" _v-5c07b2d6=\"\">\n                    <vs-list-group-item _v-5c07b2d6=\"\">\n                        发布于 {{ topic.created_time | timesince }}\n                    </vs-list-group-item>\n                    <vs-list-group-item _v-5c07b2d6=\"\">\n                        更新于 {{ topic.updated_time | timesince }}\n                    </vs-list-group-item>\n                </vs-list-group>\n            </vs-card>\n        </section>\n        <hr _v-5c07b2d6=\"\">\n        <vs-card v-for=\"reply in page.results\" _v-5c07b2d6=\"\">\n            <div class=\"card-block article-main\" _v-5c07b2d6=\"\">\n                {{{ reply.content }}}\n\n                <p class=\"card-text text-muted\" _v-5c07b2d6=\"\">\n                    <small _v-5c07b2d6=\"\">\n                        {{ reply.author.nickname }} 发表于 {{ reply.created_time | timesince }}\n                    </small>\n                </p>\n            </div>\n        </vs-card>\n        <pager v-if=\"topicId\" :url=\"`/api/topics/${topicId}/replies/`\" :model.sync=\"page\" _v-5c07b2d6=\"\">\n        </pager>\n    </div>\n    <div class=\"col-md-4 hidden-sm-down\" _v-5c07b2d6=\"\">\n        <vs-card _v-5c07b2d6=\"\">\n            <vs-list-group flush=\"\" _v-5c07b2d6=\"\">\n                <vs-list-group-item _v-5c07b2d6=\"\">\n                    发布于 {{ topic.created_time | timesince }}\n                </vs-list-group-item>\n                <vs-list-group-item _v-5c07b2d6=\"\">\n                    更新于 {{ topic.updated_time | timesince }}\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n    <div class=\"col-xs-12 lg-no-padding\" _v-5c07b2d6=\"\">\n        <editor :model.sync=\"reply\" name=\"topic-reply-edit\" :base-url=\"`/api/topics/${topicId}/replies/`\" @submitted=\"editorSubmitted\" _v-5c07b2d6=\"\">\n        </editor>\n    </div>\n</div>\n";
 
 /***/ },
 /* 184 */
@@ -15440,9 +15619,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Finance.vue"
+	  var id = "_v-99189546/Finance.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15466,8 +15645,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c4160cca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c4160cca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-99189546&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-99189546&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./Finance.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15485,7 +15664,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\nh3[_v-c4160cca] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/Finance.vue?4ac7b008"],"names":[],"mappings":";AAoBA;IACA,sBAAA;CACA","file":"Finance.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <router-view></router-view>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"company\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\"\n            >\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n\n    export default {\n        components: { ArticleListGroup },\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nh3[_v-99189546] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/Finance.vue?4ac7b008"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;AAoBA;IACA,sBAAA;CACA","file":"Finance.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <router-view></router-view>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"company\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\"\n            >\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n\n    export default {\n        components: { ArticleListGroup },\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -15534,9 +15713,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/articles/ArticleListGroup.vue"
+	  var id = "_v-5be2c4b5/ArticleListGroup.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15560,8 +15739,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-affb591a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-affb591a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5be2c4b5&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5be2c4b5&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ArticleListGroup.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15579,7 +15758,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\nli.list-group-item .wrapper[_v-affb591a] {\n    padding: .25em;\n}\n\nli.list-group-item .label[_v-affb591a] {\n    margin-left: .2em;\n}\n\nli.list-group-item .label.pointer[_v-affb591a] {\n    cursor: pointer;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleListGroup.vue?3ed0165e"],"names":[],"mappings":";AA6CA;IACA,eAAA;CACA;;AAEA;IACA,kBAAA;CACA;;AAEA;IACA,gBAAA;CACA","file":"ArticleListGroup.vue","sourcesContent":["<template>\n    <div>\n        <vs-list-group :flush=\"flush\">\n            <vs-list-group-item\n                v-for=\"article in articles\" class='ALGI'>\n                <div class=\"wrapper\">\n                    <a\n                        v-link=\"article.url\">\n                        {{ article.title }}\n                    </a>\n                    <vs-collapse-toggle \n                        :target=\"`collapse-article-${article.id}`\"\n                        :target-group=\"`article-group-${category}`\"\n                        class=\"pull-xs-right\">\n                        <vs-badge\n                            variant=\"success\"\n                            class=\"pull-xs-right pointer ALGB\">\n                            摘要\n                        </vs-badge>\n                    </vs-collapse-toggle>\n                    <vs-badge\n                        variant=\"danger\"\n                        class=\"pull-xs-right\"\n                        v-if=\"article.is_top\">\n                        置顶\n                    </vs-badge>\n                </div>\n                <vs-collapse \n                    :id=\"`collapse-article-${article.id}`\"\n                    :group=\"`article-group-${category}`\">\n                     <div class=\"card card-block\">\n                         {{ article.summary }}\n                     </div>\n                </vs-collapse>\n            </vs-list-group-item>\n        </vs-list-group>   \n        <list-loader\n            url=\"/api/articles/\"\n            :params=\"params\"\n            :model.sync=\"articles\">\n        </list-loader>\n    </div>   \n</template>\n\n<style scoped>\n    li.list-group-item .wrapper {\n        padding: .25em;\n    }\n\n    li.list-group-item .label {\n        margin-left: .2em;\n    }\n\n    li.list-group-item .label.pointer {\n        cursor: pointer;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ListLoader from 'misc/ListLoader.vue'\n\n    export default {\n        components: { ListLoader },\n        data: () => ({\n            articles: []\n        }),\n        props: {\n            category: {\n                type: String,\n                required: true\n            },\n            flush: {\n                type: Boolean,\n                default: false\n            },\n            otherParams: {\n                type: Object,\n                default: {}\n            }\n        },\n        computed: {\n            params () {\n                let params = _.cloneDeep(this.otherParams)\n\n                params.article_type = articles.ArticleType[this.category]\n\n                return params\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nli.list-group-item .wrapper[_v-5be2c4b5] {\n    padding: .25em;\n}\n\nli.list-group-item .label[_v-5be2c4b5] {\n    margin-left: .2em;\n}\n\nli.list-group-item .label.pointer[_v-5be2c4b5] {\n    cursor: pointer;\n}\n", "", {"version":3,"sources":["/./js/components/articles/ArticleListGroup.vue?3ed0165e"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AA6CA;IACA,eAAA;CACA;;AAEA;IACA,kBAAA;CACA;;AAEA;IACA,gBAAA;CACA","file":"ArticleListGroup.vue","sourcesContent":["<template>\n    <div>\n        <vs-list-group :flush=\"flush\">\n            <vs-list-group-item\n                v-for=\"article in articles\" class='ALGI'>\n                <div class=\"wrapper\">\n                    <a\n                        v-link=\"article.url\">\n                        {{ article.title }}\n                    </a>\n                    <vs-collapse-toggle \n                        :target=\"`collapse-article-${article.id}`\"\n                        :target-group=\"`article-group-${category}`\"\n                        class=\"pull-xs-right\">\n                        <vs-badge\n                            variant=\"success\"\n                            class=\"pull-xs-right pointer ALGB\">\n                            摘要\n                        </vs-badge>\n                    </vs-collapse-toggle>\n                    <vs-badge\n                        variant=\"danger\"\n                        class=\"pull-xs-right\"\n                        v-if=\"article.is_top\">\n                        置顶\n                    </vs-badge>\n                </div>\n                <vs-collapse \n                    :id=\"`collapse-article-${article.id}`\"\n                    :group=\"`article-group-${category}`\">\n                     <div class=\"card card-block\">\n                         {{ article.summary }}\n                     </div>\n                </vs-collapse>\n            </vs-list-group-item>\n        </vs-list-group>   \n        <list-loader\n            url=\"/api/articles/\"\n            :params=\"params\"\n            :model.sync=\"articles\">\n        </list-loader>\n    </div>   \n</template>\n\n<style scoped>\n    li.list-group-item .wrapper {\n        padding: .25em;\n    }\n\n    li.list-group-item .label {\n        margin-left: .2em;\n    }\n\n    li.list-group-item .label.pointer {\n        cursor: pointer;\n    }\n</style>\n\n<script>\n    import { articles } from 'consts.es'\n    import ListLoader from 'misc/ListLoader.vue'\n\n    export default {\n        components: { ListLoader },\n        data: () => ({\n            articles: []\n        }),\n        props: {\n            category: {\n                type: String,\n                required: true\n            },\n            flush: {\n                type: Boolean,\n                default: false\n            },\n            otherParams: {\n                type: Object,\n                default: {}\n            }\n        },\n        computed: {\n            params () {\n                let params = _.cloneDeep(this.otherParams)\n\n                params.article_type = articles.ArticleType[this.category]\n\n                return params\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -15653,9 +15832,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/ListLoader.vue"
+	  var id = "_v-b9e2f268/ListLoader.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15719,13 +15898,13 @@ webpackJsonp([1],Array(92).concat([
 /* 195 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-affb591a=\"\">\n    <vs-list-group :flush=\"flush\" _v-affb591a=\"\">\n        <vs-list-group-item v-for=\"article in articles\" class=\"ALGI\" _v-affb591a=\"\">\n            <div class=\"wrapper\" _v-affb591a=\"\">\n                <a v-link=\"article.url\" _v-affb591a=\"\">\n                    {{ article.title }}\n                </a>\n                <vs-collapse-toggle :target=\"`collapse-article-${article.id}`\" :target-group=\"`article-group-${category}`\" class=\"pull-xs-right\" _v-affb591a=\"\">\n                    <vs-badge variant=\"success\" class=\"pull-xs-right pointer ALGB\" _v-affb591a=\"\">\n                        摘要\n                    </vs-badge>\n                </vs-collapse-toggle>\n                <vs-badge variant=\"danger\" class=\"pull-xs-right\" v-if=\"article.is_top\" _v-affb591a=\"\">\n                    置顶\n                </vs-badge>\n            </div>\n            <vs-collapse :id=\"`collapse-article-${article.id}`\" :group=\"`article-group-${category}`\" _v-affb591a=\"\">\n                 <div class=\"card card-block\" _v-affb591a=\"\">\n                     {{ article.summary }}\n                 </div>\n            </vs-collapse>\n        </vs-list-group-item>\n    </vs-list-group>   \n    <list-loader url=\"/api/articles/\" :params=\"params\" :model.sync=\"articles\" _v-affb591a=\"\">\n    </list-loader>\n</div>   \n";
+	module.exports = "\n<div _v-5be2c4b5=\"\">\n    <vs-list-group :flush=\"flush\" _v-5be2c4b5=\"\">\n        <vs-list-group-item v-for=\"article in articles\" class=\"ALGI\" _v-5be2c4b5=\"\">\n            <div class=\"wrapper\" _v-5be2c4b5=\"\">\n                <a v-link=\"article.url\" _v-5be2c4b5=\"\">\n                    {{ article.title }}\n                </a>\n                <vs-collapse-toggle :target=\"`collapse-article-${article.id}`\" :target-group=\"`article-group-${category}`\" class=\"pull-xs-right\" _v-5be2c4b5=\"\">\n                    <vs-badge variant=\"success\" class=\"pull-xs-right pointer ALGB\" _v-5be2c4b5=\"\">\n                        摘要\n                    </vs-badge>\n                </vs-collapse-toggle>\n                <vs-badge variant=\"danger\" class=\"pull-xs-right\" v-if=\"article.is_top\" _v-5be2c4b5=\"\">\n                    置顶\n                </vs-badge>\n            </div>\n            <vs-collapse :id=\"`collapse-article-${article.id}`\" :group=\"`article-group-${category}`\" _v-5be2c4b5=\"\">\n                 <div class=\"card card-block\" _v-5be2c4b5=\"\">\n                     {{ article.summary }}\n                 </div>\n            </vs-collapse>\n        </vs-list-group-item>\n    </vs-list-group>   \n    <list-loader url=\"/api/articles/\" :params=\"params\" :model.sync=\"articles\" _v-5be2c4b5=\"\">\n    </list-loader>\n</div>   \n";
 
 /***/ },
 /* 196 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"clearfix\" _v-c4160cca=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-c4160cca=\"\">\n        <router-view _v-c4160cca=\"\"></router-view>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-c4160cca=\"\">\n        <h3 style=\"color:#ccc\" _v-c4160cca=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"company\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-c4160cca=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
+	module.exports = "\n<div class=\"clearfix\" _v-99189546=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-99189546=\"\">\n        <router-view _v-99189546=\"\"></router-view>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-99189546=\"\">\n        <h3 style=\"color:#ccc\" _v-99189546=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"company\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-99189546=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
 
 /***/ },
 /* 197 */
@@ -15746,9 +15925,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/FinanceIndex.vue"
+	  var id = "_v-40439ab6/FinanceIndex.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15772,8 +15951,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5d5835b2&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-5d5835b2&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-40439ab6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-40439ab6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FinanceIndex.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15791,7 +15970,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\nh3 a[_v-5d5835b2] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FinanceIndex.vue?e15fedf2"],"names":[],"mappings":";AAmDA;IACA,eAAA;CACA","file":"FinanceIndex.vue","sourcesContent":["<template>\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/stocks/'\">股票</a>\n        </h3>\n        <stock-item\n            v-for=\"stock in stocks\"\n            :stock=\"stock\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </stock-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"stocks\"\n            url=\"/api/stocks/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/bonds/'\">债券</a>\n        </h3>\n        <bond-item\n            v-for=\"bond in bonds\"\n            :bond=\"bond\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </bond-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"bonds\"\n            url=\"/api/bonds/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/futures/'\">期货</a>\n        </h3>\n        <future-item\n            v-for=\"future in futures\"\n            :future=\"future\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </future-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"futures\"\n            url=\"/api/futures/\">\n        </list-loader>\n    </div>\n</template>\n\n<style scoped>\n    h3 a {\n        display: block;\n    }\n</style>\n\n<script>\n    import ListLoader from 'misc/ListLoader.vue'\n    import StockItem from './StockItem.vue'\n    import BondItem from './BondItem.vue'\n    import FutureItem from './FutureItem.vue'\n\n    export default {\n        components: { ListLoader, StockItem, BondItem, FutureItem },\n        data: () => ({\n            stocks: [],\n            bonds: [],\n            futures: []\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nh3 a[_v-40439ab6] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FinanceIndex.vue?e15fedf2"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAmDA;IACA,eAAA;CACA","file":"FinanceIndex.vue","sourcesContent":["<template>\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/stocks/'\">股票</a>\n        </h3>\n        <stock-item\n            v-for=\"stock in stocks\"\n            :stock=\"stock\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </stock-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"stocks\"\n            url=\"/api/stocks/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/bonds/'\">债券</a>\n        </h3>\n        <bond-item\n            v-for=\"bond in bonds\"\n            :bond=\"bond\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </bond-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"bonds\"\n            url=\"/api/bonds/\">\n        </list-loader>\n    </div>\n\n    <div class=\"col-xs-12 no-padding\">\n        <h3>\n            <a v-link=\"'/finance/futures/'\">期货</a>\n        </h3>\n        <future-item\n            v-for=\"future in futures\"\n            :future=\"future\"\n            class=\"col-xs-12 col-md-6 small-padding\">\n        </future-item>\n        <list-loader\n            :params=\"{ limit: 3 }\"\n            :model.sync=\"futures\"\n            url=\"/api/futures/\">\n        </list-loader>\n    </div>\n</template>\n\n<style scoped>\n    h3 a {\n        display: block;\n    }\n</style>\n\n<script>\n    import ListLoader from 'misc/ListLoader.vue'\n    import StockItem from './StockItem.vue'\n    import BondItem from './BondItem.vue'\n    import FutureItem from './FutureItem.vue'\n\n    export default {\n        components: { ListLoader, StockItem, BondItem, FutureItem },\n        data: () => ({\n            stocks: [],\n            bonds: [],\n            futures: []\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -15859,9 +16038,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/StockItem.vue"
+	  var id = "_v-7dab9ae8/StockItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -15885,8 +16064,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-106b5f4a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-106b5f4a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-7dab9ae8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-7dab9ae8&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./StockItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -15904,7 +16083,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.card hr[_v-106b5f4a] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/StockItem.vue?5f91ef77"],"names":[],"mappings":";AAkDA;IACA,UAAA;CACA","file":"StockItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ stock.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ stock.price }}</dd>\n                    <dt class=\"col-md-6\">成交量</dt>\n                    <dd class=\"col-md-6\">{{ stock.volume }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"公司简介\">\n                        <div slot=\"content\">\n                            {{{ stock.company_info | br }}}\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"券商评价\">\n                        <div slot=\"content\">\n                            <vs-list-group flush>\n                                <vs-list-group-item\n                                    v-for=\"comment in stock.comments\">\n                                    {{{ comment.content | br }}}\n                                </vs-list-group-item>\n                            </vs-list-group>\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                volume: {\n                    name: '成交量'\n                }\n            }\n        }),\n        props: {\n            stock: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-7dab9ae8] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/StockItem.vue?5f91ef77"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAkDA;IACA,UAAA;CACA","file":"StockItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ stock.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ stock.price }}</dd>\n                    <dt class=\"col-md-6\">成交量</dt>\n                    <dd class=\"col-md-6\">{{ stock.volume }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"公司简介\">\n                        <div slot=\"content\">\n                            {{{ stock.company_info | br }}}\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item>\n                    <vs-expansion\n                        title=\"券商评价\">\n                        <div slot=\"content\">\n                            <vs-list-group flush>\n                                <vs-list-group-item\n                                    v-for=\"comment in stock.comments\">\n                                    {{{ comment.content | br }}}\n                                </vs-list-group-item>\n                            </vs-list-group>\n                        </div>\n                    </vs-expansion>\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                volume: {\n                    name: '成交量'\n                }\n            }\n        }),\n        props: {\n            stock: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -15965,9 +16144,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/misc/Chart.vue"
+	  var id = "_v-2a30999a/Chart.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16556,7 +16735,7 @@ webpackJsonp([1],Array(92).concat([
 /* 209 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-106b5f4a=\"\">\n    <vs-card _v-106b5f4a=\"\">\n        <div class=\"card-block text-xs-center\" _v-106b5f4a=\"\">\n            <h3 _v-106b5f4a=\"\">\n                {{ stock.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-106b5f4a=\"\">\n                <dt class=\"col-md-6\" _v-106b5f4a=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-106b5f4a=\"\">{{ stock.price }}</dd>\n                <dt class=\"col-md-6\" _v-106b5f4a=\"\">成交量</dt>\n                <dd class=\"col-md-6\" _v-106b5f4a=\"\">{{ stock.volume }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-106b5f4a=\"\">\n            <vs-list-group-item _v-106b5f4a=\"\">\n                <vs-expansion title=\"公司简介\" _v-106b5f4a=\"\">\n                    <div slot=\"content\" _v-106b5f4a=\"\">\n                        {{{ stock.company_info | br }}}\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item _v-106b5f4a=\"\">\n                <vs-expansion title=\"券商评价\" _v-106b5f4a=\"\">\n                    <div slot=\"content\" _v-106b5f4a=\"\">\n                        <vs-list-group flush=\"\" _v-106b5f4a=\"\">\n                            <vs-list-group-item v-for=\"comment in stock.comments\" _v-106b5f4a=\"\">\n                                {{{ comment.content | br }}}\n                            </vs-list-group-item>\n                        </vs-list-group>\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-106b5f4a=\"\">\n                <chart :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-106b5f4a=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-7dab9ae8=\"\">\n    <vs-card _v-7dab9ae8=\"\">\n        <div class=\"card-block text-xs-center\" _v-7dab9ae8=\"\">\n            <h3 _v-7dab9ae8=\"\">\n                {{ stock.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-7dab9ae8=\"\">\n                <dt class=\"col-md-6\" _v-7dab9ae8=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-7dab9ae8=\"\">{{ stock.price }}</dd>\n                <dt class=\"col-md-6\" _v-7dab9ae8=\"\">成交量</dt>\n                <dd class=\"col-md-6\" _v-7dab9ae8=\"\">{{ stock.volume }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-7dab9ae8=\"\">\n            <vs-list-group-item _v-7dab9ae8=\"\">\n                <vs-expansion title=\"公司简介\" _v-7dab9ae8=\"\">\n                    <div slot=\"content\" _v-7dab9ae8=\"\">\n                        {{{ stock.company_info | br }}}\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item _v-7dab9ae8=\"\">\n                <vs-expansion title=\"券商评价\" _v-7dab9ae8=\"\">\n                    <div slot=\"content\" _v-7dab9ae8=\"\">\n                        <vs-list-group flush=\"\" _v-7dab9ae8=\"\">\n                            <vs-list-group-item v-for=\"comment in stock.comments\" _v-7dab9ae8=\"\">\n                                {{{ comment.content | br }}}\n                            </vs-list-group-item>\n                        </vs-list-group>\n                    </div>\n                </vs-expansion>\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-7dab9ae8=\"\">\n                <chart :url=\"`/api/stocks/${stock.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-7dab9ae8=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
 /* 210 */
@@ -16577,9 +16756,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/BondItem.vue"
+	  var id = "_v-597b6583/BondItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16603,8 +16782,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-81baadf6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-81baadf6&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-597b6583&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-597b6583&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./BondItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -16622,7 +16801,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.card hr[_v-81baadf6] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/BondItem.vue?6a9f8498"],"names":[],"mappings":";AAgCA;IACA,UAAA;CACA","file":"BondItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ bond.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ bond.price }}</dd>\n                    <dt class=\"col-md-6\">发行量</dt>\n                    <dd class=\"col-md-6\">{{ bond.quantity }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    发行方： {{ bond.issuer }}\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                quantity: {\n                    name: '发行量'\n                }\n            }\n        }),\n        props: {\n            bond: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-597b6583] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/BondItem.vue?6a9f8498"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAgCA;IACA,UAAA;CACA","file":"BondItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ bond.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ bond.price }}</dd>\n                    <dt class=\"col-md-6\">发行量</dt>\n                    <dd class=\"col-md-6\">{{ bond.quantity }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item>\n                    发行方： {{ bond.issuer }}\n                </vs-list-group-item>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                },\n                quantity: {\n                    name: '发行量'\n                }\n            }\n        }),\n        props: {\n            bond: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -16669,7 +16848,7 @@ webpackJsonp([1],Array(92).concat([
 /* 214 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-81baadf6=\"\">\n    <vs-card _v-81baadf6=\"\">\n        <div class=\"card-block text-xs-center\" _v-81baadf6=\"\">\n            <h3 _v-81baadf6=\"\">\n                {{ bond.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-81baadf6=\"\">\n                <dt class=\"col-md-6\" _v-81baadf6=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-81baadf6=\"\">{{ bond.price }}</dd>\n                <dt class=\"col-md-6\" _v-81baadf6=\"\">发行量</dt>\n                <dd class=\"col-md-6\" _v-81baadf6=\"\">{{ bond.quantity }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-81baadf6=\"\">\n            <vs-list-group-item _v-81baadf6=\"\">\n                发行方： {{ bond.issuer }}\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-81baadf6=\"\">\n                <chart :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-81baadf6=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-597b6583=\"\">\n    <vs-card _v-597b6583=\"\">\n        <div class=\"card-block text-xs-center\" _v-597b6583=\"\">\n            <h3 _v-597b6583=\"\">\n                {{ bond.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-597b6583=\"\">\n                <dt class=\"col-md-6\" _v-597b6583=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-597b6583=\"\">{{ bond.price }}</dd>\n                <dt class=\"col-md-6\" _v-597b6583=\"\">发行量</dt>\n                <dd class=\"col-md-6\" _v-597b6583=\"\">{{ bond.quantity }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-597b6583=\"\">\n            <vs-list-group-item _v-597b6583=\"\">\n                发行方： {{ bond.issuer }}\n            </vs-list-group-item>\n            <vs-list-group-item class=\"no-padding\" _v-597b6583=\"\">\n                <chart :url=\"`/api/bonds/${bond.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-597b6583=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
 /* 215 */
@@ -16690,9 +16869,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/FutureItem.vue"
+	  var id = "_v-0a7ba17a/FutureItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16716,8 +16895,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d8b2cb76&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-d8b2cb76&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-0a7ba17a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-0a7ba17a&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FutureItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -16735,7 +16914,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.card hr[_v-d8b2cb76] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FutureItem.vue?94eaf11e"],"names":[],"mappings":";AA2BA;IACA,UAAA;CACA","file":"FutureItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ future.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ future.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/futures/${future.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            future: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-0a7ba17a] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/FutureItem.vue?94eaf11e"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;AA2BA;IACA,UAAA;CACA","file":"FutureItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ future.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ future.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/futures/${future.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            future: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -16779,13 +16958,13 @@ webpackJsonp([1],Array(92).concat([
 /* 219 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-d8b2cb76=\"\">\n    <vs-card _v-d8b2cb76=\"\">\n        <div class=\"card-block text-xs-center\" _v-d8b2cb76=\"\">\n            <h3 _v-d8b2cb76=\"\">\n                {{ future.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-d8b2cb76=\"\">\n                <dt class=\"col-md-6\" _v-d8b2cb76=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-d8b2cb76=\"\">{{ future.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-d8b2cb76=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-d8b2cb76=\"\">\n                <chart :url=\"`/api/futures/${future.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-d8b2cb76=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-0a7ba17a=\"\">\n    <vs-card _v-0a7ba17a=\"\">\n        <div class=\"card-block text-xs-center\" _v-0a7ba17a=\"\">\n            <h3 _v-0a7ba17a=\"\">\n                {{ future.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-0a7ba17a=\"\">\n                <dt class=\"col-md-6\" _v-0a7ba17a=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-0a7ba17a=\"\">{{ future.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-0a7ba17a=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-0a7ba17a=\"\">\n                <chart :url=\"`/api/futures/${future.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-0a7ba17a=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
 /* 220 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"col-xs-12 no-padding\" _v-5d5835b2=\"\">\n    <h3 _v-5d5835b2=\"\">\n        <a v-link=\"'/finance/stocks/'\" _v-5d5835b2=\"\">股票</a>\n    </h3>\n    <stock-item v-for=\"stock in stocks\" :stock=\"stock\" class=\"col-xs-12 col-md-6 small-padding\" _v-5d5835b2=\"\">\n    </stock-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"stocks\" url=\"/api/stocks/\" _v-5d5835b2=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-5d5835b2=\"\">\n    <h3 _v-5d5835b2=\"\">\n        <a v-link=\"'/finance/bonds/'\" _v-5d5835b2=\"\">债券</a>\n    </h3>\n    <bond-item v-for=\"bond in bonds\" :bond=\"bond\" class=\"col-xs-12 col-md-6 small-padding\" _v-5d5835b2=\"\">\n    </bond-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"bonds\" url=\"/api/bonds/\" _v-5d5835b2=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-5d5835b2=\"\">\n    <h3 _v-5d5835b2=\"\">\n        <a v-link=\"'/finance/futures/'\" _v-5d5835b2=\"\">期货</a>\n    </h3>\n    <future-item v-for=\"future in futures\" :future=\"future\" class=\"col-xs-12 col-md-6 small-padding\" _v-5d5835b2=\"\">\n    </future-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"futures\" url=\"/api/futures/\" _v-5d5835b2=\"\">\n    </list-loader>\n</div>\n";
+	module.exports = "\n<div class=\"col-xs-12 no-padding\" _v-40439ab6=\"\">\n    <h3 _v-40439ab6=\"\">\n        <a v-link=\"'/finance/stocks/'\" _v-40439ab6=\"\">股票</a>\n    </h3>\n    <stock-item v-for=\"stock in stocks\" :stock=\"stock\" class=\"col-xs-12 col-md-6 small-padding\" _v-40439ab6=\"\">\n    </stock-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"stocks\" url=\"/api/stocks/\" _v-40439ab6=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-40439ab6=\"\">\n    <h3 _v-40439ab6=\"\">\n        <a v-link=\"'/finance/bonds/'\" _v-40439ab6=\"\">债券</a>\n    </h3>\n    <bond-item v-for=\"bond in bonds\" :bond=\"bond\" class=\"col-xs-12 col-md-6 small-padding\" _v-40439ab6=\"\">\n    </bond-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"bonds\" url=\"/api/bonds/\" _v-40439ab6=\"\">\n    </list-loader>\n</div>\n\n<div class=\"col-xs-12 no-padding\" _v-40439ab6=\"\">\n    <h3 _v-40439ab6=\"\">\n        <a v-link=\"'/finance/futures/'\" _v-40439ab6=\"\">期货</a>\n    </h3>\n    <future-item v-for=\"future in futures\" :future=\"future\" class=\"col-xs-12 col-md-6 small-padding\" _v-40439ab6=\"\">\n    </future-item>\n    <list-loader :params=\"{ limit: 3 }\" :model.sync=\"futures\" url=\"/api/futures/\" _v-40439ab6=\"\">\n    </list-loader>\n</div>\n";
 
 /***/ },
 /* 221 */
@@ -16805,9 +16984,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Stocks.vue"
+	  var id = "_v-ed6c222c/Stocks.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16868,9 +17047,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Bonds.vue"
+	  var id = "_v-2d49115a/Bonds.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16931,9 +17110,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/Futures.vue"
+	  var id = "_v-d441f4da/Futures.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -16995,9 +17174,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/RAM.vue"
+	  var id = "_v-79900521/RAM.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17021,8 +17200,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2d2dcf42&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2d2dcf42&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-79900521&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-79900521&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAM.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -17040,7 +17219,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\nh3[_v-2d2dcf42] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAM.vue?035b96d1"],"names":[],"mappings":";AA2BA;IACA,sBAAA;CACA","file":"RAM.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <ram-item\n                v-if=\"page.results\"\n                v-for=\"item in page.results\"\n                :model=\"item\">\n            </ram-item>\n            <pager\n                :model.sync=\"page\"\n                url=\"/api/raw_materials/\">\n            </pager>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"energy_and_raw_materials\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\">\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n    import RAMItem from './RAMItem.vue'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        components: { ArticleListGroup, RAMItem, Pager },\n        data: () => ({\n            page: {}\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nh3[_v-79900521] {\n    margin-bottom: 0.8rem;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAM.vue?035b96d1"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;AA2BA;IACA,sBAAA;CACA","file":"RAM.vue","sourcesContent":["<template>\n    <div class=\"clearfix\">\n        <div class=\"col-xs-12 col-sm-6 col-md-8\">\n            <ram-item\n                v-if=\"page.results\"\n                v-for=\"item in page.results\"\n                :model=\"item\">\n            </ram-item>\n            <pager\n                :model.sync=\"page\"\n                url=\"/api/raw_materials/\">\n            </pager>\n        </div>\n        <div class=\"col-xs-12 col-sm-6 col-md-4\">\n            <h3 style='color:#ccc'>\n                资讯\n            </h3>\n            <article-list-group\n                category=\"energy_and_raw_materials\"\n                :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\"\n                :flush=\"true\">\n            </article-list-group>\n        </div>\n    </div>\n</template>\n\n<style scoped>\n    h3 {\n        margin-bottom: 0.8rem;\n    }\n</style>\n\n<script>\n    import ArticleListGroup from 'articles/ArticleListGroup.vue'\n    import RAMItem from './RAMItem.vue'\n    import Pager from 'misc/Pager.vue'\n\n    export default {\n        components: { ArticleListGroup, RAMItem, Pager },\n        data: () => ({\n            page: {}\n        }),\n        route: {\n            data (transition) {\n                this.$broadcast('ListLoader:reload')\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -17102,9 +17281,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/finance/RAMItem.vue"
+	  var id = "_v-2bf89358/RAMItem.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17128,8 +17307,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-56f60adc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-56f60adc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2bf89358&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-2bf89358&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./RAMItem.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -17147,7 +17326,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\n.card hr[_v-56f60adc] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAMItem.vue?6748e5f5"],"names":[],"mappings":";AA2BA;IACA,UAAA;CACA","file":"RAMItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ model.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ model.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            model: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n.card hr[_v-2bf89358] {\n    margin: 0;\n}\n", "", {"version":3,"sources":["/./js/components/finance/RAMItem.vue?6748e5f5"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;;;AA2BA;IACA,UAAA;CACA","file":"RAMItem.vue","sourcesContent":["<template>\n    <div>\n        <vs-card>\n            <div class=\"card-block text-xs-center\">\n                <h3>\n                    {{ model.name }}\n                </h3>\n                <dl class=\"clearfix\">\n                    <dt class=\"col-md-6\">价格</dt>\n                    <dd class=\"col-md-6\">{{ model.price }}</dd>\n                </dl>\n            </div>\n            <vs-list-group flush>\n                <vs-list-group-item\n                    class=\"no-padding\">\n                    <chart\n                        :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\"\n                        :series.once=\"chartSeries\">\n                            \n                    </chart>\n                </vs-list-group-item>\n            </vs-list-group>\n        </vs-card>\n    </div>\n</template>\n\n<style scoped>\n    .card hr {\n        margin: 0;\n    }\n</style>\n\n<script>\n    import Chart from 'misc/Chart.vue'\n\n    export default {\n        components: { Chart },\n        data: () => ({\n            chartSeries: {\n                price: {\n                    name: '价格'\n                }\n            }\n        }),\n        props: {\n            model: {\n                type: Object,\n                required: true\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -17191,13 +17370,13 @@ webpackJsonp([1],Array(92).concat([
 /* 238 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div _v-56f60adc=\"\">\n    <vs-card _v-56f60adc=\"\">\n        <div class=\"card-block text-xs-center\" _v-56f60adc=\"\">\n            <h3 _v-56f60adc=\"\">\n                {{ model.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-56f60adc=\"\">\n                <dt class=\"col-md-6\" _v-56f60adc=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-56f60adc=\"\">{{ model.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-56f60adc=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-56f60adc=\"\">\n                <chart :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-56f60adc=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
+	module.exports = "\n<div _v-2bf89358=\"\">\n    <vs-card _v-2bf89358=\"\">\n        <div class=\"card-block text-xs-center\" _v-2bf89358=\"\">\n            <h3 _v-2bf89358=\"\">\n                {{ model.name }}\n            </h3>\n            <dl class=\"clearfix\" _v-2bf89358=\"\">\n                <dt class=\"col-md-6\" _v-2bf89358=\"\">价格</dt>\n                <dd class=\"col-md-6\" _v-2bf89358=\"\">{{ model.price }}</dd>\n            </dl>\n        </div>\n        <vs-list-group flush=\"\" _v-2bf89358=\"\">\n            <vs-list-group-item class=\"no-padding\" _v-2bf89358=\"\">\n                <chart :url=\"`/api/raw_materials/${model.id}/logs/?limit=5`\" :series.once=\"chartSeries\" _v-2bf89358=\"\">\n                        \n                </chart>\n            </vs-list-group-item>\n        </vs-list-group>\n    </vs-card>\n</div>\n";
 
 /***/ },
 /* 239 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<div class=\"clearfix\" _v-2d2dcf42=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-2d2dcf42=\"\">\n        <ram-item v-if=\"page.results\" v-for=\"item in page.results\" :model=\"item\" _v-2d2dcf42=\"\">\n        </ram-item>\n        <pager :model.sync=\"page\" url=\"/api/raw_materials/\" _v-2d2dcf42=\"\">\n        </pager>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-2d2dcf42=\"\">\n        <h3 style=\"color:#ccc\" _v-2d2dcf42=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"energy_and_raw_materials\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-2d2dcf42=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
+	module.exports = "\n<div class=\"clearfix\" _v-79900521=\"\">\n    <div class=\"col-xs-12 col-sm-6 col-md-8\" _v-79900521=\"\">\n        <ram-item v-if=\"page.results\" v-for=\"item in page.results\" :model=\"item\" _v-79900521=\"\">\n        </ram-item>\n        <pager :model.sync=\"page\" url=\"/api/raw_materials/\" _v-79900521=\"\">\n        </pager>\n    </div>\n    <div class=\"col-xs-12 col-sm-6 col-md-4\" _v-79900521=\"\">\n        <h3 style=\"color:#ccc\" _v-79900521=\"\">\n            资讯\n        </h3>\n        <article-list-group category=\"energy_and_raw_materials\" :other-params=\"{ limit: 10, fields: 'id,url,title,is_top,summary' }\" :flush=\"true\" _v-79900521=\"\">\n        </article-list-group>\n    </div>\n</div>\n";
 
 /***/ },
 /* 240 */
@@ -17212,9 +17391,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/pages/404.vue"
+	  var id = "_v-bcdba976/404.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -17276,7 +17455,7 @@ webpackJsonp([1],Array(92).concat([
 /***/ function(module, exports) {
 
 	/*!
-	 * vue-resource v0.9.1
+	 * vue-resource v0.9.3
 	 * https://github.com/vuejs/vue-resource
 	 * Released under the MIT License.
 	 */
@@ -18190,7 +18369,7 @@ webpackJsonp([1],Array(92).concat([
 	
 	    if (request.timeout) {
 	        timeout = setTimeout(function () {
-	            request.cancel();
+	            request.abort();
 	        }, request.timeout);
 	    }
 	
@@ -18299,24 +18478,24 @@ webpackJsonp([1],Array(92).concat([
 	            }
 	
 	            function next(response) {
-	                when(response, function (response) {
 	
-	                    if (isFunction(response)) {
+	                if (isFunction(response)) {
 	
-	                        resHandlers.unshift(response);
-	                    } else if (isObject(response)) {
+	                    resHandlers.unshift(response);
+	                } else if (isObject(response)) {
 	
-	                        resHandlers.forEach(function (handler) {
-	                            handler.call(context, response);
+	                    resHandlers.forEach(function (handler) {
+	                        response = when(response, function (response) {
+	                            return handler.call(context, response) || response;
 	                        });
+	                    });
 	
-	                        resolve(response);
+	                    when(response, resolve);
 	
-	                        return;
-	                    }
+	                    return;
+	                }
 	
-	                    exec();
-	                });
+	                exec();
 	            }
 	
 	            exec();
@@ -18720,60 +18899,14 @@ webpackJsonp([1],Array(92).concat([
 /* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(281);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(116)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-013fe153&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-013fe153&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 281 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(81)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "\nli a[_v-013fe153] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/users/ReportList.vue?35eb1de2"],"names":[],"mappings":";AAOA;IACA,gBAAA;CACA","file":"ReportList.vue","sourcesContent":["<template>\n    <file-list :model.sync=\"reports\" :base-url='baseURL' :delete-link=\"true\">\n        <infinite-loading :on-infinite=\"load\"></infinite-loading>\n    </file-list>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        mixins: [InfiniteLoadingMixin],\n        components: { FileList },\n        listConfig: {\n            listFieldName: 'reports'\n        },\n        data: () => ({\n            nextURL: ''\n        }),\n        props: {\n            reports: {\n                type: Array,\n                twoWay: true,\n                required: true\n            },\n            userId: {\n                required: true,\n                type: Number\n            }\n        },\n        computed: {\n            baseURL () {\n                return `/api/users/${this.userId}/reports/`\n            }\n        },\n        ready () {\n            this.$watch('userId', () => {\n                this.reset()\n            })\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
-	
-	// exports
-
-
-/***/ },
-/* 282 */
-/***/ function(module, exports) {
-
-	module.exports = "\n<file-list :model.sync=\"reports\" :base-url=\"baseURL\" :delete-link=\"true\" _v-013fe153=\"\">\n    <infinite-loading :on-infinite=\"load\" _v-013fe153=\"\"></infinite-loading>\n</file-list>\n";
-
-/***/ },
-/* 283 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var __vue_script__, __vue_template__
-	__webpack_require__(284)
-	__vue_script__ = __webpack_require__(286)
+	__webpack_require__(281)
+	__vue_script__ = __webpack_require__(283)
 	if (__vue_script__ &&
 	    __vue_script__.__esModule &&
 	    Object.keys(__vue_script__).length > 1) {
 	  console.warn("[vue-loader] js/components/files/FileList.vue: named exports in *.vue files are ignored.")}
-	__vue_template__ = __webpack_require__(287)
+	__vue_template__ = __webpack_require__(284)
 	module.exports = __vue_script__ || {}
 	if (module.exports.__esModule) module.exports = module.exports.default
 	if (__vue_template__) {
@@ -18781,9 +18914,9 @@ webpackJsonp([1],Array(92).concat([
 	}
 	if (false) {(function () {  module.hot.accept()
 	  var hotAPI = require("vue-hot-reload-api")
-	  hotAPI.install(require("vue"), true)
+	  hotAPI.install(require("vue"), false)
 	  if (!hotAPI.compatible) return
-	  var id = "/home/hsfzxjy/srcs/wisecitymbc3.0/front-end/js/components/files/FileList.vue"
+	  var id = "_v-34139bca/FileList.vue"
 	  if (!module.hot.data) {
 	    hotAPI.createRecord(id, module.exports)
 	  } else {
@@ -18792,13 +18925,13 @@ webpackJsonp([1],Array(92).concat([
 	})()}
 
 /***/ },
-/* 284 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(285);
+	var content = __webpack_require__(282);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(116)(content, {});
@@ -18807,8 +18940,8 @@ webpackJsonp([1],Array(92).concat([
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1259d7cc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-1259d7cc&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-34139bca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-34139bca&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./FileList.vue");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -18818,7 +18951,7 @@ webpackJsonp([1],Array(92).concat([
 	}
 
 /***/ },
-/* 285 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(81)();
@@ -18826,13 +18959,13 @@ webpackJsonp([1],Array(92).concat([
 	
 	
 	// module
-	exports.push([module.id, "\nli a[_v-1259d7cc] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/files/FileList.vue?071a750e"],"names":[],"mappings":";AAuBA;IACA,gBAAA;CACA","file":"FileList.vue","sourcesContent":["<template>\n    <vs-list-group flush>\n        <vs-list-group-item v-for=\"file in model\">\n            {{ file.file_name }}\n            <a\n                href=\"#\"\n                v-if=\"deleteLink\"\n                class=\"pull-xs-right\"\n                @click.stop.prevent=\"removeFile($index)\">\n                删除\n            </a>\n            <a\n                href=\"{{file.storage_url}}\"\n                class=\"pull-xs-right\"\n                target=\"_blank\">\n                下载\n            </a>\n        </vs-list-group-item>\n        <slot></slot>\n    </vs-list-group>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    export default {\n        props: {\n            model: {\n                type: Array,\n                required: true,\n                twoWay: true\n            },\n            baseURL: {\n                type: String,\n                required: false\n            },\n            deleteLink: {\n                type: Boolean,\n                default: false\n            }\n        },\n        methods: {\n            removeFile (index) {\n                console.log(this.model[index].id)\n                let id = this.model[index].id\n\n                this.$http.delete(`${this.baseURL}${id}/`)\n                    .then(() => {\n                        this.model.splice(index, 1)\n                    })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nli a[_v-34139bca] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/files/FileList.vue?071a750e"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;AAuBA;IACA,gBAAA;CACA","file":"FileList.vue","sourcesContent":["<template>\n    <vs-list-group flush>\n        <vs-list-group-item v-for=\"file in model\">\n            {{ file.file_name }}\n            <a\n                href=\"#\"\n                v-if=\"deleteLink\"\n                class=\"pull-xs-right\"\n                @click.stop.prevent=\"removeFile($index)\">\n                删除\n            </a>\n            <a\n                href=\"{{file.storage_url}}\"\n                class=\"pull-xs-right\"\n                target=\"_blank\">\n                下载\n            </a>\n        </vs-list-group-item>\n        <slot></slot>\n    </vs-list-group>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    export default {\n        props: {\n            model: {\n                type: Array,\n                required: true,\n                twoWay: true\n            },\n            baseURL: {\n                type: String,\n                required: false\n            },\n            deleteLink: {\n                type: Boolean,\n                default: false\n            }\n        },\n        methods: {\n            removeFile (index) {\n                console.log(this.model[index].id)\n                let id = this.model[index].id\n\n                this.$http.delete(`${this.baseURL}${id}/`)\n                    .then(() => {\n                        this.model.splice(index, 1)\n                    })\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
 
 /***/ },
-/* 286 */
+/* 283 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -18871,10 +19004,56 @@ webpackJsonp([1],Array(92).concat([
 	};
 
 /***/ },
+/* 284 */
+/***/ function(module, exports) {
+
+	module.exports = "\n<vs-list-group flush=\"\" _v-34139bca=\"\">\n    <vs-list-group-item v-for=\"file in model\" _v-34139bca=\"\">\n        {{ file.file_name }}\n        <a href=\"#\" v-if=\"deleteLink\" class=\"pull-xs-right\" @click.stop.prevent=\"removeFile($index)\" _v-34139bca=\"\">\n            删除\n        </a>\n        <a href=\"{{file.storage_url}}\" class=\"pull-xs-right\" target=\"_blank\" _v-34139bca=\"\">\n            下载\n        </a>\n    </vs-list-group-item>\n    <slot _v-34139bca=\"\"></slot>\n</vs-list-group>\n";
+
+/***/ },
+/* 285 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(286);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(116)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c8cec45e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js?sourceMap!./../../../node_modules/vue-loader/lib/style-rewriter.js?id=_v-c8cec45e&scoped=true!./../../../node_modules/vue-loader/lib/selector.js?type=style&index=0!./ReportList.vue");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 286 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(81)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, "\n\n\n\n\n\n\nli a[_v-c8cec45e] {\n    margin: 0 .2rem;\n}\n", "", {"version":3,"sources":["/./js/components/users/ReportList.vue?35eb1de2"],"names":[],"mappings":";;;;;;;AAOA;IACA,gBAAA;CACA","file":"ReportList.vue","sourcesContent":["<template>\n    <file-list :model.sync=\"reports\" :base-url='baseURL' :delete-link=\"true\">\n        <infinite-loading :on-infinite=\"load\"></infinite-loading>\n    </file-list>\n</template>\n\n<style scoped>\n    li a {\n        margin: 0 .2rem;\n    }\n</style>\n\n<script>\n    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'\n    import FileList from 'files/FileList.vue'\n\n    export default {\n        mixins: [InfiniteLoadingMixin],\n        components: { FileList },\n        listConfig: {\n            listFieldName: 'reports'\n        },\n        data: () => ({\n            nextURL: ''\n        }),\n        props: {\n            reports: {\n                type: Array,\n                twoWay: true,\n                required: true\n            },\n            userId: {\n                required: true,\n                type: Number\n            }\n        },\n        computed: {\n            baseURL () {\n                return `/api/users/${this.userId}/reports/`\n            }\n        },\n        ready () {\n            this.$watch('userId', () => {\n                this.reset()\n            })\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	
+	// exports
+
+
+/***/ },
 /* 287 */
 /***/ function(module, exports) {
 
-	module.exports = "\n<vs-list-group flush=\"\" _v-1259d7cc=\"\">\n    <vs-list-group-item v-for=\"file in model\" _v-1259d7cc=\"\">\n        {{ file.file_name }}\n        <a href=\"#\" v-if=\"deleteLink\" class=\"pull-xs-right\" @click.stop.prevent=\"removeFile($index)\" _v-1259d7cc=\"\">\n            删除\n        </a>\n        <a href=\"{{file.storage_url}}\" class=\"pull-xs-right\" target=\"_blank\" _v-1259d7cc=\"\">\n            下载\n        </a>\n    </vs-list-group-item>\n    <slot _v-1259d7cc=\"\"></slot>\n</vs-list-group>\n";
+	module.exports = "\n<file-list :model.sync=\"reports\" :base-url=\"baseURL\" :delete-link=\"true\" _v-c8cec45e=\"\">\n    <infinite-loading :on-infinite=\"load\" _v-c8cec45e=\"\"></infinite-loading>\n</file-list>\n";
 
 /***/ }
 ]));
