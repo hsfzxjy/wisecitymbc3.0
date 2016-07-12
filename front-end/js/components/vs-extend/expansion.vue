@@ -1,7 +1,8 @@
 <template>
     <span 
         @click="toggleClicked"
-        :target="id">
+        :target="id"
+        v-if="!togglerId">
         <slot name="title">
             <a href="javascript:void 0" style="display: block;">{{ title }}</a>
         </slot>
@@ -21,7 +22,17 @@
                 return StrUtils.randStr()
             }
         },
+        ready () {
+            if (this.togglerId) 
+                jQuery('#' + this.togglerId).click(() => {
+                    this.toggleClicked()
+                })
+        },
         props: {
+            togglerId: {
+                type: String,
+                default: ''
+            },
             title: {
                 type: String,
                 default: ''

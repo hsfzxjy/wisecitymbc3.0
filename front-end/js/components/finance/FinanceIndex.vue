@@ -1,12 +1,12 @@
 <template>
-    <div class="col-xs-12 no-padding">
+    <div class="col-xs-12 sm-no-padding">
         <h3>
             <a v-link="'/finance/stocks/'">股票</a>
         </h3>
         <stock-item
             v-for="stock in stocks"
             :stock="stock"
-            class="col-xs-12 col-md-6 small-padding">
+            class="col-xs-12 col-md-6 sm-no-padding">
         </stock-item>
         <list-loader
             :params="{ limit: 3 }"
@@ -15,14 +15,14 @@
         </list-loader>
     </div>
 
-    <div class="col-xs-12 no-padding">
+    <div class="col-xs-12 sm-no-padding">
         <h3>
             <a v-link="'/finance/bonds/'">债券</a>
         </h3>
         <bond-item
             v-for="bond in bonds"
             :bond="bond"
-            class="col-xs-12 col-md-6 small-padding">
+            class="col-xs-12 col-md-6 sm-no-padding">
         </bond-item>
         <list-loader
             :params="{ limit: 3 }"
@@ -31,14 +31,14 @@
         </list-loader>
     </div>
 
-    <div class="col-xs-12 no-padding">
+    <div class="col-xs-12 sm-no-padding">
         <h3>
             <a v-link="'/finance/futures/'">期货</a>
         </h3>
         <future-item
             v-for="future in futures"
             :future="future"
-            class="col-xs-12 col-md-6 small-padding">
+            class="col-xs-12 col-md-6 sm-no-padding">
         </future-item>
         <list-loader
             :params="{ limit: 3 }"

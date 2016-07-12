@@ -100,7 +100,6 @@
             },
             loadData () {
                 if (!this.url || !this.initiated) return
-
                 this.$http.get(this.url)
                     .then(({ data }) => {
                         this.addData(data.results)

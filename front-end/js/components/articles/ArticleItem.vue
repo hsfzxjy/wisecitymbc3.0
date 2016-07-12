@@ -16,7 +16,7 @@
                         <li v-if="article.perms.change">
                             <a 
                                 class="dropdown-item" 
-                                v-link="`/edit/articles/${article.id}/`">
+                                v-link="'/edit/articles/'+article.id+'/'">
                                 编辑
                             </a>
                         </li>

@@ -46,7 +46,7 @@
                         </h4>
                         <uploader
                             :files="reports"
-                            :file-add-url="`/api/users/${id}/reports/`"
+                            :file-add-url="'/api/users/'+id+'/reports/`"
                             :upload-status.sync="uploadStatus"
                             browse-button-id="reports-uploader">
                         </uploader>

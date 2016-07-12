@@ -26,7 +26,7 @@
                         <vs-list-group-item
                             v-for="category in categories">
                             <vs-link
-                                :link="`/articles/${$key}/`"
+                                :link="'/articles/'+$key+'/'"
                                 :title="category">
                             </vs-link>
                         </vs-list-group-item>
@@ -46,7 +46,7 @@
                         </vs-list-group-item>
                         <vs-list-group-item>
                             <vs-link
-                                :link="`/tags/`"
+                                :link="'/tags/'"
                                 title="更多...">
                             </vs-link>
                         </vs-list-group-item>

@@ -7,16 +7,12 @@
                         v-link="article.url">
                         {{ article.title }}
                     </a>
-                    <vs-collapse-toggle 
-                        :target="`collapse-article-${article.id}`"
-                        :target-group="`article-group-${category}`"
-                        class="pull-xs-right">
-                        <vs-badge
-                            variant="success"
-                            class="pull-xs-right pointer ALGB">
-                            摘要
-                        </vs-badge>
-                    </vs-collapse-toggle>
+                    <vs-badge
+                        variant="success"
+                        :id="'collapse-article-'+article.id"
+                        class="pull-xs-right pointer ALGB">
+                        摘要
+                    </vs-badge>
                     <vs-badge
                         variant="danger"
                         class="pull-xs-right"
@@ -24,13 +20,12 @@
                         置顶
                     </vs-badge>
                 </div>
-                <vs-collapse 
-                    :id="`collapse-article-${article.id}`"
-                    :group="`article-group-${category}`">
-                     <div class="card card-block">
+                <vs-expansion 
+                    :toggler-id="'collapse-article-'+article.id">
+                     <div class="card card-block" slot="content">
                          {{ article.summary }}
                      </div>
-                </vs-collapse>
+                </vs-expansion>
             </vs-list-group-item>
         </vs-list-group>   
         <list-loader

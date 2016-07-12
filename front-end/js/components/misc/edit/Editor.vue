@@ -2,7 +2,7 @@
     <vs-form @submit.prevent="submit" class="col-md-8 sm-no-padding" :errors="errors">
         <slot name="fields-before"></slot>
         <fieldset class="form-group">
-            <ck-editor :editor-id="`${name}-editor`" :model.sync="model.content"></ck-editor>
+            <ck-editor :editor-id="name+'-editor'" :model.sync="model.content"></ck-editor>
         </fieldset>
         <slot name="fields-after"></slot>
     </vs-form>
@@ -11,7 +11,7 @@
             <uploader
                 @file-uploaded="insertFileToEditor"
                 :upload-status.sync="uploadStatus"
-                :browse-button-id="`${name}-editor-upload`"
+                :browse-button-id="name+'-editor-upload'"
                 :files="model.attachments">
                 <vs-buttons 
                     block

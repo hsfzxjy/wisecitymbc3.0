@@ -5,7 +5,7 @@
                 v-for="tag in tags"
                 :variant="tag.id == currentTagId ? 'danger' : 'info' "
                 >
-                <a v-link="`/tags/${tag.id}/`">{{tag.name}}</a>
+                <a v-link="'/tags/'+tag.id+'/'">{{tag.name}}</a>
             </vs-badge>
         </div>
         <article-list

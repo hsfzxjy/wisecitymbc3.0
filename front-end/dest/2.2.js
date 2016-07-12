@@ -5725,7 +5725,19 @@ webpackJsonp([2],{
 	            return _index.StrUtils.randStr();
 	        }
 	    },
+	    ready: function ready() {
+	        var _this = this;
+	
+	        if (this.togglerId) jQuery('#' + this.togglerId).click(function () {
+	            _this.toggleClicked();
+	        });
+	    },
+	
 	    props: {
+	        togglerId: {
+	            type: String,
+	            default: ''
+	        },
 	        title: {
 	            type: String,
 	            default: ''
@@ -5744,7 +5756,7 @@ webpackJsonp([2],{
 /***/ 263:
 /***/ function(module, exports) {
 
-	module.exports = "\n<span \n    @click=\"toggleClicked\"\n    :target=\"id\">\n    <slot name=\"title\">\n        <a href=\"javascript:void 0\" style=\"display: block;\">{{ title }}</a>\n    </slot>\n</span>\n<vs-collapse\n    :id=\"id\">\n    <slot name=\"content\"></slot>\n</vs-collapse>\n";
+	module.exports = "\n<span \n    @click=\"toggleClicked\"\n    :target=\"id\"\n    v-if=\"!togglerId\">\n    <slot name=\"title\">\n        <a href=\"javascript:void 0\" style=\"display: block;\">{{ title }}</a>\n    </slot>\n</span>\n<vs-collapse\n    :id=\"id\">\n    <slot name=\"content\"></slot>\n</vs-collapse>\n";
 
 /***/ },
 

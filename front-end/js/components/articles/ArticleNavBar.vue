@@ -4,7 +4,7 @@
             type="pills" :vertical="vertical">
             <vs-nav-item
                 v-for="category in categories"
-                :link="`/articles/${$key}/`"
+                :link="'/articles/'+$key+'/'"
                 :active='$key === currentCategory'>
                 {{ category }}
             </vs-nav-item>

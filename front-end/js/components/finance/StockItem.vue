@@ -37,7 +37,7 @@
                 <vs-list-group-item
                     class="no-padding">
                     <chart
-                        :url="`/api/stocks/${stock.id}/logs/?limit=5`"
+                        :url="'/api/stocks/'+stock.id+'/logs/?limit=5'"
                         :series.once="chartSeries">
                             
                     </chart>

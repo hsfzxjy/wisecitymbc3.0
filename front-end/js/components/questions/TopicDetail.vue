@@ -37,7 +37,7 @@
             </vs-card>
             <pager
                 v-if="topicId"
-                :url="`/api/topics/${topicId}/replies/`"
+                :url="'/api/topics/'+topicId+'/replies/'"
                 :model.sync="page">
             </pager>
         </div>
@@ -57,7 +57,7 @@
             <editor
                 :model.sync="reply"
                 name="topic-reply-edit"
-                :base-url="`/api/topics/${topicId}/replies/`"
+                :base-url="'/api/topics/'+topicId+'/replies/'"
                 @submitted="editorSubmitted">
             </editor>
         </div>

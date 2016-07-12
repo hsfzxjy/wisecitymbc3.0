@@ -3,7 +3,7 @@
         <div class="col-md-3 col-sm-12">
             <a 
                 class="btn btn-success btn-block"
-                v-link="`/edit/topics/`">
+                v-link="'/edit/topics/'">
                 发帖
             </a>
             <vs-buttons

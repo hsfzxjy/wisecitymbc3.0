@@ -3,7 +3,7 @@
             <vs-card v-for="company in companies">
                 <div class="card-block">
                     <h4 class="card-title text-center">
-                        <a v-link="`/users/${company.id}/`">
+                        <a v-link="'/users/'+company.id+'/'">
                             {{ company.user_data.name || '(空)' }}
                         </a>
                     </h4>
