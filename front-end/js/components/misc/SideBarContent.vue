@@ -44,6 +44,12 @@
                                 :title="tag.name">
                             </vs-link>
                         </vs-list-group-item>
+                        <vs-list-group-item>
+                            <vs-link
+                                :link="`/tags/`"
+                                title="更多...">
+                            </vs-link>
+                        </vs-list-group-item>
                     </vs-list-group>
                 </vs-expansion>
             </vs-list-group-item>
