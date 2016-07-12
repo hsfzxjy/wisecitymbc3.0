@@ -1,8 +1,8 @@
 <template>
     <div>
-        <vs-jumbotron fluid>
+        <vs-jumbotron fluid style="word-wrap: break-word;">
             <div class="col-md-8 col-sm-12">
-                <h1 class="display-3">
+                <h1 >
                     WiseCity
                 </h1>
             </div>
@@ -11,7 +11,7 @@
                     <login-form></login-form>    
                 </div>
                 <div v-else>
-                    <h1 class="display-5">欢迎您，{{ $root.user.nickname }}</h1>
+                    <h2>欢迎您，{{ $root.user.nickname }}</h2>
                 </div>
             </div>
         </vs-jumbotron>

@@ -45,6 +45,7 @@
         },
         methods: {
             initEditor () {
+                console.log(CKEDITOR)
                 let ckeditor = CKEDITOR.replace(this.editorId, {
                     language: 'zh-CN',
                     removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Image,Superscript,Subscript,About,Anchor',
@@ -62,7 +63,9 @@
                         { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
                         { name: 'colors', groups: [ 'colors' ] },
                         { name: 'about', groups: [ 'about' ] }
-                    ]
+                    ],
+                    removePlugins: 'elementspath',
+                    resize_enabled: false
                 })
                 ckeditor.on('change', () => {
                     this.model = ckeditor.getData()

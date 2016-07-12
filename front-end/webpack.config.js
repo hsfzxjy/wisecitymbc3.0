@@ -13,7 +13,6 @@ module.exports = {
             'tether',
             'lodash',
             'bootstrap/dist/js/bootstrap.min.js',
-            //'vendor/plupload.full.min.js',
             'bower_components/qiniu/dist/qiniu.min.js'
         ]
     },

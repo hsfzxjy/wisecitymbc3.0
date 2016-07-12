@@ -1,8 +1,5 @@
 import App from './components/App.vue'
 
-require('styles/bootstrap.scss') 
-require('font-awesome-sass-loader!font-awesome.config.js')
-
 require.ensure([], (require) => {
     let Vue = require('vue')
     let router = require('./init/routes.es').default(Vue)
@@ -12,3 +9,6 @@ require.ensure([], (require) => {
         router.start(App, '#app')
     })
 })
+
+require('styles/bootstrap.scss') 
+require('font-awesome-sass-loader!font-awesome.config.js')
