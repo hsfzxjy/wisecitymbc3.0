@@ -1,10 +1,11 @@
 <template>
-    <vs-collapse-toggle 
+    <span 
+        @click="toggleClicked"
         :target="id">
         <slot name="title">
             <a href="javascript:void 0" style="display: block;">{{ title }}</a>
         </slot>
-    </vs-collapse-toggle>
+    </span>
     <vs-collapse
         :id="id">
         <slot name="content"></slot>
@@ -26,13 +27,9 @@
                 default: ''
             }
         },
-        events: {
-            ['toggled::collapse'] ({id}) {
-                if (id === this.id) {
-                    this.$dispatch('toggled')
-                }
-
-                return true
+        methods: {
+            toggleClicked () {
+                jQuery('#'+this.id).slideToggle()
             }
         }
     }

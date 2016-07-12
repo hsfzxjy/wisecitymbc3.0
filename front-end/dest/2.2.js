@@ -5711,19 +5711,13 @@ webpackJsonp([2],{
 /***/ 262:
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(jQuery) {'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	
-	var _defineProperty2 = __webpack_require__(76);
-	
-	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
-	
 	var _index = __webpack_require__(122);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	exports.default = {
 	    computed: {
@@ -5737,23 +5731,20 @@ webpackJsonp([2],{
 	            default: ''
 	        }
 	    },
-	    events: (0, _defineProperty3.default)({}, 'toggled::collapse', function toggledCollapse(_ref) {
-	        var id = _ref.id;
-	
-	        if (id === this.id) {
-	            this.$dispatch('toggled');
+	    methods: {
+	        toggleClicked: function toggleClicked() {
+	            jQuery('#' + this.id).slideToggle();
 	        }
-	
-	        return true;
-	    })
+	    }
 	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(97)))
 
 /***/ },
 
 /***/ 263:
 /***/ function(module, exports) {
 
-	module.exports = "\n<vs-collapse-toggle \n    :target=\"id\">\n    <slot name=\"title\">\n        <a href=\"javascript:void 0\" style=\"display: block;\">{{ title }}</a>\n    </slot>\n</vs-collapse-toggle>\n<vs-collapse\n    :id=\"id\">\n    <slot name=\"content\"></slot>\n</vs-collapse>\n";
+	module.exports = "\n<span \n    @click=\"toggleClicked\"\n    :target=\"id\">\n    <slot name=\"title\">\n        <a href=\"javascript:void 0\" style=\"display: block;\">{{ title }}</a>\n    </slot>\n</span>\n<vs-collapse\n    :id=\"id\">\n    <slot name=\"content\"></slot>\n</vs-collapse>\n";
 
 /***/ },
 
