@@ -60,6 +60,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE_CLASSES = [
     'enhancements.middlewares.disable_csrf.DisableCSRF',
+    'enhancements.middlewares.block_ie.Middleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
