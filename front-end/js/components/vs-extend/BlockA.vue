@@ -1,5 +1,8 @@
 <template>
-    <a v-link="link" @click="clicked">
+    <a v-link="link" @click="clicked" v-if="!ext">
+        <i v-if="icon" class="fa fa-{{icon}}"></i> {{title}}
+    </a>
+    <a :href="link" @click="clicked" v-else>
         <i v-if="icon" class="fa fa-{{icon}}"></i> {{title}}
     </a>
 </template>
@@ -24,6 +27,10 @@
             link: {
                 type: String,
                 required: true
+            },
+            ext: {
+                type: Boolean,
+                default: false
             }
         },
         methods: {

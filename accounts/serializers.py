@@ -10,7 +10,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('nickname', 'username', 'bureau_type',
-                  'user_type', 'user_data', 'id', 'url', 'perms')
+                  'user_type', 'user_data', 'id', 'url', 'perms',
+                  'is_staff')
         read_only_fields = ('user_data', )
 
     def get_url(self, user):

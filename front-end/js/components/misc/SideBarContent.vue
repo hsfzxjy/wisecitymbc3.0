@@ -15,6 +15,9 @@
             <vs-list-group-item v-if="$root.perms.articles_article_add_">
                 <vs-link link="/edit/articles/" title="撰写" icon="pencil"></vs-link>
             </vs-list-group-item>
+            <vs-list-group-item v-if="$root.user.is_staff">
+                <vs-link link="/admin/" title="后台管理" icon="building" ext></vs-link>
+            </vs-list-group-item>
         </vs-list-group>
         <vs-list-group flush>
             <vs-list-group-item>

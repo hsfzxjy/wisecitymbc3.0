@@ -6023,7 +6023,7 @@ webpackJsonp([2],{
 	
 	
 	// module
-	exports.push([module.id, "\na[_v-76eb51d3] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/vs-extend/BlockA.vue?258e769c"],"names":[],"mappings":";AAOA;IACA,eAAA;CACA","file":"BlockA.vue","sourcesContent":["<template>\n    <a v-link=\"link\" @click=\"clicked\">\n        <i v-if=\"icon\" class=\"fa fa-{{icon}}\"></i> {{title}}\n    </a>\n</template>\n\n<style scoped>\n    a {\n        display: block;\n    }\n</style>\n\n<script>\n    export default {\n        props: {\n            title: {\n                type: String,\n                required: true\n            },\n            icon: {\n                type: String,\n                default: ''\n            },\n            link: {\n                type: String,\n                required: true\n            }\n        },\n        methods: {\n            clicked () {\n                this.$dispatch('BlockA:click', this)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
+	exports.push([module.id, "\na[_v-76eb51d3] {\n    display: block;\n}\n", "", {"version":3,"sources":["/./js/components/vs-extend/BlockA.vue?6dfb670a"],"names":[],"mappings":";AAUA;IACA,eAAA;CACA","file":"BlockA.vue","sourcesContent":["<template>\n    <a v-link=\"link\" @click=\"clicked\" v-if=\"!ext\">\n        <i v-if=\"icon\" class=\"fa fa-{{icon}}\"></i> {{title}}\n    </a>\n    <a :href=\"link\" @click=\"clicked\" v-else>\n        <i v-if=\"icon\" class=\"fa fa-{{icon}}\"></i> {{title}}\n    </a>\n</template>\n\n<style scoped>\n    a {\n        display: block;\n    }\n</style>\n\n<script>\n    export default {\n        props: {\n            title: {\n                type: String,\n                required: true\n            },\n            icon: {\n                type: String,\n                default: ''\n            },\n            link: {\n                type: String,\n                required: true\n            },\n            ext: {\n                type: Boolean,\n                default: false\n            }\n        },\n        methods: {\n            clicked () {\n                this.$dispatch('BlockA:click', this)\n            }\n        }\n    }\n</script>"],"sourceRoot":"webpack://"}]);
 	
 	// exports
 
@@ -6051,6 +6051,10 @@ webpackJsonp([2],{
 	        link: {
 	            type: String,
 	            required: true
+	        },
+	        ext: {
+	            type: Boolean,
+	            default: false
 	        }
 	    },
 	    methods: {
@@ -6065,7 +6069,7 @@ webpackJsonp([2],{
 /***/ 273:
 /***/ function(module, exports) {
 
-	module.exports = "\n<a v-link=\"link\" @click=\"clicked\" _v-76eb51d3=\"\">\n    <i v-if=\"icon\" class=\"fa fa-{{icon}}\" _v-76eb51d3=\"\"></i> {{title}}\n</a>\n";
+	module.exports = "\n<a v-link=\"link\" @click=\"clicked\" v-if=\"!ext\" _v-76eb51d3=\"\">\n    <i v-if=\"icon\" class=\"fa fa-{{icon}}\" _v-76eb51d3=\"\"></i> {{title}}\n</a>\n<a :href=\"link\" @click=\"clicked\" v-else=\"\" _v-76eb51d3=\"\">\n    <i v-if=\"icon\" class=\"fa fa-{{icon}}\" _v-76eb51d3=\"\"></i> {{title}}\n</a>\n";
 
 /***/ },
 
