@@ -5,7 +5,11 @@
                 v-for="item in page.results"
                 :state="!item.has_read ? 'warning' : ''"
                 @click="mark([item])">
+                <i class="fa fa-star text-warning" v-if="!item.has_read"></i>
                 {{{ item.message | render }}}
+                <span class="pull-xs-right">
+                    {{ item.created_time | timesince }}
+                </span>
             </vs-list-group-item>
         </vs-list-group>
         <pager

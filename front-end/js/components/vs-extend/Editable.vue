@@ -20,7 +20,8 @@
 
     span.btn-action {
         position: absolute;
-        top: -1rem;
+        z-index: 10000;
+        top: -2rem;
         right: 0;
     }
 </style>

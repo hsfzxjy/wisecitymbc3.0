@@ -25,6 +25,11 @@ button {
     }
 }
 
+dd:empty:after {
+    display: block;
+    content: '（空）';
+}
+
 
 .article-main {
     .article {
@@ -38,7 +43,6 @@ button {
         color:#ddd;
         padding-bottom:30px;
         padding-top:15px;
-        border-bottom:1px solid #666;
     }
 
     .article-meta {
@@ -50,6 +54,16 @@ button {
         color:#ccc;
         p {
             text-indent: 2em;
+        }
+
+        table {
+            width: 100%!important;
+            max-width: 100%;
+            overflow-x: auto;
+
+            td, tr {
+                border-collapse: inherit;
+            }
         }
 
         img {

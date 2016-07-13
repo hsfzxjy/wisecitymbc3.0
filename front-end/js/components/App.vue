@@ -6,7 +6,7 @@
             <side-bar-content></side-bar-content>
         </sidebar>
         <div class="container-fluid" id="main-container">
-            <router-view 
+            <router-view
                 class="view" 
                 keep-alive 
                 transition="fade"
@@ -72,6 +72,11 @@
             checkLogined () {
                 return this.initPromise
                     .then(() => this.hasLogined)
+            },
+            refreshCurrentView () {
+                this.$broadcast('ListLoader:reload')
+                this.$broadcast('Pager:refresh')
+                this.$broadcast('InfiniteLoading:reset')
             }
         },
         created () {

@@ -2,6 +2,11 @@ import InfiniteLoading from 'vue-infinite-loading'
 
 export default {
     components: { InfiniteLoading },
+    events: {
+        ['InfiniteLoading:reset'] () {
+            this.reset()
+        }
+    },
     methods: {
         reset () {
             this[this.$options.listConfig.listFieldName] = []

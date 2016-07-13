@@ -30,4 +30,7 @@ export default function (Vue) {
     Vue.filter('state', (value) => _.isEmpty(value) ? '' : 'danger')
     Vue.filter('timesince', (value) => timeSince(new Date(value+'+08:00'))+'前')
     Vue.filter('br', value => value.replace(/[\r\n]+/g, '<br>'))
+    Vue.filter('user', user => {
+        return `<a href="#!${user.url}">${user.nickname}</a>`
+    })
 }
