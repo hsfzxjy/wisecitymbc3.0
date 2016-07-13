@@ -11,6 +11,7 @@ __pycache__/
 .Python
 env/
 build/
+!front-end/build
 develop-eggs/
 #dist/
 !bower_components/*/dist/
