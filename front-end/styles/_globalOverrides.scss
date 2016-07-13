@@ -173,3 +173,9 @@ ul.list-group {
 label {
     color: #eee!important;
 }
+
+.pager {
+    li > a {
+        background-color: inherit;
+    }
+}

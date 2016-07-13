@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="col-xs-12">
         <editor
             v-if="!$loadingRouteData"
             name="article-edit"

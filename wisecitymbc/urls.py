@@ -23,5 +23,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include(generate_urls())),
     url(r'^$', views.index),
-    #url(r'^', views.redirect_view)
+    url(r'^', views.redirect_view)
 ]

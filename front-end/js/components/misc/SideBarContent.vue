@@ -62,7 +62,7 @@
             <vs-list-group-item>
                 <vs-link link="/ram/" title="能源及原材料"></vs-link>
             </vs-list-group-item>
-            <vs-list-group-item v-if="$root.questions_topic_view_">
+            <vs-list-group-item v-if="$root.perms.questions_topic_view_">
                 <vs-link link="/topics/" title="Q&amp;A"></vs-link>
             </vs-list-group-item>
         </vs-list-group>

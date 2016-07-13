@@ -14,6 +14,7 @@
                 <vs-nav-item link="/articles/government/">资讯</vs-nav-item>
                 <vs-nav-item link="/finance/">交易</vs-nav-item>
                 <vs-nav-item link="/ram/">能源及原材料</vs-nav-item>
+                <vs-nav-item link="/topics/" v-if="$root.perms.questions_topic_view_">Q&amp;A</vs-nav-item>
             </vs-nav>
         </div>
     </vs-navbar>

@@ -5,10 +5,10 @@
         </slot>
         <vs-pager v-if="model">
             <li v-show="model.previous" :class="!loading || 'disabled'">
-                <a @click.stop="load(model.previous)" href="javascript:void(0);">Previous</a>
+                <a @click.stop="load(model.previous)" href="javascript:void(0);">上一页</a>
             </li>
             <li v-show="model.next" :class="!loading || 'disabled'">
-                <a @click.stop="load(model.next)" href="javascript:void(0);">Next</a>
+                <a @click.stop="load(model.next)" href="javascript:void(0);">下一页</a>
             </li>
         </vs-pager>        
     </div>
@@ -44,6 +44,11 @@
         },
         events: {
             ['Pager:refresh'] () {
+                this.refresh()
+            }
+        },
+        watch: {
+            url (value) {
                 this.refresh()
             }
         }

@@ -19,7 +19,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     ordering = ('has_read', '-created_time')
 
     def get_queryset(self):
-        # return self.queryset
+        return self.queryset
         if not self.request.user.is_authenticated():
             raise Http404
 

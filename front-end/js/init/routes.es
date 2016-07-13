@@ -124,10 +124,8 @@ export default function (Vue) {
             component: TopicDetail,
             name: 'topic-detail',
             auth: {
-                model: {
-                    model: 'questions.topic',
-                    action: 'view'
-                }
+                model: 'questions.topic',
+                action: 'view'
             }
         },
         '/finance': {

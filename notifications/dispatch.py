@@ -40,7 +40,7 @@ def send(user, template, module, url=None, target=None, **kwargs):
 
     if not registry.has_module(module):
         raise registry.RegistryError("Module %r not found." % module)
-
+    print(user)
     if is_iterable(user):
         args = []
         for u in user:

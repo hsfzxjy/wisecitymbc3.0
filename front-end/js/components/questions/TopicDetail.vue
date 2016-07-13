@@ -1,10 +1,10 @@
 <template>
     <div class="container-fluid main">
-        <div class="col-xs-12 col-md-8">
+        <div class="col-xs-12 col-md-8 sm-no-padding">
             <section>
                 <vs-card>
                     <div class="card-block article-main">
-                        <h1 class="card-title">{{ topic.title }}</h1>
+                        <h1 class="card-title text-xs-center">{{ topic.title }}</h1>
                         {{{ topic.content }}}
 
                         <p class="card-text text-muted hidden-sm-down">
@@ -19,6 +19,12 @@
                         </vs-list-group-item>
                         <vs-list-group-item>
                             更新于 {{ topic.updated_time | timesince }}
+                        </vs-list-group-item>
+                        <vs-list-group-item v-if="topic.perms.change">
+                            <vs-link
+                                title="编辑"
+                                :link="'/edit/topics/'+topic.id+'/'">
+                            </vs-link>
                         </vs-list-group-item>
                     </vs-list-group>
                 </vs-card>
@@ -50,11 +56,18 @@
                     <vs-list-group-item>
                         更新于 {{ topic.updated_time | timesince }}
                     </vs-list-group-item>
+                    <vs-list-group-item v-if="topic.perms.change">
+                        <vs-link
+                            title="编辑"
+                            :link="'/edit/topics/'+topic.id+'/'">
+                        </vs-link>
+                    </vs-list-group-item>
                 </vs-list-group>
             </vs-card>
         </div>
         <div class="col-xs-12 lg-no-padding">
             <editor
+                v-if="!$loadingRouteData"
                 :model.sync="reply"
                 name="topic-reply-edit"
                 :base-url="'/api/topics/'+topicId+'/replies/'"

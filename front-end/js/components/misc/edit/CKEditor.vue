@@ -47,7 +47,7 @@
             initEditor () {
                 let ckeditor = CKEDITOR.replace(this.editorId, {
                     language: 'zh-CN',
-                    removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Image,Superscript,Subscript,About,Anchor',
+                    removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Superscript,Subscript,About,Anchor',
                     toolbarGroups: [
                         { name: 'styles', groups: [ 'styles' ] },
                         { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },

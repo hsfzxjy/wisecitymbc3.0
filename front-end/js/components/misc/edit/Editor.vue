@@ -114,12 +114,14 @@
             },
             insertFileToEditor (file) {
                 let html
-
+                console.log(file)
                 if (file.file_type === files.FileType.image) {
                     html = `<img src="${file.storage_url}"  title="${file.file_name}" />`
                 } else {
                     html = `<a href="${file.storage_url}">${file.file_name}</a>`
                 }
+
+                console.log(html)
 
                 this.$broadcast('CKEditor:insert-data', html)
             }

@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <vs-list-group flush class="col-md-8 col-sm-12">
+        <vs-list-group flush class="col-xs-12">
             <vs-list-group-item
                 v-for="item in page.results"
                 :state="!item.has_read ? 'warning' : ''"
@@ -10,6 +10,7 @@
         </vs-list-group>
         <pager
             :model.sync="page"
+            class="col-xs-12"
             url="/api/n/">
         </pager>
     </div>

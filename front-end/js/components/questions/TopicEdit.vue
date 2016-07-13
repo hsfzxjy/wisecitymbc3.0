@@ -4,6 +4,7 @@
             v-if="!$loadingRouteData"
             :model.sync="topic"
             name="topic-edit"
+            @submitted="submitted"
             base-url="/api/topics/">
             <vs-form-input
                 :model.sync="topic.title"
@@ -33,9 +34,14 @@
         }),
         editConfig: {
             getInitURL (id) {
-                return `/api/topics/${id}/?fields=title,content,attachments`
+                return `/api/topics/${id}/?fields=title,content,attachments,id`
             },
             objectFieldName: 'topic'
+        },
+        methods: {
+            submitted (editor, topic) {
+                this.$router.go(topic.url)
+            }
         }
     }
 </script>
