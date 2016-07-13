@@ -11,7 +11,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         extra_kwargs = {
             'author': {
-                'fields': ['id', 'username', 'nickname']
+                'fields': ['id', 'username', 'nickname', 'url']
             },
             'tags': {
                 'slug_field': 'name'

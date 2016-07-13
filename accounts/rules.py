@@ -37,8 +37,17 @@ rules.add_perm('accounts.change_user', logined_and_government)
 rules.add_perm('accounts.delete_user', logined_and_government)
 rules.add_perm('accounts.view_user', rules.always_true)
 
-rules.add_perm('accounts.add_userdata', government_or_self)
 
-rules.add_perm('accounts.view_userdata', government_or_self)
-rules.add_perm('accounts.change_userdata', government_or_self)
-rules.add_perm('accounts.delete_userdata', government_or_self)
+@rules.predicate
+def is_my_data(user, obj):
+    return (obj is None or user.user_data.id == obj.id)
+
+government_or_my_data = logined_and_government | \
+    (is_authenticated & is_self) | \
+    (is_authenticated & is_my_data)
+
+rules.add_perm('accounts.add_userdata', government_or_my_data)
+
+rules.add_perm('accounts.view_userdata', government_or_my_data)
+rules.add_perm('accounts.change_userdata', government_or_my_data)
+rules.add_perm('accounts.delete_userdata', government_or_my_data)

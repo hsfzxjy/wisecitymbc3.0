@@ -36,8 +36,7 @@ class UserTestCase(TestCase):
     def test_create_gov(self):
         user = User.objects.create_user(
             username='user1', nickname='user1', password='user1',
-            user_type=UserType.government,
-            bureau_type=BureauType.media)
+            user_type=UserType.government)
 
         self.assertEqual(user.bureau_type, BureauType.none)
         self.assertIsNone(user.user_data)
@@ -45,8 +44,7 @@ class UserTestCase(TestCase):
     def test_create_com(self):
         user = User.objects.create_user(
             username='user1', nickname='user1', password='user1',
-            user_type=UserType.company,
-            bureau_type=BureauType.media)
+            user_type=UserType.company)
 
         self.assertIsNotNone(user.user_data)
 
@@ -69,8 +67,7 @@ class UserRulesTestCase(TestCase):
 
         user = User.objects.create_user(
             username='user1', nickname='user1', password='user1',
-            user_type=UserType.government,
-            bureau_type=BureauType.media)
+            user_type=UserType.government)
 
         self.assertTrue(user.has_perm('accounts.add_user'))
 
@@ -83,6 +80,12 @@ class ReportsAPITestCase(APITestCase):
 
     def setUp(self):
         self.user, self.gov = create_users()
+
+    def test_perms(self):
+        self.client.force_authenticate(self.user)
+
+        res = self.client.get('/api/users/%d/' % self.user.id)
+        self.assertTrue(res.data['user_data']['perms']['change'])
 
     def test_confict(self):
         user = User.objects.create_user(
@@ -134,13 +137,11 @@ class UserAPITestCase(APITestCase):
         self.user = User.objects.create_user(
             username='user1', nickname='user1', password='user1',
             id=1,
-            user_type=UserType.company,
-            bureau_type=BureauType.media)
+            user_type=UserType.company)
         self.gov = User.objects.create_user(
             username='user2', nickname='user2', password='user1',
             id=2,
-            user_type=UserType.government,
-            bureau_type=BureauType.media)
+            user_type=UserType.government)
 
     def test_login(self):
         res = self.client.post(
@@ -173,7 +174,7 @@ class UserAPITestCase(APITestCase):
 
         res = self.client.get('/api/users/logout/')
 
-        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.status_code, 200)
 
         res = self.client.get('/api/users/me/')
         self.assertEqual(res.status_code, 404)
@@ -181,65 +182,51 @@ class UserAPITestCase(APITestCase):
     def test_get(self):
         res = self.client.get('/api/users/1/')
 
-        self.assertEqual(res.data, {
+        self.assertDictContainsSubset({
             'id': 1,
             'nickname': 'user1',
             'username': 'user1',
             'user_type': UserType.company.value,
             'bureau_type': BureauType.none.value,
             'url': '/users/1/'
-        })
+        }, res.data)
 
         res = self.client.get('/api/users/2/')
 
-        self.assertEqual(res.data, {
+        self.assertDictContainsSubset({
             'id': 2,
             'nickname': 'user2',
             'username': 'user2',
             'user_type': UserType.government.value,
             'bureau_type': BureauType.none.value,
             'url': '/users/2/'
-        })
+        }, res.data)
 
         self.client.force_authenticate(self.gov)
 
         res = self.client.get('/api/users/1/')
 
-        self.assertEqual(res.data, {
+        self.assertDictContainsSubset({
             'id': 1,
             'nickname': 'user1',
             'username': 'user1',
             'user_type': UserType.company.value,
             'bureau_type': BureauType.none.value,
             'url': '/users/1/',
-            'user_data': {
-                'name': '',
-                'industry': '',
-                'sector': '',
-                'description': '',
-                'reports': []
-            }
-        })
+        }, res.data)
 
         self.client.force_authenticate(self.user)
 
         res = self.client.get('/api/users/1/')
 
-        self.assertEqual(res.data, {
+        self.assertDictContainsSubset({
             'id': 1,
             'nickname': 'user1',
             'username': 'user1',
             'user_type': UserType.company.value,
             'bureau_type': BureauType.none.value,
             'url': '/users/1/',
-            'user_data': {
-                'name': '',
-                'industry': '',
-                'sector': '',
-                'description': '',
-                'reports': []
-            }
-        })
+        }, res.data)
 
         res = self.client.get('/api/users/me/')
         self.assertEqual(res.data['id'], 1)
