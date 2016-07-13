@@ -12,7 +12,8 @@ __pycache__/
 env/
 build/
 develop-eggs/
-dist/
+#dist/
+!bower_components/*/dist/
 #dest/
 downloads/
 eggs/
