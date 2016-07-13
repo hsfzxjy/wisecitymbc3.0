@@ -6,6 +6,8 @@ from enhancements.shortcuts import _
 from enhancements.models import QuerySet
 from enhancements.models.mixins import AutoCleanMixin, PermsMixin
 
+from django.core.exceptions import ValidationError
+
 
 from .consts import UserType, BureauType
 
@@ -71,8 +73,11 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
         self.is_staff = self.user_type != UserType.company
 
     def _clean_bureau_type(self):
-        if self.user_type != UserType.bureau:
-            self.bureau_type = BureauType.none
+        if self.user_type != UserType.bureau and \
+                self.bureau_type != BureauType.none:
+            raise ValidationError({
+                'bureau_type': _('non-bureau user cannot have bureau type')
+            })
 
     def _check_user_data(self):
         if self.user_type == UserType.company:

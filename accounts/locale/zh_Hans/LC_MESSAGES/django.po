@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-11 12:57+0800\n"
+"POT-Creation-Date: 2016-07-13 12:21+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: accounts/admin.py:61
+#: accounts/admin.py:43
 msgid "Change Password"
 msgstr "修改密码"
 
-#: accounts/admin.py:63
+#: accounts/admin.py:45
 msgid "Click here to change your password."
 msgstr "单击此处修改密码"
 
@@ -73,39 +73,43 @@ msgstr "金融系统"
 msgid "media"
 msgstr "媒体"
 
-#: accounts/models.py:32
+#: accounts/models.py:40
 msgid "nickname"
 msgstr "昵称"
 
-#: accounts/models.py:35
+#: accounts/models.py:43
 msgid "user type"
 msgstr "用户类型"
 
-#: accounts/models.py:41
+#: accounts/models.py:49
 msgid "bureau type"
 msgstr "主席团"
 
-#: accounts/models.py:47 accounts/models.py:97 accounts/models.py:98
+#: accounts/models.py:55 accounts/models.py:116 accounts/models.py:117
 msgid "user data"
 msgstr "用户信息"
 
-#: accounts/models.py:89
+#: accounts/models.py:79
+msgid "non-bureau user cannot have bureau type"
+msgstr "非主席团用户不能设置主席团类型"
+
+#: accounts/models.py:108
 msgid "name"
 msgstr "名称"
 
-#: accounts/models.py:90
+#: accounts/models.py:109
 msgid "industry"
 msgstr "行业"
 
-#: accounts/models.py:91
+#: accounts/models.py:110
 msgid "sector"
 msgstr "板块"
 
-#: accounts/models.py:92
+#: accounts/models.py:111
 msgid "description"
 msgstr "描述"
 
-#: accounts/models.py:94
+#: accounts/models.py:113
 msgid "reports"
 msgstr "报告"
 
