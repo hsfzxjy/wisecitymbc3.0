@@ -3,23 +3,10 @@ var path = require('path'),
     autoprefixer = require('autoprefixer'),
     webpack = require('webpack');
 
-module.exports = {
-    devtool: "source-map",  
-    entry: {
-        app: 'js/main.es',
-        vendor: [
-            'jquery',
-            'tether',
-            'lodash',
-            'bootstrap/dist/js/bootstrap.min.js',
-            'bower_components/qiniu/dist/qiniu.min.js'
-        ]
-    },
-    output: {
-        publicPath: '/static/',
-        path: path.join(__dirname, "dest/"), 
-        filename: "[name].js", 
-    },
+var prod = process.env.NODE_ENV === 'prod';
+var action = process.env.WEBPACK_ACTION;
+
+var commonConfig = {
     postcss: function () {
         return [precss, autoprefixer]
     },
@@ -57,14 +44,34 @@ module.exports = {
             path.resolve('./js'),
             path.resolve('./js/components')
         ]
-    },
+    }
+}
 
-    plugins: [
-        new webpack.ProvidePlugin({
-            jQuery: "jquery",
-            'window.Tether': 'tether',
-            _: 'lodash'
-        }),
-        new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js', Infinity)
-    ]
-};
+var config = {};
+
+if (action === 'vendor')
+     config = {
+        entry: {
+            vendor: 'js/vendor.es'
+        },
+        output: {
+            publicPath: '/static/',
+            path: path.join(__dirname, 'vendor_build'), 
+            filename: "[name].js", 
+        }
+    }
+
+else if (action === 'app')
+    config = {
+        devtool: prod ? '' : "source-map", 
+        entry: {
+            app: 'js/main.es'
+        },
+        output: {
+            publicPath: '/static/',
+            path: path.join(__dirname, prod ? 'build' : 'dest'), 
+            filename: "[name].js", 
+        }
+    }
+
+module.exports = Object.assign(commonConfig, config)

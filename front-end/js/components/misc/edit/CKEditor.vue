@@ -45,7 +45,6 @@
         },
         methods: {
             initEditor () {
-                console.log(CKEDITOR)
                 let ckeditor = CKEDITOR.replace(this.editorId, {
                     language: 'zh-CN',
                     removeButtons: 'Source,PasteFromWord,PasteText,Paste,Scayt,Image,Superscript,Subscript,About,Anchor',

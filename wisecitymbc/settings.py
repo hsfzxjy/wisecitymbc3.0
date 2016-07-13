@@ -170,10 +170,12 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    'front-end/dest',
+STATICFILES_DIRS_BASE = [
+    'front-end/vendor_build',
     'static'
 ]
+
+STATICFILES_DIRS = STATICFILES_DIRS_BASE + ['front-end/dest', ]
 
 # Configuration for django-webpack-loader.
 
