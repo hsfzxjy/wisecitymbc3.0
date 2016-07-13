@@ -22,7 +22,6 @@ from enhancements.rest.urls import generate_urls
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include(generate_urls())),
-    url(r'^login/', views.login),
-    url(r'^$',views.index),
-    url(r'^articles/',views.articles)
-] 
+    url(r'^$', views.index),
+    url(r'^', views.redirect_view)
+]
