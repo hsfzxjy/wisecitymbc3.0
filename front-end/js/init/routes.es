@@ -31,35 +31,43 @@ export default function (Vue) {
     router.map({
         '/': {
             component: Index,
-            name: 'index'
+            name: 'index',
+            title: '首页'
         },
         '/login/': {
             component: Login,
-            name: 'login'
+            name: 'login',
+            title: '登录'
         },
         '/logout/': {
             component: Logout,
-            name: 'logout'
+            name: 'logout',
+            title: '退出登录'
         },
         '/articles/:category/': {
             component: Articles,
-            name: 'article-list'
+            name: 'article-list',
+            title: '资讯'
         },
         '/tags/': {
             component: Tags,
-            name: 'tag-list'
+            name: 'tag-list',
+            title: '标签'
         },
         '/tags/:id/': {
             component: Tags,
-            name: 'tag-detail'
+            name: 'tag-detail',
+            title: '标签'
         },
         '/detail/articles/:id/': {
             component: ArticleDetail,
-            name: 'article-detail'
+            name: 'article-detail',
+            title: '资讯详情'
         },
         '/edit/articles/': {
             component: ArticleEdit,
             name: 'article-add',
+            title: '撰写资讯',
             auth: {
                 model: 'articles.article',
                 action: 'add'
@@ -68,6 +76,7 @@ export default function (Vue) {
         '/edit/articles/:id/': {
             component: ArticleEdit,
             name: 'article-edit',
+            title: '编辑资讯',
             auth: {
                 model: 'articles.article',
                 action: 'change'
@@ -77,21 +86,25 @@ export default function (Vue) {
             component: Profile,
             name: 'user-me',
             id: 'me',
+            title: '我',
             auth: {
                 login: true
             }
         },
         '/users/:id/': {
             component: Profile,
-            name: 'user-detail'
+            name: 'user-detail',
+            title: '用户'
         },
         '/companies/': {
             component: Companies,
-            name: 'user-list-companies'
+            name: 'user-list-companies',
+            title: '公司'
         },
         '/n/': {
             component: Notifications,
             name: 'notification-list',
+            title: '消息',
             auth: {
                 login: true
             }
@@ -99,6 +112,7 @@ export default function (Vue) {
         '/topics/': {
             component: Topics,
             name: 'topic-list',
+            title: '问题',
             auth: {
                 model: 'questions.topic',
                 action: 'view'
@@ -107,6 +121,7 @@ export default function (Vue) {
         '/edit/topics/': {
             component: TopicEdit,
             name: 'topic-add',
+            title: '提问',
             auth: {
                 model: 'questions.topic',
                 action: 'add'
@@ -115,6 +130,7 @@ export default function (Vue) {
         '/edit/topics/:id/': {
             component: TopicEdit,
             name: 'topic-edit',
+            title: '编辑问题',
             auth: {
                 model: 'questions.topic',
                 action: 'change'
@@ -123,6 +139,7 @@ export default function (Vue) {
         '/detail/topics/:id/': {
             component: TopicDetail,
             name: 'topic-detail',
+            title: '问题详情',
             auth: {
                 model: 'questions.topic',
                 action: 'view'
@@ -133,28 +150,34 @@ export default function (Vue) {
             subRoutes: {
                 '/': {
                     component: FinanceIndex,
-                    name: 'finance-index'
+                    name: 'finance-index',
+                    title: '金融'
                 },
                 '/stocks/': {
                     component: Stocks,
-                    name: 'stock-list'
+                    name: 'stock-list',
+                    title: '股票'
                 },
                 '/bonds/': {
                     component: Bonds,
-                    name: 'bond-list'
+                    name: 'bond-list',
+                    title: '债券'
                 },
                 '/futures/': {
                     component: Futures,
-                    name: 'futures-list'
+                    name: 'futures-list',
+                    title: '期货'
                 }
             }
         },
         '/ram/': {
             component: RAM,
-            name: 'ram-index'
+            name: 'ram-index',
+            title: '能源与原材料'
         },
         '*': {
-            component: NotFound
+            component: NotFound,
+            title: '走错路了～'
         }
     })
 
@@ -169,6 +192,11 @@ export default function (Vue) {
                     parseInt(to.params.id) || undefined
                 )
         } else next()
+    })
+
+    router.beforeEach(function ({ to, next }) {
+        document.title = (to.title || '') + ' - WiseCity'
+        next()
     })
 
     router.beforeEach(() => {

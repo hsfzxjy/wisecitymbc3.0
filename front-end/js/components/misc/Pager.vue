@@ -1,7 +1,10 @@
 <template>
     <div>
-        <slot name="no-results" v-if="!model.results || !model.results.length">
+        <slot name="no-results" v-if="noResults">
             <p class="text-xs-center">空空如也～～</p>
+        </slot>
+        <slot name="loading" v-if="loading">
+            <p class="text-xs-center">加载中...</p>
         </slot>
         <vs-pager v-if="model">
             <li v-show="model.previous" :class="!loading || 'disabled'">
@@ -14,10 +17,17 @@
     </div>
 </template>
 
+<style scoped>
+    p.text-xs-center {
+        padding: .75rem 0;
+    }
+</style>
+
 <script>
     export default {
         data: () => ({
-            loading: false
+            loading: false,
+            noResults: false
         }),
         props: {
             model: {
@@ -36,9 +46,16 @@
         methods: {
             load (url) {
                 this.$http.get(url)
-                    .then(res => this.model = res.data)
+                    .then(res => {
+                        this.model = res.data
+                        this.noResults = !res.data.results.length
+                        console.log(this.model, this.noResults)
+                    })
             },
             refresh () {
+                this.loading = false
+                this.noResults = false
+                this.model.results = []
                 this.load(this.url)
             }
         },

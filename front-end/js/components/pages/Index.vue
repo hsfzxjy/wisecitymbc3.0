@@ -24,9 +24,6 @@
                             category="government"
                             :other-params="{limit:3}"
                             flush>
-                            <div slot="no-results" class="card-block card-text">
-                                空空如也～～
-                            </div>
                         </article-list-group>
                     </vs-card>                    
                 </div>
@@ -37,9 +34,6 @@
                             category="media"
                             :other-params="{limit:5}"
                             flush>
-                            <div slot="no-results" class="card-block card-text">
-                                空空如也～～
-                            </div>
                         </article-list-group>
                     </vs-card>
                 </div>
@@ -52,9 +46,6 @@
                             category="finance"
                             :other-params="{limit:2}"
                             flush>
-                            <div slot="no-results" class="card-block card-text">
-                                空空如也～～
-                            </div>
                         </article-list-group>
                     </vs-card>
                 </div>
@@ -65,9 +56,6 @@
                             category="energy_and_raw_materials"
                             :other-params="{limit:2}"
                             flush>
-                            <div slot="no-results" class="card-block card-text">
-                                空空如也～～
-                            </div>
                         </article-list-group>
                     </vs-card>
                 </div>

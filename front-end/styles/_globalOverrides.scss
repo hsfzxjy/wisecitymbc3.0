@@ -76,6 +76,10 @@ dd:empty:after {
 
 .card {
     word-wrap: break-word;
+
+    .list-loader-wrapper{
+        padding: .75rem 0;
+    }
 }
 
 // Utilities 
