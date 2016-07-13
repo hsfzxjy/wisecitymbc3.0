@@ -1,5 +1,4 @@
 var path = require('path'),
-    BundleTracker = require('webpack-bundle-tracker'),
     precss = require('precss'),
     autoprefixer = require('autoprefixer'),
     webpack = require('webpack');
@@ -61,7 +60,6 @@ module.exports = {
     },
 
     plugins: [
-        new BundleTracker({filename: './webpack-stats.json'}),
         new webpack.ProvidePlugin({
             jQuery: "jquery",
             'window.Tether': 'tether',
