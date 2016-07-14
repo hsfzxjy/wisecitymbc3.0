@@ -38,6 +38,8 @@ MIME_TYPES = {
         'webm',
     ),
     FileType.image: (
+        'png',
+        'jpg',
         'bmp',
         'gif',
         'jpeg',
