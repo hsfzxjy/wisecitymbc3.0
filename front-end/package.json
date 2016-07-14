@@ -7,7 +7,7 @@
     "test": "test",
     "dev": "WEBPACK_ACTION=app webpack --watch",
     "build": "NODE_ENV=prod WEBPACK_ACTION=app webpack -p",
-    "vendor": "WEBPACK_ACTION=vendor webpack -p"
+    "vendor": "cp vendor/* vendor_build/ && WEBPACK_ACTION=vendor webpack -p"
   },
   "author": "hsfzxjy, hfercc",
   "license": "ISC",

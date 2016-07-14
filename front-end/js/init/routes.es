@@ -86,10 +86,7 @@ export default function (Vue) {
             component: Profile,
             name: 'user-me',
             id: 'me',
-            title: '我',
-            auth: {
-                login: true
-            }
+            title: '我'
         },
         '/users/:id/': {
             component: Profile,
@@ -104,10 +101,7 @@ export default function (Vue) {
         '/n/': {
             component: Notifications,
             name: 'notification-list',
-            title: '消息',
-            auth: {
-                login: true
-            }
+            title: '消息'
         },
         '/topics/': {
             component: Topics,
@@ -181,17 +175,26 @@ export default function (Vue) {
         }
     })
 
-    router.beforeEach(function ({ to, next, redirect }) {
-        if (to.auth) {
-            if (to.auth.login) {
-                return router.app.checkLogined()
-            } else
-                return router.app.getPerm(
-                    to.auth.model,
-                    to.auth.action,
-                    parseInt(to.params.id) || undefined
-                )
-        } else next()
+    router.beforeEach(function ({ to, next, redirect, abort }) {
+        if (to.name === 'login') {
+            next()
+            return
+        }
+        router.app.checkLogined()
+            .then(logined => {
+                if (logined) return logined
+
+                redirect('/login/')
+            })
+            .then(() => {
+                if (to.auth) {
+                    return router.app.getPerm(
+                        to.auth.model,
+                        to.auth.action,
+                        parseInt(to.params.id) || undefined
+                    ).then(yes => yes ? next() : abort())
+                } else next()
+            })
     })
 
     router.beforeEach(function ({ to, next }) {

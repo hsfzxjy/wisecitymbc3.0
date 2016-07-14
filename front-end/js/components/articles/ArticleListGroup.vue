@@ -9,6 +9,7 @@
                     </a>
                     <vs-badge
                         variant="success"
+                        v-if="summary"
                         :id="'collapse-article-'+article.id"
                         class="pull-xs-right pointer ALGB">
                         摘要
@@ -21,12 +22,14 @@
                     </vs-badge>
                 </div>
                 <vs-expansion 
+                    v-if="summary"
                     :toggler-id="'collapse-article-'+article.id">
                      <div class="card card-block" slot="content">
                          {{ article.summary }}
                      </div>
                 </vs-expansion>
             </vs-list-group-item>
+            <slot name="other-items"></slot>
         </vs-list-group>   
         <list-loader
             url="/api/articles/"
@@ -70,6 +73,10 @@
             otherParams: {
                 type: Object,
                 default: {}
+            },
+            summary: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {

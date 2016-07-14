@@ -56,7 +56,7 @@
             getPerm (model, action, id) {
                 return this.initPromise.then(() => {
                     let name = this._getName(model, action, id)
-
+                    //console.log(name, this.perms[name])
                     if (!_.isUndefined(this.perms[name]))
                         return this.perms[name]
                     else

@@ -5,7 +5,7 @@ export default {
             let config = this.$options.editConfig || {}
 
             if (!id) return new Promise(resolve => {
-                this.$nextTick(() => resolve({}))
+                setTimeout(() => resolve({}), 100)
             })
 
             return this.$http.get(config.getInitURL(id))
