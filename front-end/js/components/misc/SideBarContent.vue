@@ -66,6 +66,18 @@
                 <vs-link link="/topics/" title="Q&amp;A"></vs-link>
             </vs-list-group-item>
         </vs-list-group>
+        <footer>
+            Authored by 
+            <a href="https://github.com/hsfzxjy">hsfzxjy</a>
+            &amp;
+            <a href="https://github.com/hfercc">hfercc</a>.
+            <br>
+            Special thanks to<br> 
+            <a href="https://www.aliyun.com/">Aliyun</a>, 
+            <a href="http://www.qiniu.com/">Qiniu</a>, 
+            <a href="http://vuejs.org/">Vue.js</a>, 
+            <a href="http://www.django-rest-framework.org/">Django Rest Framework</a>.
+        </footer>
     </div>
 </template>
 

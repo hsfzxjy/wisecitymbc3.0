@@ -5,6 +5,12 @@ body {
     color: #ccc;
 }
 
+footer {
+    text-align: center;
+    color: darken(#eee, 10%);
+    padding: .5rem 0;
+}
+
 button {
     &.navbar-toggler:focus {
         outline: none;
@@ -231,9 +237,12 @@ dd:empty:after {
     background-color:$gre;
     color:#eee;
 }
+
 body,html {
     background-color:$bgc;
+    height: 100%;
 }
+
 a {
     color: $hyp;
     &:hover,&:focus {
@@ -245,27 +254,41 @@ a {
 .nav-link.active {
     background-color:$gre!important
 }
+
 .card {
     border:none;
     background-color:lighten($bgc,5%);
 }
+
 .card-header {
     background-color:lighten($bgc,10%);
     border-radius:0px!important;
     border-bottom:1px dashed darken(white,60%)
 }
+
 .card-footer {
     background-color:lighten($bgc,4%);
     border-top:1px dashed darken(white,70%)
 }
+
 .card-block {
     color:#eee;
 
 }
+
 .aside-header {
     background-color:lighten($bgc,5%)!important;
     border-bottom:none!important;
+    
+    h4 {
+        margin: .3rem 0;
+    }
+
+    button.close {
+        line-height: 1.1;
+    }
 }
+
 .ALGI {
     background-color:darken($bgc,3%);
     border-top:1px solid darken($bgc,7%);
@@ -273,9 +296,11 @@ a {
         background-color:darken($bgc,2%)!important;
     }
 }
+
 .ALGI:last-child {
     border-bottom:none;
 }
+
 .ALGB {
     padding-top:3px;
     padding-bottom:1px;
@@ -283,20 +308,23 @@ a {
     padding-right:5px;
     background-color:$hyp!important;
     color:darken(white,2%);
-
 }
+
 .aside {
     background-color: inherit!important;
 }
+
 .aside-content {
     background-color:$bgc;
     min-height: 100%;
 }
+
 .aside-body {
     background-color:$bgc;
     border-top:1px solid darken($bgc,5%)!important;
     min-height: 100%;
 }
+
 ul.list-group {
     li {
         background-color:darken($bgc,5%);
