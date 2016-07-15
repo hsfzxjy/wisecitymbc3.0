@@ -17,8 +17,8 @@
             size="md">        
         </vs-form-input>
         <div class="form-group row">
-            <div class="col-md-12">
-                <button type="submit" class="btn btn-success" :disabled="loading">登录</button>
+            <div class="col-xs-6 col-xs-offset-3">
+                <button type="submit" class="btn btn-success btn-submit btn-block" :disabled="loading">登录</button>
             </div>
         </div>
     </vs-form>
