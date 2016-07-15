@@ -70,7 +70,9 @@
                     return this.article.tags.join(' ')
                 },
                 set (value) {
-                    this.article.tags = _.trim(value).split(/\ +/)
+                    let trimed = _.trim(value)
+                    console.log(trimed, trimed.split(/\ +/))
+                    this.article.tags = trimed ? trimed.split(/\ +/) : []
                 }
             }
         },

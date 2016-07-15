@@ -40,12 +40,13 @@
         },
         methods: {
             mark (items) {
+                items = _.filter(items, item => !item.has_read)
                 this.$http.get('/api/n/mark_as_read/', {
                     params: {
                         ids: _.map(items, 'id').join(',')
                     }
                 }).then(() => {
-                    this.$root.nCount--;
+                    this.$root.nCount -= items.length;
                     _.map(items, item => item.has_read = true)
                 })
             }

@@ -1,4 +1,4 @@
-from rest_framework.pagination import CursorPagination, _reverse_ordering
+from rest_framework.pagination import CursorPagination, _reverse_ordering, Cursor
 
 
 def _int(integer_string, strict=False, cutoff=None):
@@ -53,12 +53,13 @@ class EnhancedCursorPagination(CursorPagination):
             order_attr = order.lstrip('-')
 
             # Test for: (cursor reversed) XOR (queryset reversed)
-            if self.cursor.reverse != is_reversed:
-                kwargs = {order_attr + '__lt': current_position}
-            else:
-                kwargs = {order_attr + '__gt': current_position}
+            # if self.cursor.reverse != is_reversed:
+            #     kwargs = {order_attr + '__lt': current_position}
+            # else:
+            #     kwargs = {order_attr + '__gt': current_position}
+            # print(kwargs)
 
-            queryset = queryset.filter(**kwargs)
+            # queryset = queryset.filter(**kwargs)
 
         # Customize
         if self.page_size <= 0:
@@ -111,3 +112,25 @@ class EnhancedCursorPagination(CursorPagination):
             self.display_page_controls = True
 
         return self.page
+
+    def get_next_link(self):
+        if not self.has_next:
+            return None
+
+        offset = self.page_size if not self.has_previous else self.cursor.offset + self.page_size
+
+        cursor = Cursor(offset=offset, reverse=False, position=None)
+
+        return self.encode_cursor(cursor)
+
+    def get_previous_link(self):
+        if not self.has_previous:
+            return None
+
+        offset = self.cursor.offset - self.page_size
+        if offset < 0:
+            offset = 0
+
+        cursor = Cursor(offset=offset, reverse=False, position=None)
+
+        return self.encode_cursor(cursor)

@@ -49,7 +49,6 @@
                     .then(res => {
                         this.model = res.data
                         this.noResults = !res.data.results.length
-                        console.log(this.model, this.noResults)
                     })
             },
             refresh () {
