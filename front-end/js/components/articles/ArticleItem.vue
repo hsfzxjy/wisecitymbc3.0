@@ -21,7 +21,13 @@
                             </a>
                         </li>
                         <li v-if="article.perms.delete">
-                            <a class="dropdown-item" href="#">删除</a>
+                            <delete-button
+                                :list.sync='list'
+                                :index="index"
+                                base-url="/api/articles/"
+                                :id="article.id">
+                                <a class="dropdown-item" href="javascript:void 0">删除</a>
+                            </delete-button>
                         </li>
                     </ul>
                 </div>
@@ -71,12 +77,22 @@
 
 <script>
     import FileList from 'files/FileList.vue'
+    import DeleteButton from 'misc/DeleteButton.vue'
 
     export default {
-        components: { FileList },
+        components: { FileList, DeleteButton },
         props: {
             article: {
                 type: Object,
+                required: true
+            },
+            list: {
+                type: Array,
+                required: true,
+                twoWay: true
+            },
+            index: {
+                type: Number,
                 required: true
             },
             expanded: false

@@ -18,6 +18,8 @@
         <div class="col-md-9 col-sm-12">
             <topic-item
                 v-for="topic in page.results"
+                :list.sync="page.results"
+                :index="$index"
                 :model.sync="topic">
             </topic-item>
             <pager

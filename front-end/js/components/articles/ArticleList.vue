@@ -2,7 +2,9 @@
     <div class="article-list sm-no-padding">
         <article-item 
             v-for="article in articles" 
-            :article="article" 
+            :article="article"
+            :list.sync="articles"
+            :index="$index"
             track-by="$index">    
         </article-item>
     </div>
