@@ -3,7 +3,6 @@
         <vs-list-group flush class="col-xs-12">
             <vs-list-group-item
                 v-for="item in page.results"
-                :state="!item.has_read ? 'warning' : ''"
                 @click="mark([item])">
                 <i class="fa fa-star text-warning" v-if="!item.has_read"></i>
                 {{{ item.message | render }}}
@@ -34,13 +33,21 @@
         data: () => ({
             page: {}
         }),
+        route: {
+            data () {
+                this.$nextTick(() => this.$broadcast('Pager:refresh'))
+            }
+        },
         methods: {
             mark (items) {
                 this.$http.get('/api/n/mark_as_read/', {
                     params: {
                         ids: _.map(items, 'id').join(',')
                     }
-                }).then(() => _.map(items, item => item.has_read = true))
+                }).then(() => {
+                    this.$root.nCount--;
+                    _.map(items, item => item.has_read = true)
+                })
             }
         }
     }

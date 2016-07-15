@@ -1,6 +1,7 @@
 <template>
     <div>
         <top-nav-bar></top-nav-bar>
+        <notification-fetcher></notification-fetcher>
         <sidebar :show.sync="showSideBar" placement="right" header="WiseCity" :width="350"
             style="max-width: 100%;">
             <side-bar-content></side-bar-content>
@@ -19,17 +20,20 @@
 <script>
     import TopNavBar from 'navs/TopNavBar.vue'
     import SideBarContent from 'misc/SideBarContent.vue'
+    import NotificationFetcher from 'notifications/Fetcher.vue'
 
     export default {
         components: {
             TopNavBar,
-            SideBarContent
+            SideBarContent,
+            NotificationFetcher
         },
         data: () => ({
             user: null,
             perms: {},
             showSideBar: false,
-            initPromise: null
+            initPromise: null,
+            nCount: 0
         }),
         computed: {
             hasLogined () {
@@ -98,6 +102,10 @@
                 this.user = null
                 this.initPromise = this.resetPerms()
 
+                return true
+            },
+            ['new-notifications'] (count) {
+                this.nCount = count
                 return true
             }
         }

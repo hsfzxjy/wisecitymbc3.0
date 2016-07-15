@@ -4,11 +4,11 @@
             <vs-nav-item>
                 <span class="fa fa-refresh fa-lg" @click="$root.refreshCurrentView()"></span>
             </vs-nav-item>
-            <vs-nav-item link="/n/" v-if="$root.user">
+            <vs-nav-item link="/n/" v-if="$root.user" class="n-outer">
                 <span 
-                    class="fa fa-envelope-o fa-lg" 
-                    >
+                    class="fa fa-envelope-o fa-lg">
                 </span>
+                <span class="n-dot">{{ $root.nCount > 0 ? $root.nCount : ''}}</span>
             </vs-nav-item>
             <vs-nav-item>
                 <span @click="$root.showSideBar = true" class="fa fa-bars fa-lg"></span>
@@ -26,6 +26,23 @@
     </vs-navbar>
 </template>
 
-<script>
+<style>
+    .n-outer {
+        position: relative;
+    }
 
-</script>
+    .n-dot {
+        position: absolute;
+        right: -1em;
+        top: 1em;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        font-size: .5em;
+        padding: .2em .3em;
+        line-height: 1;
+    }
+    .n-dot:empty {
+        display: none;
+    }
+</style>

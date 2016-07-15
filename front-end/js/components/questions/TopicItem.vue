@@ -15,7 +15,7 @@
                 更新于 {{ model.updated_time | timesince }}
             </p>
             <p class="card-text">
-                {{ model.author.nickname }} 发布于 {{ model.created_time | timesince }}
+                {{ model.asker.nickname }} 发布于 {{ model.created_time | timesince }}
             </p>
             <p class="card-text" v-if="model.replies_count">
                 {{ model.replies_count }} 条回复
