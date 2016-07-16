@@ -13,7 +13,8 @@ export default {
             this.nextURL = ''
             setTimeout(() => {
                 this.$broadcast('$InfiniteLoading:reset')
-            }, 1000)
+                this.load()
+            }, 10)
         },
         load () {
             let url, params
