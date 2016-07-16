@@ -38,7 +38,6 @@
             },
             params () {
                 let params = {}
-
                 if (this.category) 
                     params.article_type = articles.ArticleType[this.category]
 

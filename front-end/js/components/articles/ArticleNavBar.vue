@@ -13,8 +13,7 @@
 </template>
 
 <script>
-    import { AVAILABLE_CATEGORIES, articles } from 'consts.es'
-    const CATEGORIES_NAME = ['政府', '公司', '媒体', '交易', '能源及原材料']
+    import { AVAILABLE_CATEGORIES, articles, CATEGORIES_NAME } from 'consts.es'
 
     export default {
         data: () => ({

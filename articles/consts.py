@@ -15,6 +15,9 @@ class ArticleType(Enum):
     media = 3
     finance = 4
     energy_and_raw_materials = 5
+    electronic_technology = 6
+    bank = 7
+    real_estate = 8
 
     @classmethod
     def from_user(cls, user):
@@ -29,6 +32,9 @@ class ArticleType(Enum):
             cls.media: _('media'),
             cls.finance: _('finance'),
             cls.energy_and_raw_materials: _('energy_and_raw_materials'),
+            cls.electronic_technology: _('electronic_technology'),
+            cls.bank: _('bank'),
+            cls.real_estate: _('real_estate')
         }
 
 USER_TO_ARTICLE_MAPPING = {
@@ -37,10 +43,10 @@ USER_TO_ARTICLE_MAPPING = {
     (UserType.bureau, BureauType.media): ArticleType.media,
     (UserType.bureau, BureauType.financial_system): ArticleType.finance,
     (UserType.bureau, BureauType.energy_and_raw_materials):
-    ArticleType.government,
+    ArticleType.energy_and_raw_materials,
     (UserType.bureau, BureauType.car): ArticleType.government,
     (UserType.bureau, BureauType.electronic_technology):
-    ArticleType.government,
-    (UserType.bureau, BureauType.real_estate): ArticleType.government,
-    (UserType.bureau, BureauType.bank): ArticleType.government
+    ArticleType.electronic_technology,
+    (UserType.bureau, BureauType.real_estate): ArticleType.real_estate,
+    (UserType.bureau, BureauType.bank): ArticleType.bank
 }

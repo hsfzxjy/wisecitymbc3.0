@@ -67,6 +67,18 @@
                 energy_and_raw_materials: {
                     title: '能源及原材料',
                     limit: 2
+                },
+                bank: {
+                    title: '银行',
+                    limit: 2
+                },
+                real_estate: {
+                    title: '房地产',
+                    limit: 2
+                },
+                electronic_technology: {
+                    title: '电子科技',
+                    limit: 2
                 }
             }
         }),

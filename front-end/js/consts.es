@@ -1,4 +1,5 @@
-export const AVAILABLE_CATEGORIES = ['government', 'company', 'media', 'finance', 'energy_and_raw_materials']
+export const AVAILABLE_CATEGORIES = ['government', 'company', 'media', 'finance', 'energy_and_raw_materials', 'electronic_technology', 'bank', 'real_estate']
+export const CATEGORIES_NAME = ['政府', '公司', '媒体', '交易', '能源及原材料', '电子科技', '银行', '房地产']
 
 import consts from 'consts.json'
 

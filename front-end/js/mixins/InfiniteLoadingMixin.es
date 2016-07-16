@@ -11,9 +11,9 @@ export default {
         reset () {
             this[this.$options.listConfig.listFieldName] = []
             this.nextURL = ''
-            this.$nextTick(() => {
+            setTimeout(() => {
                 this.$broadcast('$InfiniteLoading:reset')
-            })
+            }, 1000)
         },
         load () {
             let url, params
