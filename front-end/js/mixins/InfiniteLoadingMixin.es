@@ -12,7 +12,9 @@ export default {
             this[this.$options.listConfig.listFieldName] = []
             this.nextURL = ''
             setTimeout(() => {
-                this.$broadcast('$InfiniteLoading:reset')
+                try {this.$broadcast('$InfiniteLoading:reset')} catch (e) {
+                    console.log('Fucking error', e)
+                }
                 this.load()
             }, 10)
         },
