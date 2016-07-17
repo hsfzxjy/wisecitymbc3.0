@@ -10,7 +10,7 @@
                     <dd class="col-md-6">{{ future.price }}</dd>
                 </dl>
             </div>
-            <vs-list-group flush>
+            <vs-list-group flush v-if="detail">
                 <vs-list-group-item
                     class="no-padding">
                     <chart
@@ -46,6 +46,10 @@
             future: {
                 type: Object,
                 required: true
+            },
+            detail: {
+                type: Boolean,
+                default: true
             }
         }
     }

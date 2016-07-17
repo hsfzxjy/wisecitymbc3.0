@@ -12,7 +12,7 @@
                     <dd class="col-md-6">{{ stock.volume }}</dd>
                 </dl>
             </div>
-            <vs-list-group flush>
+            <vs-list-group flush v-if="detail">
                 <vs-list-group-item>
                     <vs-expansion
                         title="公司简介">
@@ -72,6 +72,10 @@
             stock: {
                 type: Object,
                 required: true
+            },
+            detail: {
+                type: Boolean,
+                default: true
             }
         }
     }

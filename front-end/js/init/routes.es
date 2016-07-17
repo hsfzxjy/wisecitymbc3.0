@@ -17,6 +17,7 @@ import Finance from "finance/Finance.vue"
 import FinanceIndex from "finance/FinanceIndex.vue"
 import Stocks from 'finance/Stocks.vue'
 import Bonds from 'finance/Bonds.vue'
+import StockFutures from 'finance/StockFutures.vue'
 import Futures from 'finance/Futures.vue'
 import RAM from 'finance/RAM.vue'
 import NotFound from "pages/404.vue"
@@ -138,6 +139,11 @@ export default function (Vue) {
                 model: 'questions.topic',
                 action: 'view'
             }
+        },
+        '/financeSummary/': {
+            component: StockFutures,
+            name: 'finance-summary',
+            title: '交易信息汇总'
         },
         '/finance': {
             component: Finance,
