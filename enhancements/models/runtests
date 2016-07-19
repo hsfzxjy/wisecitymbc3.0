@@ -1,4 +1,0 @@
-#! /bin/bash
-
-../../manage.py test . --settings enhancements.models.tests.test_settings
-

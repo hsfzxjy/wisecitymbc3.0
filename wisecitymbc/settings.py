@@ -42,10 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Enhancements
     'enhancements.constants',
-    'enhancements.postgres',
     # Third-party
-    'watson',
-    'django_nose',
     'django_object_actions',
     'rules.apps.AutodiscoverRulesConfig',
     # website related apps
@@ -174,12 +171,6 @@ STATICFILES_DIRS_BASE = [
 
 STATICFILES_DIRS = STATICFILES_DIRS_BASE + ['front-end/dest', ]
 
-# Tests
-
-TEST_RUNNER = 'enhancements.postgres.test.PostgresEnhancedTestRunner'
-NOSE_ARGS = ['--nocapture',
-             '--nologcapture', ]
-
 # rest_framework
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
@@ -195,14 +186,6 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'PAGE_SIZE': 10,
 }
-
-
-# watson: full text search engine
-
-WATSON_BACKEND = 'enhancements.postgres.search_backends'\
-    '.PostgresChineseSearchBackend'
-
-TS_CONFIG_NAME = 'chinesecfg'
 
 from .qiniu_keys import *
 

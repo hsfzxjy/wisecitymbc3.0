@@ -35,7 +35,7 @@ def send(user, template, module, url=None, target=None, **kwargs):
             )
         )
 
-    if url is None:
+    if url is None and target is not None:
         url = target.get_absolute_url()
 
     if not registry.has_module(module):

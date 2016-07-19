@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
 
 from enhancements.rest.urls import register, register_nested
 from enhancements.rest.viewsets import rel_viewset
@@ -9,8 +8,6 @@ from enhancements.rest.viewsets import rel_viewset
 from files.viewsets import FileViewSet
 
 from .models import Article, Tag
-
-from watson import search as watson
 
 
 @register(
@@ -20,7 +17,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     queryset = Article.objects.all()
     filter_fields = ('article_type', 'author__id', 'tags__id')
-    keyword_param = 'keyword'
     ordering = ('-is_top', '-created_time',)
 
     def patch_author(self, request):
@@ -30,21 +26,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
         self.patch_author(request)
 
         return super(ArticleViewSet, self).create(request, *args, **kwargs)
-
-    def filter_queryset(self, qs):
-        keyword = self.request.query_params.get(self.keyword_param, '')
-
-        if not self.action == 'search' or not keyword:
-            return super(ArticleViewSet, self).filter_queryset(qs)
-
-        return watson.filter(
-            qs,
-            keyword
-        )
-
-    @list_route(['GET'])
-    def search(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
 
 
 @register('tags')
