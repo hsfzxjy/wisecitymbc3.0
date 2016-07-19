@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'watson',
     'django_nose',
     'django_object_actions',
-    # 'webpack_loader',
     'rules.apps.AutodiscoverRulesConfig',
     # website related apps
     'accounts',
@@ -96,9 +95,6 @@ TEMPLATES = [
         'OPTIONS': {
             'environment': 'enhancements.jinja2.env.environment',
             'context_processors': CONTEXT_PROCESSORS,
-            'extensions': [
-                'webpack_loader.contrib.jinja2ext.WebpackExtension'
-            ]
         },
     },
 ]
@@ -177,20 +173,6 @@ STATICFILES_DIRS_BASE = [
 ]
 
 STATICFILES_DIRS = STATICFILES_DIRS_BASE + ['front-end/dest', ]
-
-# Configuration for django-webpack-loader.
-
-FRONTEND_DIR = os.path.join(BASE_DIR, 'front-end')
-
-# WEBPACK_LOADER = {
-#     'DEFAULT': {
-#         'CACHE': not DEBUG,
-#         'BUNDLE_DIR_NAME': './',
-#         'STATS_FILE': os.path.join(FRONTEND_DIR, 'webpack-stats.json'),
-#         'POLL_INTERVAL': 0.1,
-#         'IGNORE': ['.+\.hot-update.js', '.+\.map']
-#     }
-# }
 
 # Tests
 
