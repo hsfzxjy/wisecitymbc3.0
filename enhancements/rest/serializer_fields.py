@@ -2,9 +2,6 @@ from rest_framework import serializers
 
 from enhancements.models.fields import EnumField as ModelEnumField
 
-from django.utils.encoding import smart_text
-from django.core.exceptions import ObjectDoesNotExist
-
 
 class EnumField(serializers.Field):
 
@@ -16,7 +13,7 @@ mapping = {
 }
 
 
-class SlugRelatedFieldPatch(object):
+class SlugRelatedField(serializers.SlugRelatedField):
 
     def to_internal_value(self, data):
         try:
@@ -25,11 +22,3 @@ class SlugRelatedFieldPatch(object):
             #           value=smart_text(data))
         except (TypeError, ValueError):
             self.fail('invalid')
-
-
-def monkey_patch():
-    serializers.SlugRelatedField = type(
-        'SlugRelatedField',
-        (SlugRelatedFieldPatch, serializers.SlugRelatedField),
-        {}
-    )

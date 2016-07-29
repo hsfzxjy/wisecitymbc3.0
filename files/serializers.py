@@ -1,13 +1,8 @@
-from rest_framework import serializers
-
-from enhancements.rest import registry
+from enhancements.rest import serializers
 
 from .models import File
 
 
+@serializers.register(File)
 class FileSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = File
-
-registry.register(File, FileSerializer)
+    pass

@@ -119,7 +119,7 @@ def create_revision_model(name, fields, log_fields_names, module,
     }
 
     log_fields.update({
-        'owner': models.ForeignKey(revision_class),
+        'owner': models.ForeignKey(revision_class, related_name='logs'),
         '__module__': module
     })
 

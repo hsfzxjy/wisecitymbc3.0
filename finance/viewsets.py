@@ -1,19 +1,15 @@
-from rest_framework import viewsets, mixins
+from rest_framework import mixins
 
-from enhancements.rest.urls import register, register_nested
+from enhancements.rest import viewsets
+from enhancements.rest.urls import register
 
 from . import models
 
 
-def create_viewset(name, prefix, parent_lookup):
+def create_viewset(name, prefix):
 
     model = getattr(models, name)
     log_model = getattr(models, name + 'Log')
-
-    def log_get_queryset(self):
-        return self.queryset.filter(
-            owner__pk=self.kwargs['%s_pk' % parent_lookup]
-        )
 
     viewset = type(
         '{name}ViewSet',
@@ -37,24 +33,20 @@ def create_viewset(name, prefix, parent_lookup):
             mixins.RetrieveModelMixin,
         ),
         {
+            'nested': True,
+            'get_rel': lambda self: self.get_parent_object().logs,
             'queryset': log_model.objects.all(),
-            'get_queryset': log_get_queryset,
         }
     )
 
-    register_nested(
-        'logs',
-        viewset,
-        prefix,
-        parent_lookup
-    )(log_viewset)
+    register('logs', viewset)(log_viewset)
 
     return viewset, log_viewset
 
 
 # Initialization
 
-create_viewset('Stock', 'stocks', 'stock')
-create_viewset('Bond', 'bonds', 'bond')
-create_viewset('Futures', 'futures', 'futures')
-create_viewset('RawMaterials', 'raw_materials', 'raw_materials')
+create_viewset('Stock', 'stocks')
+create_viewset('Bond', 'bonds')
+create_viewset('Futures', 'futures')
+create_viewset('RawMaterials', 'raw_materials')

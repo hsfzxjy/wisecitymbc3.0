@@ -1,110 +1,196 @@
-from rest_framework.routers import DefaultRouter, BaseRouter
+from rest_framework.routers import DefaultRouter, Route
+from rest_framework.views import APIView
+
 from rest_framework_nested.routers import NestedSimpleRouter
 
-from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet
+from .viewsets import ViewSetMixin
 
 from django.conf.urls import url
 
-from .routers import custom_router
 
-_default_router = DefaultRouter()
-_routers = [_default_router]
-_router_map = {}
-
-_urls = []
+def is_view(cls):
+    return issubclass(cls, APIView) and not is_viewset(cls)
 
 
-def _get_key(viewset):
-    return '.'.join((viewset.__module__, viewset.__class__.__name__))
+def is_viewset(cls):
+    return issubclass(cls, ViewSetMixin)
 
 
-def _store_viewset(viewset, router):
-    _router_map[_get_key(viewset)] = router
+def get_router_class(routes, base, default):
+    if routes is None:
+        return default
+
+    return type(
+        'CustomRouter',
+        (base,),
+        dict(routes=[
+            Route(**route_option) for route_option in routes
+        ])
+    )
 
 
-def _get_router(viewset):
-    try:
-        return _router_map[_get_key(viewset)]
-    except KeyError:
-        raise ValueError("Viewset %r hasn't been registered." % viewset)
+def associate_viewset_with_router(viewset, router, pattern, base_name):
+    viewset._route_info = (
+        pattern,
+        base_name if base_name is not None else router.get_default_base_name(
+            viewset)
+    )
 
 
-class register_nested(object):
+class NestedViewSetMixin(object):
 
-    def __init__(self, prefix, required, parent_prefix,
-                 lookup=None, base_name=None, routes=None):
-        self.prefix, self.parent_prefix, self.base_name = prefix, \
-            parent_prefix, base_name
+    @property
+    def rel(self):
+        if hasattr(self, '_rel'):
+            return self._rel
 
-        self.parent_router = _get_router(required)
+        self._rel = self.get_rel() if hasattr(self, 'get_rel') else None
 
-        if routes is not None:
-            router_class = custom_router(routes, NestedSimpleRouter)
+        return self._rel
+
+    def get_queryset(self):
+        rel = self.rel
+
+        return (rel.all()
+                if rel
+                else super(NestedViewSetMixin, self).get_queryset())
+
+    def perform_create(self, serializer):
+        rel = self.rel
+
+        if rel:
+            obj = serializer.save()
+            rel.add(obj)
         else:
-            router_class = NestedSimpleRouter
+            super(NestedViewSetMixin, self).perform_create(serializer)
 
-        self.router = router_class(self.parent_router,
-                                   parent_prefix, lookup=lookup)
-        _routers.append(self.router)
+    def perform_destroy(self, instance):
+        rel = self.rel
 
-    def __call__(self, viewset_class):
-        self.router.register(self.prefix, viewset_class, self.base_name)
-        _store_viewset(viewset_class, self.router)
+        if rel:
+            try:
+                rel.remove(instance)
+            except AttributeError:
+                pass
 
-        return viewset_class
+        return super(NestedViewSetMixin, self).perform_destroy(instance)
 
 
 class register(object):
 
-    def __init__(self, prefix, base_name=None, router=None):
-        self._prefix, self._base_name = prefix, base_name
+    # Map: view/viewset -> url/router instance
+    _registry = {}
 
-        if router is None:
-            # default
-            self._router = _default_router
-        elif isinstance(router, dict):
-            # Custom routes
-            self._router = custom_router(router)
-            _routers.append(self._router)
-        else:
-            assert isinstance(router, BaseRouter), \
-                "Custom router must be instance of `BaseRouter`, "\
-                "got %r." % type(router)
+    @classmethod
+    def _add_entry(cls, view, route_object):
+        cls._registry[view] = route_object
 
-            self._router = router
+    @classmethod
+    def _has_registered(cls, view):
+        return view in cls._registry
 
-            # Check if registered
-            if not hasattr(router, '_registered'):
-                router._registered = True
-                _routers.append(router)
+    @classmethod
+    def get_urls(cls):
+        urls = []
 
-    def __call__(self, viewset_class):
-        self._router.register(
-            self._prefix,
-            viewset_class,
-            self._base_name
+        for route_object in cls._registry.values():
+            try:
+                urls += route_object.urls
+            except AttributeError:
+                urls.append(route_object)
+
+        return urls
+
+    def __init__(self, pattern, *args, **kwargs):
+        self._pattern = pattern
+        self._args = args
+        self._kwargs = kwargs
+
+    def __call__(self, cls):
+        assert not self._has_registered(cls), (
+            'View %r has already registered.' % cls
         )
 
-        _store_viewset(viewset_class, self._router)
+        if is_viewset(cls):
+            registrant = (self.register_nested_viewset
+                          if cls.nested else self.register_viewset)
+        elif is_view(cls):
+            registrant = self.register_view
+        else:
+            raise TypeError(
+                '`register` should decorate a ViewSet/APIView, '
+                'got %r.' % type(cls)
+            )
 
-        return viewset_class
+        registrant(cls, self._pattern, *self._args, **self._kwargs)
+        return cls
 
+    def register_view(self, view, pattern):
+        self._add_entry(
+            view,
+            url(pattern, view)
+        )
 
-class register_view(object):
+    def register_viewset(self, viewset, pattern, base_name=None, routes=None):
+        router_class = get_router_class(routes, DefaultRouter, DefaultRouter)
+        router = router_class()
+        associate_viewset_with_router(viewset, router, pattern, base_name)
+        router.register(pattern, viewset, base_name)
 
-    def __init__(self, prefix):
-        self._prefix = prefix
+        self._add_entry(viewset, router)
 
-    def __call__(self, view):
-        _urls.append(url(self._prefix, view.as_view()))
+    def register_nested_viewset(self, viewset, pattern,
+                                parent_viewset, base_name=None, routes=None):
+        assert is_viewset(parent_viewset), (
+            '`parent_viewset` must be a ViewSet, '
+            'got %r.' % parent_viewset
+        )
 
-        return view
+        viewset = type(
+            viewset.__name__,
+            (NestedViewSetMixin, viewset),
+            dict()
+        )
 
+        parent_router = self._registry.get(parent_viewset, None)
+        parent_pattern, parent_lookup = parent_viewset._route_info
 
-def generate_urls():
-    urls = []
-    for router in _routers:
-        urls += router.urls
+        assert parent_router is not None, (
+            '`parent_viewset` %r must be registered '
+            'before sub-viewset.' % parent_viewset
+        )
 
-    return urls + _urls
+        router_class = get_router_class(
+            routes, NestedSimpleRouter, NestedSimpleRouter)
+        router = router_class(
+            parent_router,
+            parent_pattern,
+            lookup=parent_lookup
+        )
+        associate_viewset_with_router(viewset, router, pattern, base_name)
+        router.register(pattern, viewset, base_name)
+
+        def get_parent_object(self):
+            if hasattr(self, '_parent_object'):
+                return self._parent_object
+
+            parent_lookup_kwarg = (
+                parent_viewset.lookup_url_kwarg or parent_viewset.lookup_field)
+            kwargs = {}
+            kwargs.update(self.kwargs)
+            kwargs[parent_lookup_kwarg] = self.kwargs.get(
+                parent_lookup + '_pk')
+
+            parent_viewset_instance = parent_viewset(
+                request=self.request,
+                args=self.args,
+                kwargs=kwargs,
+                _ignore_object_permissions=True
+            )
+            self._parent_object = parent_viewset_instance.get_object()
+
+            return self._parent_object
+
+        viewset.get_parent_object = get_parent_object
+
+        self._add_entry(viewset, router)

@@ -13,3 +13,10 @@ class DjangoObjectPermissionOrAnonReadOnly(DjangoObjectPermissions):
         'PATCH': ['%(app_label)s.change_%(model_name)s'],
         'DELETE': ['%(app_label)s.delete_%(model_name)s'],
     }
+
+    def has_object_permission(self, request, view, obj):
+        if getattr(view, '_ignore_object_permissions', False):
+            return True
+
+        return super(DjangoObjectPermissionOrAnonReadOnly, self)\
+            .has_object_permission(request, view, obj)

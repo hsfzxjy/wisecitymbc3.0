@@ -1,29 +1,22 @@
-from rest_framework import serializers
+from enhancements.rest import serializers
 
 from .models import Article, Tag
 
-from enhancements.rest import registry
 
-
+@serializers.register(Article)
 class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Article
         extra_kwargs = {
             'author': {
                 'fields': ['id', 'username', 'nickname', 'url']
-            },
-            'tags': {
-                'slug_field': 'name'
             }
         }
-        slug_relations = ['tags']
+        slug = {
+            'tags': 'name'
+        }
 
 
+@serializers.register(Tag)
 class TagSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Tag
-
-registry.register(Article, ArticleSerializer)
-registry.register(Tag, TagSerializer)
+    pass

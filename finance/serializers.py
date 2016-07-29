@@ -1,8 +1,6 @@
-from rest_framework import serializers
+from enhancements.rest import serializers
 
 from . import models
-
-from enhancements.rest import registry
 
 
 def create_serializer(name, meta_fields=None):
@@ -34,8 +32,8 @@ def create_serializer(name, meta_fields=None):
         }
     )
 
-    registry.register(model, serializer)
-    registry.register(log_model, log_serializer)
+    serializers.register(model, serializer)
+    serializers.register(log_model, log_serializer)
 
     return serializer, log_serializer
 
@@ -52,10 +50,8 @@ RawMaterialsSerializer, RawMaterialsLogSerializer = create_serializer(
     'RawMaterials', {})
 
 
+@serializers.register(models.Comment)
 class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = models.Comment
         exclude = ('stock', 'perms')
-
-registry.register(models.Comment, CommentSerializer)

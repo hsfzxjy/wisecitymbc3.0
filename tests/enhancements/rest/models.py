@@ -1,73 +1,46 @@
 from django.db import models
-from enhancements.models.mixins import PermsMixin
 
-import rules
-from accounts import rules as accounts_rules
+from enhancements.models.mixins import LimitedAccessMixin
 
 
-class Base(models.Model):
+class BasicModel(LimitedAccessMixin, models.Model):
 
-    name = models.CharField(max_length=255)
-    child = models.ForeignKey('Child')
-
-
-class Child(models.Model):
-
-    def get_absolute_url(self):
-        return '/%s' % self.id
-
-
-class Goods(models.Model, PermsMixin):
-
+    text = models.TextField()
     name = models.CharField(max_length=100)
-    price = models.IntegerField()
 
-    INVISIBLE_FIELDS = {
-        'tests.change_goods': ['price']
+    NON_ACCESSIBLE = {
+        'rest_test.view_basicmodel': ['name']
     }
 
-    class Meta:
-        ordering = ('id',)
-
-rules.add_perm('tests.change_goods', accounts_rules.is_government)
-rules.add_perm('tests.view_goods', rules.always_allow)
+    def get_absolute_url(self):
+        return 'test_url'
 
 
-class Bucket(models.Model):
-
-    goods = models.ManyToManyField(Goods)
-    name = models.CharField(max_length=100)
-
-rules.add_perm('tests.view_bucket', rules.always_true)
-rules.add_perm('tests.add_bucket', rules.always_true)
-rules.add_perm('tests.change_bucket', rules.always_true)
-
-
-class Ball(models.Model):
-
-    box = models.ForeignKey('Box', related_name='balls')
-
-rules.add_perm('tests.view_ball', rules.always_true)
-rules.add_perm('tests.add_ball', rules.always_true)
-rules.add_perm('tests.change_ball', rules.always_true)
-rules.add_perm('tests.view_box', rules.always_true)
-rules.add_perm('tests.change_box', rules.always_true)
-rules.add_perm('tests.add_box', rules.always_true)
-
-
-class Box(models.Model):
+class ManyToManyTarget(LimitedAccessMixin, models.Model):
 
     name = models.CharField(max_length=100)
 
-    class Meta:
-        ordering = ('id',)
+    NON_ACCESSIBLE = {
+        'rest_test.view_manytomanytarget': ['name']
+    }
 
 
-class Book(models.Model):
+class ManyToManySource(models.Model):
+
+    name = models.CharField(max_length=100)
+    targets = models.ManyToManyField(ManyToManyTarget)
+
+
+class ForeignKeyTarget(models.Model):
 
     name = models.CharField(max_length=100)
 
+    @property
+    def custom_name(self):
+        return 'custom %s' % self.name
 
-class Author(models.Model):
 
-    books = models.ManyToManyField(Book)
+class ForeignKeySource(models.Model):
+
+    name = models.CharField(max_length=100)
+    target = models.ForeignKey(ForeignKeyTarget)

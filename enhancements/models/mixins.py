@@ -1,16 +1,3 @@
-class AutoURLMixin(object):
-
-    def get_absolute_url(self):
-        from enhancements.rest.reverse import safe_reverse
-
-        name = self.__class__.__name__.lower()
-
-        return safe_reverse(
-            'views.{name}-detail'.format(name=name),
-            kwargs={'{name}_pk'.format(name=name): self.pk}
-        )
-
-
 class AutoCleanMixin(object):
 
     def save(self, *args, **kwargs):
@@ -19,7 +6,11 @@ class AutoCleanMixin(object):
         return super(AutoCleanMixin, self).save(*args, **kwargs)
 
 
-class PermsMixin(object):
+def get_all_fields(model_class):
+    return set(field.name for field in model_class._meta.get_fields())
+
+
+class LimitedAccessMixin(object):
     """Permission Enhancement Mixin
     """
 
@@ -27,37 +18,36 @@ class PermsMixin(object):
     # {
     #      <perm>: list of fields disallowed without the permission
     # }
-    INVISIBLE_FIELDS = {}
-    DEFAULT_ID = True
+    NON_ACCESSIBLE = {}
 
     @classmethod
-    def get_invisible_fields(cls):
+    def _get_non_accessible_fields(cls):
         if hasattr(cls, '_perms_map'):
             return cls._perms_map
 
         pmap = cls._perms_map = {}
-        all_fields = set(field.name for field in cls._meta.get_fields())
+        all_fields = get_all_fields(cls)
 
-        for perms, invisible_fields in cls.INVISIBLE_FIELDS.items():
-            assert isinstance(perms, (str, tuple)), \
-                "Permission %r must be list or tuple." % perms
+        for perms, fields in cls.NON_ACCESSIBLE.items():
+
+            assert isinstance(perms, (str, tuple, list)), (
+                "Permission must be a string, list or tuple, "
+                "got %r." % type(perms)
+            )
 
             if isinstance(perms, str):
                 perms = (perms, )
 
             for perm in perms:
-                pmap[perm] = fields = all_fields & set(invisible_fields)
-
-                if cls.DEFAULT_ID:
-                    fields -= {'id'}
+                pmap[perm] = all_fields & set(fields)
 
         return pmap
 
     @classmethod
-    def get_fields_by_user(cls, user, obj=None):
-        fields = set(field.name for field in cls._meta.get_fields())
+    def accessible_fields(cls, user, obj=None):
+        fields = get_all_fields(cls)
 
-        for perm, invisible in cls.get_invisible_fields().items():
+        for perm, invisible in cls._get_non_accessible_fields().items():
             if not user.has_perm(perm, obj):
                 fields -= invisible
 

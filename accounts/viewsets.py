@@ -1,4 +1,4 @@
-from rest_framework import viewsets, mixins
+from rest_framework import mixins
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -8,15 +8,14 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.contrib import auth
 
-from enhancements.rest import urls
-from enhancements.rest.viewsets import rel_viewset
+from enhancements.rest import urls, viewsets
 
 from files.viewsets import FileViewSet
 
 from .models import User, UserData
 
 
-@urls.register_view('^perms/$')
+@urls.register(r'^perms/$')
 class PermsView(APIView):
 
     _ignore_model_permissions = True
@@ -27,7 +26,7 @@ class PermsView(APIView):
         return Response(get_perms(request.user))
 
 
-@urls.register_view(r'^object_perms/(?P<model_path>[\w\.]+)/(?P<id>\d+)/$')
+@urls.register(r'^object_perms/(?P<model_path>[\w\.]+)/(?P<id>\d+)/$')
 class ObjectPermsView(APIView):
 
     _ignore_model_permissions = True
@@ -36,6 +35,7 @@ class ObjectPermsView(APIView):
         from .utils import get_object_perms
 
         return Response(get_object_perms(request.user, model_path, id))
+
 
 @urls.register(
     'users',
@@ -85,43 +85,18 @@ class UserViewSet(
         return Response({'status': 'OK'})
 
 
-class UserNestedGetOwnerMixin(object):
+@urls.register('reports', UserViewSet)
+class ReportsViewSet(FileViewSet):
 
-    def get_owner(self, request):
-        arg = self.kwargs['user_pk']
+    nested = True
 
-        if arg == 'me':
-            user = self.request.user
-        else:
-            user = get_object_or_404(User, pk=arg)
-
-        if user.user_data is None:
-            raise Http404
-
-        if not self.request.user.has_perm('accounts.view_userdata', user):
-            self.permission_denied(self.request)
-
-        return user
+    def get_rel(self):
+        return self.get_parent_object().user_data.reports
 
 
-@urls.register_nested(
-    'reports',
-    UserViewSet,
-    'users',
-    'user'
-)
-@rel_viewset
-class ReportsViewSet(FileViewSet, UserNestedGetOwnerMixin):
-
-    def get_rel(self, owner):
-        return owner.user_data.reports
-
-
-@urls.register_nested(
+@urls.register(
     'userdata',
     UserViewSet,
-    'users',
-    'user',
     routes=[
         dict(
             url=r'^{prefix}/$',
@@ -132,12 +107,14 @@ class ReportsViewSet(FileViewSet, UserNestedGetOwnerMixin):
     ]
 )
 class UserDataViewSet(viewsets.GenericViewSet,
-                      mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                      UserNestedGetOwnerMixin):
+                      mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
 
+    nested = True
     queryset = UserData.objects.all()
 
     def get_object(self):
-        user = self.get_owner(self.request)
+        user_data = self.get_parent_object().user_data
+        if not user_data:
+            raise Http404
 
-        return user.user_data
+        return user_data

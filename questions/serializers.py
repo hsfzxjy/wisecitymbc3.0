@@ -1,14 +1,12 @@
 from .models import Reply, Topic
 
-from rest_framework import serializers
-
-from enhancements.rest import registry
+from enhancements.rest import serializers
 
 
+@serializers.register(Topic)
 class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Topic
         extra_kwargs = {
             'asker': {
                 'fields': ('username', 'nickname', 'id')
@@ -19,10 +17,10 @@ class TopicSerializer(serializers.ModelSerializer):
         return '/detail/topics/{0}/'.format(topic.id)
 
 
+@serializers.register(Reply)
 class ReplySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Reply
         extra_kwargs = {
             'author': {
                 'fields': ('username', 'nickname', 'id')
@@ -31,6 +29,3 @@ class ReplySerializer(serializers.ModelSerializer):
                 'fields': ('id', 'title')
             }
         }
-
-registry.register(Topic, TopicSerializer)
-registry.register(Reply, ReplySerializer)

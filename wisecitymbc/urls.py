@@ -17,11 +17,11 @@ from django.conf.urls import url, include
 from . import views
 from django.contrib import admin
 
-from enhancements.rest.urls import generate_urls
+from enhancements.rest.urls import register
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/', include(generate_urls())),
+    url(r'^api/', include(register.get_urls())),
     url(r'^$', views.index),
     # url(r'^', views.redirect_view)
 ]

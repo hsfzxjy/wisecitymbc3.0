@@ -4,7 +4,6 @@ from django.conf import settings
 from django.dispatch import receiver
 
 from enhancements.shortcuts import _
-from enhancements.models.mixins import AutoURLMixin
 from enhancements.utils.lock import pass_if_locked, LockMixin
 from enhancements.utils.html import filter_html_mixin
 
@@ -15,7 +14,7 @@ from .dispatchers import notifier
 FilterContentMixin = filter_html_mixin(['content'])
 
 
-class Topic(AutoURLMixin, LockMixin, FilterContentMixin, models.Model):
+class Topic(LockMixin, FilterContentMixin, models.Model):
     asker = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name=_('asker')
@@ -78,10 +77,11 @@ class Topic(AutoURLMixin, LockMixin, FilterContentMixin, models.Model):
         return '/detail/topics/{0}/'.format(self.id)
 
 
-class Reply(AutoURLMixin, FilterContentMixin, models.Model):
+class Reply(FilterContentMixin, models.Model):
     topic = models.ForeignKey(
         'Topic',
-        verbose_name=_('topic')
+        verbose_name=_('topic'),
+        related_name='replies'
     )
     created_time = models.DateTimeField(
         _('created time'),

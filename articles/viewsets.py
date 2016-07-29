@@ -1,18 +1,15 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework import viewsets
+from enhancements.rest import viewsets
 
-from enhancements.rest.urls import register, register_nested
-from enhancements.rest.viewsets import rel_viewset
+from enhancements.rest.urls import register
 
 from files.viewsets import FileViewSet
 
 from .models import Article, Tag
 
 
-@register(
-    'articles',
-)
+@register('articles',)
 class ArticleViewSet(viewsets.ModelViewSet):
 
     queryset = Article.objects.all()
@@ -35,13 +32,7 @@ class TagViewSet(viewsets.ModelViewSet):
     filter_fields = ('name', )
 
 
-@register_nested(
-    'reports',
-    ArticleViewSet,
-    'articles',
-    'article'
-)
-@rel_viewset
+@register('reports', ArticleViewSet)
 class AttachmentsViewSet(FileViewSet):
 
     ordering = ('-created_time',)

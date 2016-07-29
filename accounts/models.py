@@ -4,7 +4,7 @@ from enhancements.auth.models import AbstractUser, UserManager as UserManager_
 from enhancements.models.fields import EnumField
 from enhancements.shortcuts import _
 from enhancements.models import QuerySet
-from enhancements.models.mixins import AutoCleanMixin, PermsMixin
+from enhancements.models.mixins import AutoCleanMixin, LimitedAccessMixin
 
 from django.core.exceptions import ValidationError
 
@@ -35,7 +35,7 @@ class UserManager(UserManager_.from_queryset(UserQuerySet)):
             username, password, **extra_fields)
 
 
-class User(AutoCleanMixin, PermsMixin, AbstractUser):
+class User(AutoCleanMixin, LimitedAccessMixin, AbstractUser):
 
     nickname = models.CharField(_('nickname'), max_length=255, unique=True)
     user_type = EnumField(
@@ -61,7 +61,7 @@ class User(AutoCleanMixin, PermsMixin, AbstractUser):
 
     REQUIRED_FIELDS = ['nickname']
 
-    INVISIBLE_FIELDS = {
+    NON_ACCESSIBLE = {
         'accounts.view_userdata': ['user_data']
     }
 

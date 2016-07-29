@@ -1,13 +1,11 @@
-from rest_framework import viewsets
+from enhancements.rest import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 
-from enhancements.rest.urls import register, register_nested
+from enhancements.rest.urls import register
 
 from .models import Reply, Topic
 from accounts.consts import UserType
-
-from django.shortcuts import get_object_or_404
 
 
 @register('topics')
@@ -48,29 +46,22 @@ class TopicViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(obj).data)
 
 
-@register_nested(
-    'replies',
-    TopicViewSet,
-    'topics',
-    'topic',
-)
+@register('replies', TopicViewSet)
 class ReplyViewSet(viewsets.ModelViewSet):
 
+    nested = True
     queryset = Reply.objects.all()
     ordering = ('-created_time',)
 
-    def get_queryset(self):
-        topic = self.topic = get_object_or_404(
-            Topic.objects.only('id'),
-            id=self.kwargs['topic_pk'],
-        )
-
-        return self.queryset.filter(topic=topic)
+    def get_rel(self):
+        self.topic = self.get_parent_object()
+        return self.topic.replies
 
     def create(self, *args, **kwargs):
+        topic = self.topic
         self.check_object_permissions(self.request, self.topic)
 
         self.request.data['author'] = self.request.user.id
-        self.request.data['topic'] = self.topic.id
+        self.request.data['topic'] = topic.id
 
         return super(ReplyViewSet, self).create(*args, **kwargs)

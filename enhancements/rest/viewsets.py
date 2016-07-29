@@ -1,41 +1,13 @@
-from enhancements.rest import registry
+from .serializers import default_entries
 
 from rest_framework import filters
 from rest_framework.response import Response
+from rest_framework import viewsets
 
 
-class RelViewSetMixin(object):
+class ViewSetMixin(object):
 
-    def get_owner(self, request):
-        return super(RelViewSetMixin, self).get_owner(request)
-
-    def get_rel(self, owner):
-        return super(RelViewSetMixin, self).get_rel(owner)
-
-    def get_queryset(self):
-        self.rel = self.get_rel(self.get_owner(self.request))
-
-        return self.rel.all()
-
-    def perform_create(self, serializer):
-        obj = serializer.save()
-        self.rel.add(obj)
-
-    def perform_destroy(self, instance):
-        self.rel.remove(instance)
-
-        return super(RelViewSetMixin, self).perform_destroy(instance)
-
-
-def rel_viewset(viewset_class):
-
-    class wrapped_class(RelViewSetMixin, viewset_class):
-        pass
-
-    return wrapped_class
-
-
-class EnhancedViewSetMixin(object):
+    nested = False
 
     filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
     ordering_fields = ('id',)
@@ -44,7 +16,7 @@ class EnhancedViewSetMixin(object):
 
     def render_list(self, queryset=None, filter=False):
         if queryset is None:
-            queryset = self.get_queryset
+            queryset = self.get_queryset()
 
         if filter:
             queryset = self.filter_queryset(queryset)
@@ -81,39 +53,27 @@ class EnhancedViewSetMixin(object):
         serializer_class = self.get_serializer_class()
         kwargs['context'] = self.get_serializer_context()
         kwargs.update(
-            dict(
-                zip(
-                    ('fields', 'exclude'),
-                    self._get_dynamic_fields_options()
-                )
-            )
+            dict(zip(
+                ('fields', 'exclude'),
+                self._get_dynamic_fields_options()
+            ))
         )
 
         return serializer_class(*args, **kwargs)
 
     def get_serializer_class(self):
         model = self.get_queryset().model
-        serializer_class = registry.get_value(model, None)
+        serializer_class = default_entries.get(model, None)
 
         if serializer_class is not None:
             return serializer_class
 
-        return super(EnhancedViewSetMixin, self).get_serializer_class()
+        return super(ViewSetMixin, self).get_serializer_class()
 
 
-def monkey_patch():
-    from rest_framework import viewsets
+class ModelViewSet(ViewSetMixin, viewsets.ModelViewSet):
+    pass
 
-    for object_name in dir(viewsets):
-        if not object_name.endswith('ViewSet'):
-            continue
 
-        old_class = getattr(viewsets, object_name)
-
-        new_class = type(
-            object_name,
-            (EnhancedViewSetMixin, old_class,),
-            {}
-        )
-
-        setattr(viewsets, object_name, new_class)
+class GenericViewSet(ViewSetMixin, viewsets.GenericViewSet):
+    pass

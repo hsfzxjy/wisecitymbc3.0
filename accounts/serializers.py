@@ -1,14 +1,12 @@
-from rest_framework import serializers
+from enhancements.rest import serializers
 
 from .models import User, UserData
 
-from enhancements import rest
 
-
+@serializers.register(User)
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = User
         fields = ('nickname', 'username', 'bureau_type',
                   'user_type', 'user_data', 'id', 'url', 'perms',
                   'is_staff')
@@ -18,11 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
         return '/users/{0}/'.format(user.id)
 
 
+@serializers.register(UserData)
 class UserDataSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = UserData
-        exclude = ('id',)
-
-rest.registry.register(User, UserSerializer)
-rest.registry.register(UserData, UserDataSerializer)
+    pass

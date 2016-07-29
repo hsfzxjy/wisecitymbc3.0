@@ -81,9 +81,6 @@ class QuestionsTestCase(APITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data['content'], 'b')
 
-        print(self.user.notifications.all())
-        print(self.gov.notifications.all())
-
 
 class ReplyTestCase(APITestCase):
 

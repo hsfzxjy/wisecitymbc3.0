@@ -2,13 +2,13 @@ from django.db import models
 from django.conf import settings
 
 from enhancements.models.fields import EnumField
-from enhancements.models.mixins import PermsMixin, AutoCleanMixin
+from enhancements.models.mixins import AutoCleanMixin
 from enhancements.shortcuts import _
 
 from .consts import ArticleType
 
 
-class Article(PermsMixin, AutoCleanMixin, models.Model):
+class Article(AutoCleanMixin, models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, verbose_name=_('author'))
     title = models.CharField(_('title'), max_length=255)

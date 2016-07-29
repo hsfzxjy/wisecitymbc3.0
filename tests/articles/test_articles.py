@@ -160,5 +160,6 @@ class ArticleTestCase(APITestCase):
                 'tags': ['1', '1']
             }, format='json'
         )
+        print(res.data)
         self.assertEqual(
             res.data['url'], '/detail/articles/{0}/'.format(res.data['id']))
