@@ -1,8 +1,8 @@
 <template>
     <div class="container">
-        <vs-list-group flush class="col-xs-12">
+        <vs-list-group flush class="col-xs-">
             <vs-list-group-item
-                v-for="item in page.results"
+                v-for="item in notifications"
                 @click="mark([item])">
                 <i class="fa fa-star text-warning" v-if="!item.has_read"></i>
                 {{{ item.message | render }}}
@@ -11,19 +11,16 @@
                 </span>
             </vs-list-group-item>
         </vs-list-group>
-        <pager
-            :model.sync="page"
-            class="col-xs-12"
+        <list
+            :model.sync="notifications"
+            type="pager"
             url="/api/n/">
-        </pager>
+        </list>
     </div>
 </template>
 
 <script>
-    import Pager from 'misc/Pager.vue'
-
     export default {
-        components: { Pager },
         filters: {
             render: message => message
                 .replace(/\[(.*)\]\((.*)\)/g, (ignore, text, url) => {
@@ -31,11 +28,11 @@
                 })
         },
         data: () => ({
-            page: {}
+            notifications: []
         }),
         route: {
             data () {
-                this.$nextTick(() => this.$broadcast('Pager:refresh'))
+                this.$nextTick(() => this.$broadcast('List:reload'))
             }
         },
         methods: {

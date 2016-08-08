@@ -26,10 +26,10 @@
             uploadStatus: {
                 type: Object,
                 twoWay: true,
-                default: {
+                default: () => ({
                     uploading: false,
                     percent: 0
-                }
+                })
             }
         },
         ready () {
@@ -79,7 +79,7 @@
                     init[eventName] = function () {
                         let args = [_.kebabCase(eventName)].concat(Array.prototype.slice.call(arguments))
 
-                        this.$dispatch.apply(this, args)
+                        this.$emit.apply(this, args)
                     }.bind(this)
                 })
 

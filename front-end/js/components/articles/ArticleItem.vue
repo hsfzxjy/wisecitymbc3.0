@@ -2,10 +2,10 @@
     <div>
         <vs-card>
             <div class="card-block">
-                <span class="label label-1">
+                <span class="tag label-1">
                     @{{ article.author.nickname }}
                 </span>
-                <span class="label label-danger" v-if="article.is_top">
+                <span class="tag tag-danger" v-if="article.is_top">
                     置顶
                 </span>
                 <div class="btn-group operation pull-xs-right">

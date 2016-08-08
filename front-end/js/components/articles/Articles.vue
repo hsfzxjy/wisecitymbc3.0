@@ -3,17 +3,20 @@
         <div class="col-md-3 hidden-sm-down">
             <article-nav-bar 
                 :vertical="true" 
-                class="hidden-sm-down"
+                class="hidden-sm-down fixed"
                 :current-category="currentCategory">    
             </article-nav-bar>
         </div>
-        <div class="col-md-9 col-sm-12">
+        <div class="col-md-9 col-sm-12 col-md-offset-3">
             <article-list
                 :category="currentCategory">    
             </article-list>         
         </div> 
     </div>
 </template>
+
+<style scoped>
+</style>
 
 <script>
     import {StrUtils} from 'utils/index.es'
@@ -28,17 +31,15 @@
             currentCategory: ''
         }),
         route: {
-            data (transition) {
-                let category = transition.to.params.category
+            data ({to, next}) {
+                let category = to.params.category
 
                 if (!StrUtils.isContainedBy(category, AVAILABLE_CATEGORIES))
                     category = 'government'
 
                 this.currentCategory = category
+                this.$nextTick(() => { this.$broadcast('List:reload') })
             }
-        },
-        ready () {
-            
         }
     }
 </script>

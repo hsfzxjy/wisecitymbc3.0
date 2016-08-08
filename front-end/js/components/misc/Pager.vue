@@ -1,19 +1,29 @@
 <template>
     <div>
-        <slot name="no-results" v-if="noResults">
-            <p class="text-xs-center">空空如也～～</p>
-        </slot>
-        <slot name="loading" v-if="loading">
-            <p class="text-xs-center">加载中...</p>
-        </slot>
-        <vs-pager v-if="model">
-            <li v-show="model.previous" :class="!loading || 'disabled'">
-                <a @click.stop="load(model.previous)" href="javascript:void(0);">上一页</a>
-            </li>
-            <li v-show="model.next" :class="!loading || 'disabled'">
-                <a @click.stop="load(model.next)" href="javascript:void(0);">下一页</a>
-            </li>
-        </vs-pager>        
+        <p class="text-xs-center">
+            <slot name="no-results" v-if="!isLoading && isNoResults">
+                空空如也～～
+            </slot>
+        </p>
+        <p class="text-xs-center">
+            <slot name="loading" v-if="isLoading">
+                加载中...
+            </slot>
+        </p>
+        <div class="pagination">
+            <button 
+                v-show="hasPrev" 
+                :class="buttonClass"
+                @click.stop="$emit('prev')">
+                上一页
+            </button>
+            <button 
+                v-show="hasNext" 
+                :class="buttonClass"
+                @click.stop="$emit('next')">
+                下一页
+            </button>
+        </div>        
     </div>
 </template>
 
@@ -21,51 +31,40 @@
     p.text-xs-center {
         padding: .75rem 0;
     }
+
+    div.pagination {
+        text-align: center;
+        display: block;
+    }
 </style>
 
 <script>
     export default {
-        data: () => ({
-            loading: false,
-            noResults: false
-        }),
         props: {
-            model: {
-                type: Object,
-                twoWay: true,
-                required: true
+            hasNext: {
+                type: Boolean,
+                default: true
             },
-            url: {
-                type: String,
-                required: true
-            }
-        },
-        ready () {
-            this.refresh()
-        },
-        methods: {
-            load (url) {
-                this.$http.get(url)
-                    .then(res => {
-                        this.model = res.data
-                        this.noResults = !res.data.results.length
-                    })
+            hasPrev: {
+                type: Boolean,
+                default: true
             },
-            refresh () {
-                this.loading = false
-                this.noResults = false
-                this.model.results = []
-                this.load(this.url)
+            isLoading: {
+                type: Boolean,
+                default: false
+            },
+            isNoResults: {
+                type: Boolean,
+                default: false
             }
         },
-        events: {
-            ['Pager:refresh'] () {
-                this.refresh()
-            }
-        },
-        watch: {
-            url (value) {
-                this.refresh()
+        computed: {
+            buttonClass () {
+                return [
+                    !this.isLoading || 'disabled',
+                    'btn',
+                    'btn-primary'
+                ]
             }
         }
     }

@@ -174,7 +174,7 @@ STATICFILES_DIRS = STATICFILES_DIRS_BASE + ['front-end/dest', ]
 # rest_framework
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
-        'enhancements.rest.renderers.JSONRenderer',
+        'rest_framework.renderers.JSONRenderer',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'enhancements.rest.permissions.DjangoObjectPermissionOrAnonReadOnly',

@@ -46,7 +46,7 @@
                         </h4>
                         <uploader
                             :files="reports"
-                            :file-add-url="'/api/users/'+id+'/reports/`"
+                            :file-add-url="'/api/users/'+id+'/reports/'"
                             :upload-status.sync="uploadStatus"
                             browse-button-id="reports-uploader">
                         </uploader>
@@ -63,7 +63,8 @@
             </div>
             <div class="col-sm-12 col-md-{{ hasUserData ? 9 : 12}} xs-no-padding">
                 <article-list
-                    :other-params="{ author__id: id }">
+                    :other-params="{ author__id: id }"
+                    autoload>
                 </article-list>
             </div>
         </div>

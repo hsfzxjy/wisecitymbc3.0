@@ -17,8 +17,8 @@ class SlugRelatedField(serializers.SlugRelatedField):
 
     def to_internal_value(self, data):
         try:
-            return self.get_queryset().get_or_create(**{self.slug_field: data})[0]
-            # self.fail('does_not_exist', slug_name=self.slug_field,
-            #           value=smart_text(data))
+            return self.get_queryset().get_or_create(
+                **{self.slug_field: data}
+            )[0]
         except (TypeError, ValueError):
             self.fail('invalid')

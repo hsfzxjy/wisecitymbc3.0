@@ -1,23 +1,23 @@
 <template>
     <bond-item
-        v-if="page.results"
-        v-for="item in page.results"
-        :bond="item">
+        v-if="list"
+        v-for="item in list"
+        :model="item">
     </bond-item>
-    <pager
-        :model.sync="page"
+    <list
+        :model.sync="list"
+        type="pager"
         url="/api/bonds/">
-    </pager>
+    </list>
 </template>
 
 <script>
-    import Pager from 'misc/Pager.vue'
     import BondItem from './BondItem.vue'
 
     export default {
-        components: { Pager, BondItem },
+        components: { BondItem },
         data: () => ({
-            page: {}
+            list: []
         })
     }
 </script>

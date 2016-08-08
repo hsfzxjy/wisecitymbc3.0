@@ -81,9 +81,6 @@
                     limit: 2
                 }
             }
-        }),
-        ready () {
-            this.$broadcast('ListLoader:reload')
-        }
+        })
     }
 </script>

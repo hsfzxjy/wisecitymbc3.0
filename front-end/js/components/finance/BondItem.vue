@@ -3,23 +3,23 @@
         <vs-card>
             <div class="card-block text-xs-center">
                 <h3>
-                    {{ bond.name }}
+                    {{ model.name }}
                 </h3>
                 <dl class="clearfix">
                     <dt class="col-md-6">价格</dt>
-                    <dd class="col-md-6">{{ bond.price }}</dd>
+                    <dd class="col-md-6">{{ model.price }}</dd>
                     <dt class="col-md-6">发行量</dt>
-                    <dd class="col-md-6">{{ bond.quantity }}</dd>
+                    <dd class="col-md-6">{{ model.quantity }}</dd>
                 </dl>
             </div>
             <vs-list-group flush>
                 <vs-list-group-item>
-                    发行方： {{ bond.issuer }}
+                    发行方： {{ model.issuer }}
                 </vs-list-group-item>
                 <vs-list-group-item
                     class="no-padding">
                     <chart
-                        :url="'/api/bonds/'+bond.id+'/logs/?limit=5'"
+                        :url="'/api/bonds/'+model.id+'/logs/?limit=5'"
                         :series.once="chartSeries">
                             
                     </chart>
@@ -51,7 +51,7 @@
             }
         }),
         props: {
-            bond: {
+            model: {
                 type: Object,
                 required: true
             }

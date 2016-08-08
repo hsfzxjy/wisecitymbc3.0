@@ -78,9 +78,7 @@
                     .then(() => this.hasLogined)
             },
             refreshCurrentView () {
-                this.$broadcast('ListLoader:reload')
-                this.$broadcast('Pager:refresh')
-                this.$broadcast('InfiniteLoading:reset')
+                this.$broadcast('List:reload')
             }
         },
         created () {

@@ -15,10 +15,8 @@ import TopicEdit from "questions/TopicEdit.vue"
 import TopicDetail from "questions/TopicDetail.vue"
 import Finance from "finance/Finance.vue"
 import FinanceIndex from "finance/FinanceIndex.vue"
-import Stocks from 'finance/Stocks.vue'
-import Bonds from 'finance/Bonds.vue'
 import StockFutures from 'finance/StockFutures.vue'
-import Futures from 'finance/Futures.vue'
+import FinanceList from 'finance/FinanceList.vue'
 import RAM from 'finance/RAM.vue'
 import NotFound from "pages/404.vue"
 
@@ -148,25 +146,17 @@ export default function (Vue) {
         '/finance': {
             component: Finance,
             subRoutes: {
+                '/:product/': {
+                    component: FinanceList,
+                    title: '列表',
+                    validator: {
+                        product: /^(stocks|bonds|futures)$/
+                    }
+                },
                 '/': {
                     component: FinanceIndex,
                     name: 'finance-index',
                     title: '金融'
-                },
-                '/stocks/': {
-                    component: Stocks,
-                    name: 'stock-list',
-                    title: '股票'
-                },
-                '/bonds/': {
-                    component: Bonds,
-                    name: 'bond-list',
-                    title: '债券'
-                },
-                '/futures/': {
-                    component: Futures,
-                    name: 'futures-list',
-                    title: '期货'
                 }
             }
         },
@@ -179,6 +169,14 @@ export default function (Vue) {
             component: NotFound,
             title: '走错路了～'
         }
+    })
+
+    // validation
+    router.beforeEach(({ to, next, abort }) => {
+        _.forEach(to.validator || {}, (regexp, key) => {
+            if (!regexp.test(to.params[key])) abort()
+        })
+        next()
     })
 
     router.beforeEach(function ({ to, next, redirect, abort }) {

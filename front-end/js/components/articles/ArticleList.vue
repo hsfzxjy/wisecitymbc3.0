@@ -8,7 +8,12 @@
             track-by="$index">    
         </article-item>
     </div>
-    <infinite-loading :on-infinite="load"></infinite-loading>
+    <list
+        :model.sync="articles"
+        url="/api/articles/"
+        :params="params"
+        :autoload="autoload">
+    </list>
 </template>
 
 <style>
@@ -20,14 +25,9 @@
 <script>
     import { articles } from 'consts.es'
     import ArticleItem from './ArticleItem.vue'
-    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'
 
     export default {
-        listConfig: {
-            listFieldName: 'articles'
-        },
-        components: {ArticleItem},
-        mixins: [InfiniteLoadingMixin],
+        components: { ArticleItem },
         data: () => ({
             articles: [],
             nextURL: ''
@@ -51,19 +51,9 @@
             otherParams: {
                 type: Object
             },
-            once: {
+            autoload: {
                 type: Boolean,
                 default: false
-            }
-        },
-        watch: {
-            category () {
-                this.reset()
-            }
-        },
-        events: {
-            ['ArticleList:reset'] () {
-                this.reset()
             }
         }
     }

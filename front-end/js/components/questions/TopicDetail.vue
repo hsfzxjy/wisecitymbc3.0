@@ -30,7 +30,7 @@
                 </vs-card>
             </section>
             <hr>
-            <vs-card v-for="reply in page.results">
+            <vs-card v-for="reply in replies">
                 <div class="card-block article-main">
                     {{{ reply.content }}}
 
@@ -41,11 +41,12 @@
                     </p>
                 </div>
             </vs-card>
-            <pager
+            <list
                 v-if="topicId"
                 :url="'/api/topics/'+topicId+'/replies/'"
-                :model.sync="page">
-            </pager>
+                :model.sync="replies"
+                type="pager">
+            </list>
         </div>
         <div class="col-md-4 hidden-sm-down">
             <vs-card>
@@ -86,11 +87,10 @@
 <script>
     import Editor from 'misc/edit/Editor.vue'
     import DetailMixin from 'mixins/DetailMixin.es'
-    import Pager from 'misc/Pager.vue'
 
     export default {
         mixins: [DetailMixin],
-        components: {Editor, Pager},
+        components: {Editor},
         detailConfig: {
             baseURL: '/api/topics/',
             objectFieldName: 'topic',
@@ -99,7 +99,7 @@
         data: () => ({
             topic: {},
             topicId: '',
-            page: {},
+            replies: [],
             reply: {
                 content: '',
                 attachments: []
@@ -107,7 +107,7 @@
         }),
         methods: {
             editorSubmitted (editor, reply) {
-                this.page.results.push(reply)
+                this.replies.push(reply)
             }
         }
     }

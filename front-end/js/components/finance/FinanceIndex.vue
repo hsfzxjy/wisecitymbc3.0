@@ -5,14 +5,16 @@
         </h3>
         <stock-item
             v-for="stock in stocks"
-            :stock="stock"
+            :model="stock"
             class="col-xs-12 col-md-6 sm-no-padding">
         </stock-item>
-        <list-loader
+        <list
             :params="{ limit: 3 }"
             :model.sync="stocks"
-            url="/api/stocks/">
-        </list-loader>
+            url="/api/stocks/"
+            type="once"
+            autoload>
+        </list>
     </div>
 
     <div class="col-xs-12 sm-no-padding">
@@ -21,14 +23,16 @@
         </h3>
         <bond-item
             v-for="bond in bonds"
-            :bond="bond"
+            :model="bond"
             class="col-xs-12 col-md-6 sm-no-padding">
         </bond-item>
-        <list-loader
+        <list
             :params="{ limit: 3 }"
             :model.sync="bonds"
-            url="/api/bonds/">
-        </list-loader>
+            url="/api/bonds/"
+            type="once"
+            autoload>
+        </list>
     </div>
 
     <div class="col-xs-12 sm-no-padding">
@@ -37,14 +41,16 @@
         </h3>
         <future-item
             v-for="future in futures"
-            :future="future"
+            :model="future"
             class="col-xs-12 col-md-6 sm-no-padding">
         </future-item>
-        <list-loader
+        <list
             :params="{ limit: 3 }"
             :model.sync="futures"
-            url="/api/futures/">
-        </list-loader>
+            url="/api/futures/"
+            type="once"
+            autoload>
+        </list>
     </div>
 </template>
 
@@ -55,22 +61,16 @@
 </style>
 
 <script>
-    import ListLoader from 'misc/ListLoader.vue'
     import StockItem from './StockItem.vue'
     import BondItem from './BondItem.vue'
     import FutureItem from './FutureItem.vue'
 
     export default {
-        components: { ListLoader, StockItem, BondItem, FutureItem },
+        components: { StockItem, BondItem, FutureItem },
         data: () => ({
             stocks: [],
             bonds: [],
             futures: []
-        }),
-        route: {
-            data (transition) {
-                this.$broadcast('ListLoader:reload')
-            }
-        }
+        })
     }
 </script>

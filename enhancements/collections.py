@@ -1,7 +1,7 @@
-from enum import Enum as _Enum
+from enum import IntEnum
 
 
-class Enum(_Enum):
+class Enum(IntEnum):
     """Django capatible Enum"""
 
     def deconstruct(self):

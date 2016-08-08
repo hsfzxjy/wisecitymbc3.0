@@ -1,10 +1,12 @@
 <template>
-    <div class="container-fluid card-columns">
+    <div>
+        <div class="container-fluid card-columns">
             <vs-card v-for="company in companies">
                 <div class="card-block">
                     <h4 class="card-title text-center">
                         <a v-link="'/users/'+company.id+'/'">
-                            {{ company.user_data.name || '(空)' }}
+                            {{ company.username }} 
+                            {{ company.user_data.name || '(无昵称)' }}
                         </a>
                     </h4>
                     <dl class="dl-horizontal">
@@ -17,32 +19,23 @@
                     </dl>
                 </div>
             </vs-card>
-        <infinite-loading 
-            :on-infinite="load"
-            class="col-xs-12">
-        </infinite-loading>
+        </div>
+        <list
+            url="/api/users/"
+            :model.sync="companies"
+            :params="params">
+        </list>
     </div>
 </template>
 
 <script>
-    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'
-    import InfiniteLoading from 'vue-infinite-loading'
     import { accounts } from 'consts.es'
 
     export default {
-        mixins: [InfiniteLoadingMixin],
-        listConfig: {
-            listFieldName: 'companies'
-        },
-        components: { InfiniteLoading },
         data: () => ({
-            companies: [],
-            nextURL: ''
+            companies: []
         }),
         computed: {
-            baseURL () {
-                return `/api/users/`
-            },
             params () {
                 return {
                     user_type: accounts.UserType.company
@@ -50,7 +43,7 @@
             }
         },
         ready () {
-            this.reset()
+            this.$broadcast('List:reload')
         }
     }
 </script>

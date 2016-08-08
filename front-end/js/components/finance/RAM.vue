@@ -3,14 +3,15 @@
         <div class="col-xs-12 col-sm-6 col-md-8">
             <h3 style="color:#ccc">原材料</h3>
             <ram-item
-                v-if="page.results"
-                v-for="item in page.results"
+                v-if="items"
+                v-for="item in items"
                 :model="item">
             </ram-item>
-            <pager
-                :model.sync="page"
-                url="/api/raw_materials/">
-            </pager>
+            <list
+                :model.sync="items"
+                url="/api/raw_materials/"
+                type="pager">
+            </list>
         </div>
         <div class="col-xs-12 col-sm-6 col-md-4">
             <h3 style='color:#ccc'>
@@ -34,16 +35,15 @@
 <script>
     import ArticleListGroup from 'articles/ArticleListGroup.vue'
     import RAMItem from './RAMItem.vue'
-    import Pager from 'misc/Pager.vue'
 
     export default {
-        components: { ArticleListGroup, RAMItem, Pager },
+        components: { ArticleListGroup, RAMItem },
         data: () => ({
-            page: {}
+            items: []
         }),
         route: {
             data (transition) {
-                this.$broadcast('ListLoader:reload')
+                this.$broadcast('List:reload')
             }
         }
     }

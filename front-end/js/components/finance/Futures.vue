@@ -1,23 +1,23 @@
 <template>
     <future-item
-        v-if="page.results"
-        v-for="item in page.results"
-        :future="item">
+        v-if="list"
+        v-for="item in list"
+        :model="item">
     </future-item>
-    <pager
-        :model.sync="page"
+    <list
+        :model.sync="list"
+        type="pager"
         url="/api/futures/">
-    </pager>
+    </list>
 </template>
 
 <script>
-    import Pager from 'misc/Pager.vue'
     import FutureItem from './FutureItem.vue'
 
     export default {
-        components: { Pager, FutureItem },
+        components: { FutureItem },
         data: () => ({
-            page: {}
+            list: []
         })
     }
 </script>

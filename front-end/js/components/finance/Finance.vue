@@ -27,11 +27,6 @@
     import ArticleListGroup from 'articles/ArticleListGroup.vue'
 
     export default {
-        components: { ArticleListGroup },
-        route: {
-            data (transition) {
-                this.$broadcast('ListLoader:reload')
-            }
-        }
+        components: { ArticleListGroup }
     }
 </script>

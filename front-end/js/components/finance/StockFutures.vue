@@ -2,26 +2,30 @@
     <div class="container-fluid" id="finance-summary-container">
         <stock-item
             v-for="stock in stocks"
-            :stock="stock"
+            :model="stock"
             :detail="false"
             class="col-md-4">
         </stock-item>
         <future-item
             v-for="future in futures"
-            :future="future"
+            :model="future"
             :detail="false"
             class="col-md-4">
         </future-item>
-        <list-loader
+        <list
             :model.sync="stocks"
             :params="params"
-            url="/api/stocks/">
-        </list-loader>
-        <list-loader
+            url="/api/stocks/"
+            type="once"
+            autoload>
+        </list>
+        <list
             :model.sync="futures"
             :params="params"
-            url="/api/futures/">
-        </list-loader>
+            url="/api/futures/"
+            type="once"
+            autoload>
+        </list>
     </div>
 </template>
  
@@ -32,21 +36,15 @@
 </style>
 
 <script>
-    import ListLoader from 'misc/ListLoader.vue'
     import StockItem from './StockItem.vue'
     import FutureItem from './FutureItem.vue'
 
     export default {
-        components: { ListLoader, StockItem, FutureItem },
+        components: { StockItem, FutureItem },
         data: () => ({
             params: { limit: -1 },
             stocks: [],
             futures: []
-        }),
-        route: {
-            data () {
-                this.$broadcast('ListLoader:reload')
-            }
-        }
+        })
     }
 </script>

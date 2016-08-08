@@ -3,18 +3,18 @@
         <vs-card>
             <div class="card-block text-xs-center">
                 <h3>
-                    {{ future.name }}
+                    {{ model.name }}
                 </h3>
                 <dl class="clearfix">
                     <dt class="col-md-6">价格</dt>
-                    <dd class="col-md-6">{{ future.price }}</dd>
+                    <dd class="col-md-6">{{ model.price }}</dd>
                 </dl>
             </div>
             <vs-list-group flush v-if="detail">
                 <vs-list-group-item
                     class="no-padding">
                     <chart
-                        :url="'/api/futures/'+future.id+'/logs/?limit=5'"
+                        :url="'/api/futures/'+model.id+'/logs/?limit=5'"
                         :series.once="chartSeries">
                             
                     </chart>
@@ -43,7 +43,7 @@
             }
         }),
         props: {
-            future: {
+            model: {
                 type: Object,
                 required: true
             },

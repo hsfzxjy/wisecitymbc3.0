@@ -5,14 +5,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 
 
-class ViewSetMixin(object):
-
-    nested = False
-
-    filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
-    ordering_fields = ('id',)
-    ordering = 'id'
-    filter_fields = ()
+class ViewSetUtilityMixin(object):
 
     def render_list(self, queryset=None, filter=False):
         if queryset is None:
@@ -35,6 +28,19 @@ class ViewSetMixin(object):
 
         serializer = self.get_serializer(obj)
         return Response(serializer.data)
+
+
+class FilteringAndOrderingMixin(object):
+
+    filter_backends = (filters.DjangoFilterBackend, filters.OrderingFilter)
+    ordering_fields = ('id',)
+    ordering = 'id'
+    filter_fields = ()
+
+
+class NestedViewSetMixin(object):
+
+    nested = False
 
     def _get_dynamic_fields_options(self):
         """
@@ -68,7 +74,12 @@ class ViewSetMixin(object):
         if serializer_class is not None:
             return serializer_class
 
-        return super(ViewSetMixin, self).get_serializer_class()
+        return super(NestedViewSetMixin, self).get_serializer_class()
+
+
+class ViewSetMixin(ViewSetUtilityMixin,
+                   FilteringAndOrderingMixin, NestedViewSetMixin):
+    pass
 
 
 class ModelViewSet(ViewSetMixin, viewsets.ModelViewSet):

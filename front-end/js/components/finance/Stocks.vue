@@ -1,23 +1,23 @@
 <template>
     <stock-item
-        v-if="page.results"
-        v-for="item in page.results"
-        :stock="item">
+        v-if="list"
+        v-for="item in list"
+        :model="item">
     </stock-item>
-    <pager
-        :model.sync="page"
-        url="/api/stocks/">
-    </pager>
+    <list
+        :model.sync="list"
+        url="/api/stocks/"
+        type="pager">
+    </list>
 </template>
 
 <script>
-    import Pager from 'misc/Pager.vue'
     import StockItem from './StockItem.vue'
 
     export default {
-        components: { Pager, StockItem },
+        components: { StockItem },
         data: () => ({
-            page: {}
+            list: []
         })
     }
 </script>

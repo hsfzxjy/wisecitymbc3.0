@@ -1,6 +1,10 @@
 <template>
     <file-list :model.sync="reports" :base-url='baseURL' :delete-link="true">
-        <infinite-loading :on-infinite="load"></infinite-loading>
+        <list
+            :url="baseURL"
+            :model.sync="reports"
+            autoload>
+        </list>
     </file-list>
 </template>
 
@@ -11,15 +15,10 @@
 </style>
 
 <script>
-    import InfiniteLoadingMixin from 'mixins/InfiniteLoadingMixin.es'
     import FileList from 'files/FileList.vue'
 
     export default {
-        mixins: [InfiniteLoadingMixin],
         components: { FileList },
-        listConfig: {
-            listFieldName: 'reports'
-        },
         data: () => ({
             nextURL: ''
         }),
@@ -36,13 +35,8 @@
         },
         computed: {
             baseURL () {
-                return `/api/users/${this.userId}/reports/`
+                return `/api/users/`+this.userId+`/reports/`
             }
-        },
-        ready () {
-            this.$watch('userId', () => {
-                this.reset()
-            })
         }
     }
 </script>

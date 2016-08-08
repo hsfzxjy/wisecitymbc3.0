@@ -128,7 +128,7 @@ class register(object):
     def register_view(self, view, pattern):
         self._add_entry(
             view,
-            url(pattern, view)
+            url(pattern, view.as_view())
         )
 
     def register_viewset(self, viewset, pattern, base_name=None, routes=None):

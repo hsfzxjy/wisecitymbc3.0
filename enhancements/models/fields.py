@@ -17,7 +17,10 @@ class EnumField(models.PositiveIntegerField):
     def __init__(self, enum, *args, **kwargs):
         self._enum = enum
 
-        assert issubclass(self._enum, Enum)
+        assert issubclass(self._enum, Enum), (
+            '`enum` must be subclass of `enhancements.collections.Enum`'
+            ', got %r.' % enum
+        )
 
         try:
             self._choices = kwargs['choices']

@@ -7,19 +7,17 @@
                         v-link="article.url">
                         {{ article.title }}
                     </a>
-                    <vs-badge
-                        variant="success"
+                    <label
                         v-if="summary"
                         :id="'collapse-article-'+article.id"
-                        class="pull-xs-right pointer ALGB">
+                        class="pull-xs-right pointer ALGB tag tag-success">
                         摘要
-                    </vs-badge>
-                    <vs-badge
-                        variant="danger"
-                        class="pull-xs-right"
+                    </label>
+                    <label
+                        class="pull-xs-right tag tag-danger"
                         v-if="article.is_top">
                         置顶
-                    </vs-badge>
+                    </label>
                 </div>
                 <vs-expansion 
                     v-if="summary"
@@ -31,11 +29,13 @@
             </vs-list-group-item>
             <slot name="other-items"></slot>
         </vs-list-group>   
-        <list-loader
+        <list
             url="/api/articles/"
             :params="params"
-            :model.sync="articles">
-        </list-loader>
+            :model.sync="articles"
+            type="once"
+            autoload>
+        </list>
 </template>
 
 <style scoped>
@@ -54,10 +54,8 @@
 
 <script>
     import { articles } from 'consts.es'
-    import ListLoader from 'misc/ListLoader.vue'
 
     export default {
-        components: { ListLoader },
         data: () => ({
             articles: [],
         }),

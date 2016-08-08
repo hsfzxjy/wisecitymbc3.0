@@ -17,30 +17,33 @@
         </div>
         <div class="col-md-9 col-sm-12">
             <topic-item
-                v-for="topic in page.results"
-                :list.sync="page.results"
+                v-for="topic in topics"
+                :list.sync="topics"
                 :index="$index"
                 :model.sync="topic">
             </topic-item>
-            <pager
+            <list
                 url="/api/topics/"
-                :model.sync="page">
-            </pager>
+                :model.sync="topics"
+                type="pager">
+            </list>
         </div>
     </div>
 </template>
 
 <script>
-    import Pager from 'misc/Pager.vue'
     import TopicItem from './TopicItem.vue'
 
     export default {
-        components: { TopicItem, Pager },
+        components: { TopicItem },
         data: () => ({
-            page: {},
+            topics: [],
             nextURL: '',
             baseURL: `/api/topics/`,
             params: {}
-        })
+        }),
+        ready () {
+            this.$broadcast('List:reload')
+        }
     }
 </script>

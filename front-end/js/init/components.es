@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 export default function (Vue, callback) {
     require.ensure([], (require) => {
         let vsBase = require('vuestrap-base-components')
@@ -15,6 +13,7 @@ export default function (Vue, callback) {
         let vsForm = require('vs-extend/form.vue')
 
         let SideBar = require('vue-strap/src/Aside.vue')
+        let List = require('misc/List.vue')
 
         Vue.component('vs-form-button', vsFormButton)
         Vue.component('vs-expansion', vsExpansion)
@@ -22,6 +21,7 @@ export default function (Vue, callback) {
         Vue.component('vs-link', BlockA)
         Vue.component('sidebar', SideBar)
         Vue.component('editable', Editable)
+        Vue.component('List', List)
 
         callback()
     })
