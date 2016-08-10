@@ -7,18 +7,18 @@
             </h3>
         </vs-jumbotron>
         <div class="container" id="index-container">
-            <div class="col-xs-12 col-sm-6 col-md-3" v-for="options in articleOptions">
+            <div class="col-xs-12 col-sm-6 col-md-3" v-for="title in articleOptions">
                 <vs-card class="clearfix">
                     <a v-link="'/articles/'+$key+'/'" class="title">
                         <h2 class="card-block card-title text-xs-center">
-                            {{options.title}}
+                            {{title}}
                         </h2> 
                     </a>
                     <div class="content">
                         <article-list-group
                             :summary="false"
                             :category="$key"
-                            :other-params="{limit: options.limit}"
+                            :other-params="{limit: 3}"
                             flush>
                             <vs-list-group-item
                                 slot="other-items"
@@ -51,36 +51,7 @@
             ArticleListGroup
         },
         data: () => ({
-            articleOptions: {
-                government: {
-                    title: '资讯·政府',
-                    limit: 2
-                },
-                media: {
-                    title: '资讯·媒体',
-                    limit: 2
-                },
-                finance: {
-                    title: '资讯 · 金融',
-                    limit: 2
-                },
-                energy_and_raw_materials: {
-                    title: '能源及原材料',
-                    limit: 2
-                },
-                bank: {
-                    title: '银行',
-                    limit: 2
-                },
-                real_estate: {
-                    title: '房地产',
-                    limit: 2
-                },
-                electronic_technology: {
-                    title: '电子科技',
-                    limit: 2
-                }
-            }
+            articleOptions: consts.article_type_verbose
         })
     }
 </script>

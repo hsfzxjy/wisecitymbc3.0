@@ -33,7 +33,7 @@ def collect_consts():
         if not consts:
             continue
 
-        consts_dict[app.label] = consts
+        consts_dict.update(consts)
 
     return consts_dict
 

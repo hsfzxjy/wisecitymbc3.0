@@ -7,15 +7,13 @@ output_file_names = [os.path.join(os.path.dirname(__file__), 'a.json')]
 
 
 expected_result = {
-    'constants_test': {
-        'TYPES': {
-            'Government': 'Government',
-        },
-        'UserType': {
-            'Gov': 1,
-            'Com': 2,
-            'Chr': 3
-        }
+    'TYPES': {
+        'Government': 'Government',
+    },
+    'UserType': {
+        'Gov': 1,
+        'Com': 2,
+        'Chr': 3
     }
 }
 

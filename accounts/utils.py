@@ -1,52 +1,59 @@
+from inflection import camelize, underscore
+
 from django.apps import apps
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
+from collections import defaultdict
 
-def make_name(model, action, id=''):
-    return '{app_label}_{model}_{action}_{id}'.format(
-        model=model._meta.model_name.lower(),
-        app_label=model._meta.app_label,
-        action=action,
-        id=id
-    )
+__all__ = ['default_perms', 'model_perms']
 
 
-def get_perms(user):
-    models = apps.get_models()
-    result = {}
+def tree():
+    return defaultdict(tree)
 
-    for model in models:
-        model_name = model._meta.model_name.lower()
 
-        for action in ['add', 'view']:
-            name = '{app_label}.{action}_{model}'.format(
-                app_label=model._meta.app_label,
-                model=model_name,
-                action=action
-            )
-            result[make_name(model, action)] = user.has_perm(name)
+def model_info(model_class):
+    return model_class._meta.app_label, model_class.__name__
+
+
+def store_permission(storage, user, action, model, id=None):
+    app, name = model_info(model)
+    permission_name = '{0}.{1}_{2}'.format(app, action, name.lower())
+
+    if id is None:
+        storage[app][underscore(name)][action] = user.has_perm(permission_name)
+    else:
+        obj = get_object_or_404(model, pk=id)
+        storage[app][underscore(name)][id][action] = user.has_perm(
+            permission_name, obj)
+
+
+def get_model_class(app, name):
+    try:
+        return apps.get_model(app, camelize(name))
+    except LookupError:
+        raise Http404
+
+
+# Permissions getters & formatters
+
+def default_perms(user):
+    all_models = apps.get_models()
+    result = tree()
+
+    for model in all_models:
+        for action in ('add', 'view'):
+            store_permission(result, user, action, model)
 
     return result
 
 
-def get_object_perms(user, model_path, id):
+def model_perms(user, app, name, id=None):
+    model = get_model_class(app, name)
+    result = tree()
 
-    try:
-        model = apps.get_model(model_path)
-    except LookupError:
-        raise Http404
-
-    obj = get_object_or_404(model, pk=id)
-
-    result = {}
-
-    for action in ['view', 'change', 'delete']:
-        name = '{app_label}.{action}_{model}'.format(
-            app_label=model._meta.app_label,
-            model=model._meta.model_name.lower(),
-            action=action
-        )
-        result[make_name(model, action, id)] = user.has_perm(name, obj)
+    for action in ('add', 'view', 'change', 'delete'):
+        store_permission(result, user, action, model, id)
 
     return result

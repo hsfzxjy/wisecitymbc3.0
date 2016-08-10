@@ -28,8 +28,9 @@
 </style>
 
 <script> 
-    import DetailMixin from 'mixins/DetailMixin.es'
+    import DetailMixin from 'mixins/DetailMixin'
     import ArticleNavBar from './ArticleNavBar.vue'
+    
     export default {
         components: {ArticleNavBar},
         mixins: [DetailMixin],

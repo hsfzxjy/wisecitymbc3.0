@@ -75,8 +75,6 @@
     import Uploader from 'misc/Uploader.vue'
     import ReportList from './ReportList.vue'
     import ArticleList from 'articles/ArticleList.vue'
-    import { StrUtils } from 'utils/index.es'
-    import { USER_TYPES } from 'consts.es'
  
     export default {
         components: { ReportList, ArticleList, Uploader },
@@ -99,7 +97,7 @@
                 return !!(this.user.user_data)
             },
             userTypeName () {
-                return USER_TYPES[this.user.user_type]
+                return consts.user_type_verbose[this.user.user_type]
             },
             saveAction () {
                 return {
@@ -112,7 +110,7 @@
         route: {
             canActivate (transition) {
                 let id = transition.to.params.id
-                return id === undefined || StrUtils.isDigits(id)
+                return id === undefined || isDigits(id)
             },
             data (transition) {
                 let id = transition.to.params.id || 'me'

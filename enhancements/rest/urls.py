@@ -107,9 +107,9 @@ class register(object):
         self._kwargs = kwargs
 
     def __call__(self, cls):
-        assert not self._has_registered(cls), (
-            'View %r has already registered.' % cls
-        )
+        # assert not self._has_registered(cls), (
+        #     'View %r has already registered.' % cls
+        # )
 
         if is_viewset(cls):
             registrant = (self.register_nested_viewset

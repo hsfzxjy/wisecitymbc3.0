@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-13 12:21+0800\n"
+"POT-Creation-Date: 2016-08-09 13:38+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,24 +18,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: articles/consts.py:27
+#: articles/consts.py:30
 msgid "company"
 msgstr ""
 
-#: articles/consts.py:28
+#: articles/consts.py:31
 msgid "government"
 msgstr ""
 
-#: articles/consts.py:29
+#: articles/consts.py:32
 msgid "media"
 msgstr ""
 
-#: articles/consts.py:30
+#: articles/consts.py:33
 msgid "finance"
+msgstr "金融"
+
+#: articles/consts.py:34
+msgid "energy_and_raw_materials"
 msgstr ""
 
-#: articles/consts.py:31
-msgid "energy_and_raw_materials"
+#: articles/consts.py:35
+msgid "electronic_technology"
+msgstr ""
+
+#: articles/consts.py:36
+msgid "bank"
+msgstr ""
+
+#: articles/consts.py:37
+msgid "real_estate"
 msgstr ""
 
 #: articles/models.py:13

@@ -11,6 +11,7 @@ gevent==1.1.2
 greenlet==0.4.10
 gunicorn==19.6.0
 html2text==2016.5.29
+inflection==0.3.1
 Jinja2==2.8
 jsonfield==1.0.3
 MarkupSafe==0.23
@@ -21,7 +22,7 @@ pytest-cov==2.3.1
 pytest-django==2.9.1
 qiniu==7.0.8
 redis==2.10.5
-requests==2.10.0
+requests==2.11.0
 rules==1.1.1
 six==1.10.0
 uWSGI==2.0.13.1

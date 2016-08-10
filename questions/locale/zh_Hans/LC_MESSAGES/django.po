@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-13 12:21+0800\n"
+"POT-Creation-Date: 2016-08-09 13:38+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,43 +43,43 @@ msgid ""
 "({{url}})."
 msgstr "{{target.author.nickname}} 回复了 [{{target.topic.title}}]({{url}})"
 
-#: questions/models.py:21
+#: questions/models.py:20
 msgid "asker"
 msgstr "提问者"
 
-#: questions/models.py:24
+#: questions/models.py:23
 msgid "title"
 msgstr "标题"
 
-#: questions/models.py:27 questions/models.py:94
+#: questions/models.py:26 questions/models.py:94
 msgid "content"
 msgstr "内容"
 
-#: questions/models.py:29 questions/models.py:87
+#: questions/models.py:28 questions/models.py:87
 msgid "created time"
 msgstr "创建时间"
 
-#: questions/models.py:33
+#: questions/models.py:32
 msgid "updated time"
 msgstr "更新时间"
 
-#: questions/models.py:37
+#: questions/models.py:36
 msgid "is closed"
 msgstr "关闭"
 
-#: questions/models.py:41
+#: questions/models.py:40
 msgid "replies count"
 msgstr "回复数"
 
-#: questions/models.py:46 questions/models.py:97
+#: questions/models.py:45 questions/models.py:97
 msgid "attachments"
 msgstr "附件"
 
-#: questions/models.py:74 questions/models.py:84
+#: questions/models.py:73 questions/models.py:83
 msgid "topic"
 msgstr "帖子"
 
-#: questions/models.py:75
+#: questions/models.py:74
 msgid "topics"
 msgstr "帖子"
 

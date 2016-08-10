@@ -91,11 +91,9 @@
 </style>
 
 <script>
-    import { AVAILABLE_CATEGORIES, CATEGORIES_NAME } from 'consts.es'
-
     export default {
         data: () => ({
-            categories: _.zipObject(AVAILABLE_CATEGORIES, CATEGORIES_NAME),
+            categories: consts.article_type_verbose,
             tags: []
         }),
         methods: {

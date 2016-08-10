@@ -86,7 +86,7 @@
 
 <script>
     import Editor from 'misc/edit/Editor.vue'
-    import DetailMixin from 'mixins/DetailMixin.es'
+    import DetailMixin from 'mixins/DetailMixin'
 
     export default {
         mixins: [DetailMixin],

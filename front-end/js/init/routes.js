@@ -46,7 +46,15 @@ export default function (Vue) {
         '/articles/:category/': {
             component: Articles,
             name: 'article-list',
-            title: '资讯'
+            title: function () {
+                console.log(consts, this)
+                return `${consts.article_type_verbose[this.params.category]}·资讯`
+            },
+            validator: {
+                category: new RegExp(
+                    '^('+_.values(consts.ArticleType).join('|')+')$'
+                )
+            }
         },
         '/tags/': {
             component: Tags,
@@ -148,7 +156,9 @@ export default function (Vue) {
             subRoutes: {
                 '/:product/': {
                     component: FinanceList,
-                    title: '列表',
+                    title: function () {
+                        return consts.finance_product_verbose[this.params.product]
+                    },
                     validator: {
                         product: /^(stocks|bonds|futures)$/
                     }
@@ -169,6 +179,10 @@ export default function (Vue) {
             component: NotFound,
             title: '走错路了～'
         }
+    })
+
+    router.redirect({
+        '/articles/': `/articles/${consts.ArticleType.government}/`
     })
 
     // validation
@@ -202,7 +216,16 @@ export default function (Vue) {
     })
 
     router.beforeEach(function ({ to, next }) {
-        document.title = (to.title || '') + ' - WiseCity'
+        let title = to.title
+
+        switch (true) {
+            case _.isFunction(title):
+                title = title.call(to)
+                break;
+            default:
+                title = title || '无标题';
+        }
+        document.title = `${title} - WiseCity`
         next()
     })
 

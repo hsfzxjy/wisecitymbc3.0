@@ -15,7 +15,7 @@ var commonConfig = {
             test: /\.vue$/,
             loader: 'vue',
         }, {
-            test: /(\.es)|(node_modules.*src.*\.js)$/,
+            test: /(node_modules.*src.*|js).*\.js$/,
             loader: 'babel',
             query: {
                 presets: ['es2015']
@@ -52,7 +52,7 @@ var config = {};
 if (action === 'vendor')
      config = {
         entry: {
-            vendor: 'js/vendor.es'
+            vendor: 'js/vendor.js'
         },
         output: {
             publicPath: '/static/',
@@ -65,7 +65,7 @@ else if (action === 'app')
     config = {
         devtool: prod ? '' : "source-map", 
         entry: {
-            app: 'js/main.es'
+            app: 'js/main'
         },
         output: {
             publicPath: '/static/',

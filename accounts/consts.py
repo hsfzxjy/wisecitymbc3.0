@@ -41,4 +41,8 @@ class BureauType(Enum):
             cls.media: _('media'),
         }
 
-EXPORTS = ['UserType', 'BureauType']
+user_type_verbose = UserType.get_choices()
+bureau_type_verbose = BureauType.get_choices()
+
+EXPORTS = ['UserType', 'BureauType',
+           'user_type_verbose', 'bureau_type_verbose']

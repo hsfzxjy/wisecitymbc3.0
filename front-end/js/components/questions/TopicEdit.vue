@@ -19,7 +19,7 @@
 
 <script>
     import Editor from 'misc/edit/Editor.vue'
-    import EditPageMixin from 'mixins/EditPageMixin.es'
+    import EditPageMixin from 'mixins/EditPageMixin'
 
     export default {
         mixins: [EditPageMixin],

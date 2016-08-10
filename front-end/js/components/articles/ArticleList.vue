@@ -23,7 +23,6 @@
 </style>
 
 <script>
-    import { articles } from 'consts.es'
     import ArticleItem from './ArticleItem.vue'
 
     export default {
@@ -39,7 +38,7 @@
             params () {
                 let params = {}
                 if (this.category) 
-                    params.article_type = articles.ArticleType[this.category]
+                    params.article_type = this.category
 
                 return _.assign(params, this.otherParams)
             }

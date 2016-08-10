@@ -19,11 +19,8 @@
 </style>
 
 <script>
-    import {StrUtils} from 'utils/index.es'
     import ArticleList from './ArticleList.vue'
     import ArticleNavBar from './ArticleNavBar.vue'
-
-    import { AVAILABLE_CATEGORIES } from 'consts.es'
 
     export default {
         components: { ArticleList, ArticleNavBar },
@@ -32,12 +29,7 @@
         }),
         route: {
             data ({to, next}) {
-                let category = to.params.category
-
-                if (!StrUtils.isContainedBy(category, AVAILABLE_CATEGORIES))
-                    category = 'government'
-
-                this.currentCategory = category
+                this.currentCategory = to.params.category
                 this.$nextTick(() => { this.$broadcast('List:reload') })
             }
         }

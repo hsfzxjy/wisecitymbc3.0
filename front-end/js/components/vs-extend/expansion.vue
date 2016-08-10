@@ -14,12 +14,12 @@
 </template>
 
 <script>
-    import { StrUtils } from 'utils/index.es'
+    import { randStr } from 'utils'
 
     export default {
         computed: {
             id () {
-                return StrUtils.randStr()
+                return randStr()
             }
         },
         ready () {

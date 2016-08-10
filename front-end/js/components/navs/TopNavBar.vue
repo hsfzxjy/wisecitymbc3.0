@@ -17,7 +17,7 @@
         <div>
             <a class="navbar-brand" href="#">WiseCity</a>
             <vs-nav type="navbar" class="pull-xs-left hidden-xs-down">
-                <vs-nav-item link="/articles/government/">资讯</vs-nav-item>
+                <vs-nav-item link="/articles/">资讯</vs-nav-item>
                 <vs-nav-item link="/finance/">交易</vs-nav-item>
                 <vs-nav-item link="/ram/">能源及原材料</vs-nav-item>
                 <vs-nav-item link="/topics/" v-if="$root.perms.questions_topic_view_">Q&amp;A</vs-nav-item>

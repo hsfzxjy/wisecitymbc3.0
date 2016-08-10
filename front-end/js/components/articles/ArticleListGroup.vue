@@ -53,8 +53,6 @@
 </style>
 
 <script>
-    import { articles } from 'consts.es'
-
     export default {
         data: () => ({
             articles: [],
@@ -81,7 +79,7 @@
             params () {
                 let params = _.cloneDeep(this.otherParams)
 
-                params.article_type = articles.ArticleType[this.category]
+                params.article_type = this.category
 
                 return params
             }

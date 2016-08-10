@@ -14,5 +14,5 @@ class AutoDiscoverConfig(AppConfig):
     def ready(self):
         from django.utils.module_loading import autodiscover_modules
 
-        autodiscover_modules('serializers')
-        autodiscover_modules('viewsets')
+        for module_name in ['serializers', 'viewsets', 'views']:
+            autodiscover_modules(module_name)

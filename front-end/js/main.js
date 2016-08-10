@@ -1,11 +1,14 @@
+global.Promise = Vue.Promise
+global.consts = require('./consts.json')
+
 import App from './components/App.vue'
-import Router from 'init/routes.es'
+import Router from 'init/routes'
 
 let router = Router(Vue)
 
-import ResourceInit from 'init/resources.es'
-import FilterInit from 'init/filters.es'
-import ComponentInit from 'init/components.es'
+import ResourceInit from 'init/resources'
+import FilterInit from 'init/filters'
+import ComponentInit from 'init/components'
 
 ResourceInit(Vue)
 FilterInit(Vue)

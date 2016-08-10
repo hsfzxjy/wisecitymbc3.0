@@ -13,11 +13,9 @@
 </template>
 
 <script>
-    import { AVAILABLE_CATEGORIES, articles, CATEGORIES_NAME } from 'consts.es'
-
     export default {
         data: () => ({
-            categories: _.zipObject(AVAILABLE_CATEGORIES, CATEGORIES_NAME),
+            categories: consts.article_type_verbose,
         }),
         props: {
             vertical: {
@@ -34,7 +32,7 @@
                     if (_.isNumber(value)) {
                         let key
 
-                        _.forEach(articles.ArticleType, (v, k) => {
+                        _.forEach(consts.ArticleType, (v, k) => {
                             if (v === value) key = k
                         })
 

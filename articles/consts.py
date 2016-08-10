@@ -5,7 +5,7 @@ from enhancements.shortcuts import _
 from accounts.consts import BureauType, UserType
 
 
-EXPORTS = ['ArticleType']
+EXPORTS = ['ArticleType', 'article_type_verbose']
 
 
 class ArticleType(Enum):
@@ -50,3 +50,5 @@ USER_TO_ARTICLE_MAPPING = {
     (UserType.bureau, BureauType.real_estate): ArticleType.real_estate,
     (UserType.bureau, BureauType.bank): ArticleType.bank
 }
+
+article_type_verbose = ArticleType.get_choices()

@@ -1,9 +1,9 @@
-import { StrUtils } from 'utils/index.es'
+import { isDigits } from 'utils'
 
 export default {
     route: {
         canActivate (transition) {
-            return StrUtils.isDigits(transition.to.params.id)
+            return isDigits(transition.to.params.id)
         },
         data (transition) {
             let id = transition.to.params.id

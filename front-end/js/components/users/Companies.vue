@@ -29,8 +29,6 @@
 </template>
 
 <script>
-    import { accounts } from 'consts.es'
-
     export default {
         data: () => ({
             companies: []
@@ -38,7 +36,7 @@
         computed: {
             params () {
                 return {
-                    user_type: accounts.UserType.company
+                    user_type: consts.UserType.company
                 }
             }
         },

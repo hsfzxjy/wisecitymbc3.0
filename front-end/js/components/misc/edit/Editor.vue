@@ -55,8 +55,7 @@
 </template>
 
 <script>
-    import { files } from 'consts.es'
-    import { clearObject } from 'utils/index.es'
+    import { clearObject } from 'utils'
     import CkEditor from 'misc/edit/CKEditor.vue'
     import Uploader from 'misc/Uploader.vue'
 
@@ -115,7 +114,7 @@
             insertFileToEditor (file) {
                 let html
                 console.log(file)
-                if (file.file_type === files.FileType.image) {
+                if (file.file_type === consts.FileType.image) {
                     html = `<img src="${file.storage_url}"  title="${file.file_name}" />`
                 } else {
                     html = `<a href="${file.storage_url}">${file.file_name}</a>`
