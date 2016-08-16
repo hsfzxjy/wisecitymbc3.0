@@ -7,7 +7,10 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     mutations: {
         INIT_LOADING_STATE (state, path) {
-            Vue.set(state, path, true)
+            Vue.$set(state, path, true)
+        },
+        RESET_LOADING_STATE (state, path) {
+            Vue.$set(state, path, false)
         }
     },
     modules: {

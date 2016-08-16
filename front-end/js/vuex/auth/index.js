@@ -17,6 +17,7 @@ let mutations = {
     },
     SET_USER (state, user) {
         state.user = user
+        state.isUserLoading = false
     }
 }
 
