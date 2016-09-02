@@ -29,14 +29,24 @@ export function isThenable (object) {
     return _.isObject(object) && _.isFunction(object.then)
 }
 
+export function now () {
+    return +(new Date())
+}
+
 /**
  * Return a Promise, which will be resolved when condition is true.
  *
  * @param      {Function}  condition  The condition
  */
-export function waitUntil (condition, interval) {
-    return Promise((resolve) => {
+export function waitUntil (condition, interval, timeout = 2000) {
+    return new Promise((resolve, reject) => {
+        let startTime = now()
+
         function wait () {
+            if (now() - startTime > timeout) {
+                reject('timeout')
+                return
+            }
             setTimeout(() => condition() ? resolve() : wait(), interval || 60)
         }
 

@@ -1,47 +1,62 @@
-import waitUntil from 'utils'
+import { waitUntil } from 'utils'
 
-import { getPromise } from 'vuex/promises/getters'
-
-export function loadMyInfo ({ state, dispatch }) {
-    let promise = Vue.$http.get('/api/users/me/')
-        .then(res => dispatch('SET_USER', res.data))
-
-    dispatch('SET_PROMISE', promise)
-    return promise
+const loadingState = {
+    myInfo: false,
+    perms: false
 }
 
-export function initPerms ({ state, dispatch }) {
-    if (state.isPermsLoading) {
-        return waitUntil(() => !state.isPermsLoading).then(() => state.perms)
-    } else {
-        return fetchPerms('/api/perms/').then(() => state.perms)
-    }
+function wait (name) {
+    return waitUntil(() => !loadingState[name])
+}
+
+function fetchMyInfo ({ dispatch }) {
+    loadingState.myInfo = true
+    return Vue.http.get('/api/users/me/')
+        .then(res => dispatch('SET_USER', res.data), _.noop)
+        .then(() => loadingState.myInfo = false)
+}
+
+export function loadMyInfo ({ state, dispatch }) {
+    return wait('myInfo')
+        .then(() => {
+            if (_.isNull(state.auth.user)) return fetchMyInfo({ dispatch })
+        })
 }
 
 export function getMyInfo ({ state, dispatch }) {
-    return waitUntil(() => !state.isUserLoading).then(() => state.user)
+    return loadMyInfo().then(() => state.user)
+}
+
+function fetchPerms (url) {
+    loadingState.perms = true
+
+    return Vue.$http.get(url)
+        .then(
+            ({ data }) => dispatch('SET_PERMS', data),
+            _.noop
+        ).then(() => loadingState.perms = false)
+}
+
+export function initPerms ({ state, dispatch }) {
+    return wait('perms')
+        .then(() => fetchPerms('/api/perms/'))
+        .then(() => state.perms)
 }
 
 export function getPerm ({ state, dispatch }, ...args) {
 
-    function get () {
+    function getPermValue () {
         return Vue.$get(state.perms, args.join('.'))
     }
 
-    return waitUntil(() => !state.isPermsLoading).then(() => {
-        if (!_.isUndefined(get())) return permValue
+    return wait('perms')
+        .then(() => {
+            let value = getPermValue()
 
-        let subURL = args.concat(['']).join('/')
-        return fetchPerms(`/api/perms/${subURL}/`)
-            .then(() => get())
-    })
-}
+            if (_.isUndefined(value)) {
+                let subURL = args.join('/')
 
-function fetchPerms (url) {
-    dispatch('INIT_LOADING_STATE', 'auth.isPermsLoading')
-    return Vue.$http.get(url)
-        .then(
-            ({ data }) => dispatch('SET_PERMS', data), 
-            () => dispatch('SET_PERMS', {})
-        )
+                return fetchPerms(`/api/perms/${subURL}/`)
+            }
+        }).then(() => getPermValue())
 }

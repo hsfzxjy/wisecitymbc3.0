@@ -7,7 +7,7 @@ export default function (Vue) {
     // Vue.http.headers.common['X-CSRFToken'] = /csrftoken=(.*)(\s|;|$)/.exec(document.cookie)[1]
 
     Vue.http.interceptors.push(function (request, next) {
-        if (!_.isUndefined(this.loading)) {
+        if (this && !_.isUndefined(this.loading)) {
             this.loading = true
             next(function (response) {
                 this.loading = false
@@ -16,7 +16,7 @@ export default function (Vue) {
     })
 
     Vue.http.interceptors.push(function (request, next) {
-        if (!_.isUndefined(this.errors)) {
+        if (this && !_.isUndefined(this.errors)) {
             next(function (response) {
                 if (response.status === 400)
                     this.errors = response.data

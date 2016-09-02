@@ -22,6 +22,9 @@
     import SideBarContent from 'misc/SideBarContent.vue'
     import NotificationFetcher from 'notifications/Fetcher.vue'
 
+    import store from 'vuex/store'
+    import { auth as authActions } from 'vuex/actions'
+
     export default {
         components: {
             TopNavBar,
@@ -29,83 +32,33 @@
             NotificationFetcher
         },
         data: () => ({
-            user: null,
-            perms: {},
             showSideBar: false,
-            initPromise: null,
             nCount: 0
         }),
-        computed: {
-            hasLogined () {
-                return !!this.user
-            }
-        },
         methods: {
-            _getName (model, action, id) {
-                return [model.replace('.', '_'), action, (id || '')].join('_')
-            },
-            _extendPerms (perms) {
-                _.forEach(perms, (value, key) => {
-                    this.$set('perms.'+key, value)
-                })
-            },
-            _loadAddPerms () {
-                return this.$http.get('/api/perms/')
-                    .then(res => this._extendPerms(res.data))
-            },
-            loadPerms (model, id) {
-                return this.$http.get(`/api/object_perms/${model}/${id}/`)
-                    .then(res => this._extendPerms(res.data, id))
-            },
-            getPerm (model, action, id) {
-                return this.initPromise.then(() => {
-                    let name = this._getName(model, action, id)
-                    //console.log(name, this.perms[name])
-                    if (!_.isUndefined(this.perms[name]))
-                        return this.perms[name]
-                    else
-                        return this.loadPerms(model, id)
-                            .then(() => this.perms[name], () => false)
-                })
-            },
-            resetPerms () {
-                this.perms = {}
-                this.reseting = false
-                return this._loadAddPerms().then(() => this.reseting = false)
-            },
-            checkLogined () {
-                return this.initPromise
-                    .then(() => this.hasLogined)
-            },
             refreshCurrentView () {
                 this.$broadcast('List:reload')
             }
         },
+        vuex: {
+            actions: {
+                loadMyInfo: authActions.loadMyInfo
+            },
+            getters: {
+                user (state) {
+                    return state.auth.user
+                }
+            }
+        },
         created () {
-            return this.initPromise = Promise.all([
-                this.$http.get('/api/users/me/'),
-                this.resetPerms()
-            ]).then(([userRes]) => {
-                this.user = userRes.data
-            }, _.noop)
+            this.loadMyInfo()
         },
         events: {
-            logined (user) {
-                this.user = user
-                this.initPromise = this.resetPerms()
-
-                return true
-            },
-            logout () {
-                this.user = null
-                this.initPromise = this.resetPerms()
-
-                return true
-            },
             ['new-notifications'] (count) {
                 this.nCount = count
                 return true
             }
-        }
+        },
+        store
     }
 </script>

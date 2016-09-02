@@ -1,8 +1,6 @@
 const state = {
     perms: {},
-    user: null,
-    isPermsLoading: false,
-    isUserLoading: false
+    user: null
 }
 
 let mutations = {

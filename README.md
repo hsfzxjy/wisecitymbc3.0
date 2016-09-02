@@ -19,7 +19,7 @@ Test:
 $ [sudo -u postgres] psql app_wisecitymbc
 ```
 
-# Configure Full Text Search (NEW)
+# Configure Full Text Search (Currently Deprecated)
 
 ## Installation
 
@@ -94,13 +94,17 @@ cd front-end && npm install
 
 # Development for front-end
 
-While constructing frontend modules, you should run `cd front-end/ && webpack --watch` and `./manage.py runserver` first, and keep them running.
+When constructing front-end modules, make sure you are in `front-end` directory, and run `npm run dev` to compile Javascript files in real-time.
+
+Before deploying to the server, make sure you've run command `npm run build` to minimize the scripts.
+
+To add a new front-end library, install it, edit file `front-end/js/vendor.js`, and then run `npm run `npm run vendor`.
 
 ## Folders
 
- + `front-end/dest/`: contains compiled bundles included by the pages.
- + `front-end/entries/`: should ONLY contain entry scripts which will be compiled into bundles.
- + `front-end/components/`: should contain vue components.
- + `templates/`: contains template files for Django.
-
-Checkout [branch test-webpack](https://github.com/hsfzxjy/wisecitymbc3.0/tree/test-webpack) for a detailed example.
+ + `front-end/dest/`: Temporary files while developing.
+ + `front-end/build/`: Built files for deployment.
+ + `front-end/js/`: Javascript / Vue.js source file.
+ + `front-end/vendor/`: Third-party libaries.
+ + `front-end/styles/`: Custom style files (SCSS Language).
+ + `templates/`: Template files for Django (Jinja2 Language).
