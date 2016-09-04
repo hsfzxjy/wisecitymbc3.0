@@ -3,7 +3,7 @@
         <div class="col-md-3 col-sm-12">
             <a 
                 class="btn btn-success btn-block"
-                v-if="$root.perms.questions_topic_add_"
+                v-if="perms.questions.topic.add"
                 v-link="'/edit/topics/'">
                 发帖
             </a>
@@ -42,6 +42,11 @@
             baseURL: `/api/topics/`,
             params: {}
         }),
+        vuex: {
+            getters: {
+                perms: state => state.auth.perms
+            }
+        },
         ready () {
             this.$broadcast('List:reload')
         }

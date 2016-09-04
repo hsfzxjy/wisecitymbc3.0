@@ -24,13 +24,17 @@ export function loadMyInfo ({ state, dispatch }) {
 }
 
 export function getMyInfo ({ state, dispatch }) {
-    return loadMyInfo().then(() => state.user)
+    return loadMyInfo({ dispatch, state }).then(() => state.auth.user)
 }
 
-function fetchPerms (url) {
+export function checkHasLogined ({ state, dispatch }) {
+    return getMyInfo({ dispatch, state }).then(user => !_.isNull(user))
+}
+
+function fetchPerms ({ dispatch }, url) {
     loadingState.perms = true
 
-    return Vue.$http.get(url)
+    return Vue.http.get(url)
         .then(
             ({ data }) => dispatch('SET_PERMS', data),
             _.noop
@@ -39,14 +43,14 @@ function fetchPerms (url) {
 
 export function initPerms ({ state, dispatch }) {
     return wait('perms')
-        .then(() => fetchPerms('/api/perms/'))
+        .then(() => fetchPerms({ dispatch }, '/api/perms/'))
         .then(() => state.perms)
 }
 
 export function getPerm ({ state, dispatch }, ...args) {
 
     function getPermValue () {
-        return Vue.$get(state.perms, args.join('.'))
+        return _.get(state.auth.perms, args.join('.'))
     }
 
     return wait('perms')
@@ -54,9 +58,9 @@ export function getPerm ({ state, dispatch }, ...args) {
             let value = getPermValue()
 
             if (_.isUndefined(value)) {
-                let subURL = args.join('/')
+                let subURL = args.slice(0, -1).join('/')
 
-                return fetchPerms(`/api/perms/${subURL}/`)
+                return fetchPerms({ dispatch }, `/api/perms/${subURL}/`)
             }
         }).then(() => getPermValue())
 }

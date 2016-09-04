@@ -35,6 +35,11 @@
             showSideBar: false,
             nCount: 0
         }),
+        computed: {
+            hasLogined () {
+                return !_.isNull(this.user)
+            }
+        },
         methods: {
             refreshCurrentView () {
                 this.$broadcast('List:reload')
@@ -42,16 +47,16 @@
         },
         vuex: {
             actions: {
-                loadMyInfo: authActions.loadMyInfo
+                loadMyInfo: authActions.loadMyInfo,
+                initPerms: authActions.initPerms
             },
             getters: {
-                user (state) {
-                    return state.auth.user
-                }
+                user: state => state.auth.user
             }
         },
         created () {
             this.loadMyInfo()
+                .then(() => this.user && this.initPerms())
         },
         events: {
             ['new-notifications'] (count) {

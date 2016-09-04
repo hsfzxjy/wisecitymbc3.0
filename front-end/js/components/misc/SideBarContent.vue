@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <div v-if="$root.user" class="clearfix top-btn-group">
+    <div v-if="user && perms._loaded">
+        <div class="clearfix top-btn-group">
             <div class="col-xs-6">
                 <vs-link link="/me/" title="个人主页" icon="user"></vs-link>
             </div>
@@ -12,10 +12,10 @@
             <vs-link link="/login/" title="登录" icon="sign-in"></vs-link>
         </div>
         <vs-list-group flush>
-            <vs-list-group-item v-if="$root.perms.articles_article_add_">
+            <vs-list-group-item v-if="perms.articles.article.add">
                 <vs-link link="/edit/articles/" title="撰写" icon="pencil"></vs-link>
             </vs-list-group-item>
-            <vs-list-group-item v-if="$root.user.is_staff">
+            <vs-list-group-item v-if="user.is_staff">
                 <vs-link link="/admin/" title="后台管理" icon="building" ext></vs-link>
             </vs-list-group-item>
         </vs-list-group>
@@ -65,7 +65,7 @@
             <vs-list-group-item>
                 <vs-link link="/ram/" title="能源及原材料"></vs-link>
             </vs-list-group-item>
-            <vs-list-group-item v-if="$root.perms.questions_topic_view_">
+            <vs-list-group-item v-if="perms.questions.topic.view">
                 <vs-link link="/topics/" title="Q&amp;A"></vs-link>
             </vs-list-group-item>
         </vs-list-group>
@@ -96,6 +96,12 @@
             categories: consts.article_type_verbose,
             tags: []
         }),
+        vuex: {
+            getters: {
+                perms: state => state.auth.perms,
+                user: state => state.auth.user
+            }
+        },
         methods: {
             tagToggled () {
                 this.$http.get('/api/tags/')

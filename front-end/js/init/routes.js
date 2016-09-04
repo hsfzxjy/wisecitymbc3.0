@@ -20,6 +20,9 @@ import FinanceList from 'finance/FinanceList.vue'
 import RAM from 'finance/RAM.vue'
 import NotFound from "pages/404.vue"
 
+import store from 'vuex/store'
+import { checkHasLogined, getPerm } from 'vuex/auth/actions'
+
 export default function (Vue) {
     Vue.use(VueRouter)
 
@@ -75,19 +78,13 @@ export default function (Vue) {
             component: ArticleEdit,
             name: 'article-add',
             title: '撰写资讯',
-            auth: {
-                model: 'articles.article',
-                action: 'add'
-            }
+            auth: ['articles', 'article', 'add']
         },
         '/edit/articles/:id/': {
             component: ArticleEdit,
             name: 'article-edit',
             title: '编辑资讯',
-            auth: {
-                model: 'articles.article',
-                action: 'change'
-            }
+            auth: ['articles', 'article', 'change']
         },
         '/me/': {
             component: Profile,
@@ -114,37 +111,25 @@ export default function (Vue) {
             component: Topics,
             name: 'topic-list',
             title: '问题',
-            auth: {
-                model: 'questions.topic',
-                action: 'view'
-            }
+            auth: ['questions', 'topic', 'view']
         },
         '/edit/topics/': {
             component: TopicEdit,
             name: 'topic-add',
             title: '提问',
-            auth: {
-                model: 'questions.topic',
-                action: 'add'
-            }
+            auth: ['questions', 'topic', 'add']
         },
         '/edit/topics/:id/': {
             component: TopicEdit,
             name: 'topic-edit',
             title: '编辑问题',
-            auth: {
-                model: 'questions.topic',
-                action: 'change'
-            }
+            auth: ['questions', 'topic', 'change']
         },
         '/detail/topics/:id/': {
             component: TopicDetail,
             name: 'topic-detail',
             title: '问题详情',
-            auth: {
-                model: 'questions.topic',
-                action: 'view'
-            }
+            auth: ['questions', 'topic', 'view']
         },
         '/financeSummary/': {
             component: StockFutures,
@@ -198,7 +183,7 @@ export default function (Vue) {
             next()
             return
         }
-        router.app.checkLogined()
+        checkHasLogined(store)
             .then(logined => {
                 if (logined) return logined
 
@@ -206,11 +191,11 @@ export default function (Vue) {
             })
             .then(() => {
                 if (to.auth) {
-                    return router.app.getPerm(
-                        to.auth.model,
-                        to.auth.action,
-                        parseInt(to.params.id) || undefined
-                    ).then(yes => yes ? next() : abort())
+                    let args = to.auth
+
+                    if (to.id) args = args.slice(0, -1).concat([to.id]).concat(args.slice(-1))
+                    return getPerm(store, ...args)
+                        .then(yes => yes ? next() : abort())
                 } else next()
             })
     })

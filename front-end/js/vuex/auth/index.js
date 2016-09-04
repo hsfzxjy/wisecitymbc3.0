@@ -7,15 +7,13 @@ let mutations = {
     LOGOUT (state) {
         state.perms = {}
         state.user = null
-        state.isPermsLoading = false
-        state.isUserLoading = false
     },
     SET_PERMS (state, perms) {
-        _.merge(state.perms, perms)
+        state.perms = _.merge({}, _.merge(state.perms, perms))
+        Vue.set(state.perms, '_loaded', true)
     },
     SET_USER (state, user) {
         state.user = user
-        state.isUserLoading = false
     }
 }
 

@@ -14,17 +14,28 @@
                 <span @click="$root.showSideBar = true" class="fa fa-bars fa-lg"></span>
             </vs-nav-item>
         </vs-nav>
-        <div>
+        <div v-if="perms._loaded">
             <a class="navbar-brand" href="#">WiseCity</a>
             <vs-nav type="navbar" class="pull-xs-left hidden-xs-down">
                 <vs-nav-item link="/articles/">资讯</vs-nav-item>
                 <vs-nav-item link="/finance/">交易</vs-nav-item>
                 <vs-nav-item link="/ram/">能源及原材料</vs-nav-item>
-                <vs-nav-item link="/topics/" v-if="$root.perms.questions_topic_view_">Q&amp;A</vs-nav-item>
+                <vs-nav-item link="/topics/" v-if="perms.questions.topic.view">Q&amp;A</vs-nav-item>
             </vs-nav>
         </div>
     </vs-navbar>
 </template>
+
+<script>
+    export default {
+        vuex: {
+            getters: {
+                perms: state => state.auth.perms,
+                user: state => state.auth.user
+            }
+        }
+    }
+</script>
 
 <style>
     .n-outer {
