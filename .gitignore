@@ -141,3 +141,5 @@ front-end/consts.json
 .DS_Store
 
 local_settings.py
+
+tmp

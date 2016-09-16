@@ -169,7 +169,7 @@ STATICFILES_DIRS_BASE = [
     'static'
 ]
 
-STATICFILES_DIRS = STATICFILES_DIRS_BASE + ['front-end/dest', ]
+STATICFILES_DIRS = STATICFILES_DIRS_BASE + ['front-end/tmp', ]
 
 # rest_framework
 REST_FRAMEWORK = {
