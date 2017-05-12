@@ -18,7 +18,7 @@
             id: {
                 required: true
             },
-            baseURL: {
+            baseUrl: {
                 type: String,
                 required: true
             }
@@ -26,7 +26,7 @@
 
         methods: {
             click () {
-                this.$http.delete(`${this.baseURL}${this.id}/`)
+                this.$http.delete(`${this.baseUrl}${this.id}/`)
                     .then(() => {
                         this.list.splice(this.index, 1)
                     })

@@ -1,55 +1,57 @@
 <template>
-    <vs-form @submit.prevent="submit" class="col-md-8 sm-no-padding" :errors="errors">
-        <slot name="fields-before"></slot>
-        <fieldset class="form-group">
-            <ck-editor :editor-id="name+'-editor'" :model.sync="model.content"></ck-editor>
-        </fieldset>
-        <slot name="fields-after"></slot>
-    </vs-form>
-    <div class="col-md-4 sm-no-padding">
-        <div class="col-xs-6 col-md-12 sm-no-padding">
-            <uploader
-                @file-uploaded="insertFileToEditor"
-                :upload-status.sync="uploadStatus"
-                :browse-button-id="name+'-editor-upload'"
-                :files="model.attachments">
-                <vs-buttons 
-                    block
-                    id="{{name}}-editor-upload" 
-                    variant="primary"
-                    :disabled="uploadStatus.uploading || loading">
-                    添加文件
+    <div>
+        <vs-form @submit.prevent="submit" class="col-md-8 sm-no-padding" :errors="errors">
+            <slot name="fields-before"></slot>
+            <fieldset class="form-group">
+                <ck-editor :editor-id="name+'-editor'" :model.sync="model.content"></ck-editor>
+            </fieldset>
+            <slot name="fields-after"></slot>
+        </vs-form>
+        <div class="col-md-4 sm-no-padding">
+            <div class="col-xs-6 col-md-12 sm-no-padding">
+                <uploader
+                    @file-uploaded="insertFileToEditor"
+                    :upload-status.sync="uploadStatus"
+                    :browse-button-id="name+'-editor-upload'"
+                    :files="model.attachments">
+                    <vs-buttons
+                        block
+                        id="{{name}}-editor-upload"
+                        variant="primary"
+                        :disabled="uploadStatus.uploading || loading">
+                        添加文件
+                    </vs-buttons>
+                </uploader>
+            </div>
+            <div class="col-xs-6 col-md-12 sm-no-padding">
+                <vs-buttons :disabled="loading" @click="submit" block>
+                    <slot name="submit-name">发布</slot>
                 </vs-buttons>
-            </uploader>
-        </div>
-        <div class="col-xs-6 col-md-12 sm-no-padding">
-            <vs-buttons :disabled="loading" @click="submit" block>
-                <slot name="submit-name">发布</slot>
-            </vs-buttons>
-        </div>
-        <div class="col-xs-12 sm-no-padding">
-            <vs-progress 
-                v-show="uploadStatus.uploading"
-                variant="success"
-                :value="uploadStatus.percent" 
-                striped>
-            </vs-progress>
-            <vs-list-group>
-                <vs-list-group-item
-                    v-for="file in model.attachments">
-                    <a
-                        href="javascript: void 0"
-                        @click.stop="insertFileToEditor(model.attachments[$index])">
-                        {{ file.file_name }}
-                    </a>
-                    <a 
-                        href="javascript:void 0" 
-                        class="pull-xs-right" 
-                        @click.stop="removeFile($index)">
-                        删除
-                    </a>
-                </vs-list-group-item>
-            </vs-list-group>
+            </div>
+            <div class="col-xs-12 sm-no-padding">
+                <vs-progress
+                    v-show="uploadStatus.uploading"
+                    variant="success"
+                    :value="uploadStatus.percent"
+                    striped>
+                </vs-progress>
+                <vs-list-group>
+                    <vs-list-group-item
+                        v-for="file in model.attachments">
+                        <a
+                            href="javascript: void 0"
+                            @click.stop="insertFileToEditor(model.attachments[$index])">
+                            {{ file.file_name }}
+                        </a>
+                        <a
+                            href="javascript:void 0"
+                            class="pull-xs-right"
+                            @click.stop="removeFile($index)">
+                            删除
+                        </a>
+                    </vs-list-group-item>
+                </vs-list-group>
+            </div>
         </div>
     </div>
 </template>
@@ -80,7 +82,7 @@
                 type: String,
                 required: true
             },
-            baseURL: {
+            baseUrl: {
                 type: String,
                 required: true
             }
@@ -90,7 +92,7 @@
                 return this.model.id ? 'patch' : 'post'
             },
             submitURL () {
-                return this.model.id ? `${this.baseURL}${this.model.id}/` : `${this.baseURL}`
+                return this.model.id ? `${this.baseUrl}${this.model.id}/` : `${this.baseUrl}`
             },
             dataToSubmit () {
                 let obj = _.cloneDeep(this.model)

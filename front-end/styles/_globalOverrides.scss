@@ -91,7 +91,7 @@ dd:empty:after {
 @include media-breakpoint-down('xs') {
     .navbar-brand {
         position: absolute;
-    }    
+    }
 }
 
 // Fucking index
@@ -130,11 +130,11 @@ dd:empty:after {
 #index-container {
     .card {
         transition: background-color .5s;
-        
+
         a.title {
             display: block;
             &:hover, &:focus {
-                text-decoration: none!important;                
+                text-decoration: none!important;
             }
         }
 
@@ -166,7 +166,9 @@ dd:empty:after {
 
         .card-title {
             transition: opacity .5s;
-            writing-mode: vertical-rl;
+            // writing-mode: vertical-rl;
+            width: 2em;
+            word-break: break-all;
             height: 240px;
             margin: 0 auto;
             text-decoration: none!important;
@@ -196,7 +198,7 @@ dd:empty:after {
                 background-color: #131616;
 
                 .card-title {
-                    opacity: 0.02;    
+                    opacity: 0.02;
                 }
 
                 .content {
@@ -208,7 +210,7 @@ dd:empty:after {
     }
 }
 
-// Utilities 
+// Utilities
 
 @each $breakpoint in map-keys($grid-breakpoints) {
 
@@ -278,7 +280,7 @@ a {
 .aside-header {
     background-color:lighten($bgc,5%)!important;
     border-bottom:none!important;
-    
+
     h4 {
         margin: .3rem 0;
     }

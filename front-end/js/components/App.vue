@@ -8,11 +8,11 @@
         </sidebar>
         <div class="container-fluid" id="main-container">
             <router-view
-                class="view" 
-                keep-alive 
+                class="view"
+                keep-alive
                 transition="fade"
                 transition-mode="out-in">
-            </router-view>            
+            </router-view>
         </div>
     </div>
 </template>
@@ -29,7 +29,7 @@
             NotificationFetcher
         },
         data: () => ({
-            user: null,
+            user: {},
             perms: {},
             showSideBar: false,
             initPromise: null,
@@ -37,7 +37,7 @@
         }),
         computed: {
             hasLogined () {
-                return !!this.user
+                return this.user.id
             }
         },
         methods: {
@@ -99,7 +99,7 @@
                 return true
             },
             logout () {
-                this.user = null
+                this.user = {}
                 this.initPromise = this.resetPerms()
 
                 return true
